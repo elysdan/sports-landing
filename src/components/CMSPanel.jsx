@@ -22,11 +22,34 @@ export default function CMSPanel() {
       if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
-        updateSection(section, (prev) => ({
-          ...prev,
-          [field]: ev.target.result,
-          type: file.type.startsWith('video') ? 'video' : 'image',
-        }));
+        const base64 = ev.target.result;
+        fetch('/api/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            filename: file.name,
+            base64: base64,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.url) {
+              updateSection(section, (prev) => ({
+                ...prev,
+                [field]: data.url,
+                type: file.type.startsWith('video') ? 'video' : 'image',
+              }));
+            } else {
+              console.error('Error al subir archivo:', data.error);
+              alert('Error al subir el archivo: ' + (data.error || 'Desconocido'));
+            }
+          })
+          .catch((err) => {
+            console.error('Error de red al subir archivo:', err);
+            alert('Error de red al intentar subir el archivo.');
+          });
       };
       reader.readAsDataURL(file);
     },

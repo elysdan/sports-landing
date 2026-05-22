@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCMS } from '../context/CMSContext';
+import { Link } from 'react-router-dom';
 
 /* ─── Render a single module based on its type ─── */
-function RenderModule({ module }) {
+export function RenderModule({ module }) {
   switch (module.type) {
     case 'media':
       return <MediaModule content={module.content} />;
@@ -23,15 +24,17 @@ function RenderModule({ module }) {
 
 /* ─── MEDIA MODULE ─── */
 function MediaModule({ content }) {
+  const objectFitStyle = content.objectFit || 'contain';
+
   if (content.showBrandOverlay) {
     return (
       <div className="module-media">
         {content.src && (
           <>
             {isVideo(content.src, content.mediaType) ? (
-              <video className="media-content" src={content.src} autoPlay muted loop playsInline />
+              <video className={`media-content ${objectFitStyle}`} style={{ objectFit: objectFitStyle }} src={content.src} autoPlay muted loop playsInline />
             ) : (
-              <img className={`media-content ${content.objectFit === 'contain' ? 'contain' : ''}`} src={content.src} alt={content.alt || ''} />
+              <img className={`media-content ${objectFitStyle}`} style={{ objectFit: objectFitStyle }} src={content.src} alt={content.alt || ''} />
             )}
           </>
         )}
@@ -61,9 +64,9 @@ function MediaModule({ content }) {
       {content.src ? (
         <>
           {isVideo(content.src, content.mediaType) ? (
-            <video className="media-content" src={content.src} autoPlay muted loop playsInline />
+            <video className={`media-content ${objectFitStyle}`} style={{ objectFit: objectFitStyle }} src={content.src} autoPlay muted loop playsInline />
           ) : (
-            <img className={`media-content ${content.objectFit === 'contain' ? 'contain' : ''}`} src={content.src} alt={content.alt || ''} />
+            <img className={`media-content ${objectFitStyle}`} style={{ objectFit: objectFitStyle }} src={content.src} alt={content.alt || ''} />
           )}
           <div className="media-overlay" />
           {content.overlayText && (
@@ -190,12 +193,17 @@ export default function DisplayView() {
   const { data } = useCMS();
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
+  const [isVertical, setIsVertical] = useState(false);
 
   useEffect(() => {
     function handleResize() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      setScale(Math.min(vw / 1920, vh / 1080));
+      const vertical = vw < vh;
+      setIsVertical(vertical);
+      const canvasWidth = vertical ? 1080 : 1920;
+      const canvasHeight = vertical ? 1920 : 1080;
+      setScale(Math.min(vw / canvasWidth, vh / canvasHeight));
     }
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -203,35 +211,47 @@ export default function DisplayView() {
   }, []);
 
   const { modules, grid } = data;
+  const visibleModules = modules.filter(m => m.visible !== false);
 
   return (
-    <div
-      ref={containerRef}
-      className="viewport-container"
-      style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
-    >
+    <>
       <div
-        className="billboard-grid"
-        style={{
-          gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-          gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
-            modules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
-          ).join(' '),
-        }}
+        ref={containerRef}
+        className={`viewport-container ${isVertical ? 'vertical' : ''}`}
+        style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
       >
-        {modules.map((mod) => (
-          <div
-            key={mod.id}
-            className="module-cell"
-            style={{
-              gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
-              gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-            }}
-          >
-            <RenderModule module={mod} />
-          </div>
-        ))}
+        <div
+          className={`billboard-grid ${isVertical ? 'vertical' : ''}`}
+          style={{
+            gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
+            gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
+              visibleModules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
+            ).join(' '),
+          }}
+        >
+          {visibleModules.map((mod) => {
+            const indexInMaster = data.modules.findIndex((m) => m.id === mod.id);
+            return (
+              <div
+                key={mod.id}
+                className="module-cell"
+                style={{
+                  gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
+                  gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                  zIndex: data.modules.length - indexInMaster,
+                }}
+              >
+                <RenderModule module={mod} />
+              </div>
+            );
+          })}
+        </div>
       </div>
-    </div>
+
+      <Link to="/admin" className="floating-admin-btn" title="Panel de Administración">
+        <span>⚙️</span>
+        <span className="floating-admin-text">Administrador</span>
+      </Link>
+    </>
   );
 }

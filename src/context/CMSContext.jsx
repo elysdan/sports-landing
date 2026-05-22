@@ -20,7 +20,7 @@ export const MODULE_TYPES = {
 function defaultContentForType(type) {
   switch (type) {
     case 'media':
-      return { src: '', mediaType: 'image', alt: 'Contenido multimedia', objectFit: 'cover' };
+      return { src: '', mediaType: 'image', alt: 'Contenido multimedia', objectFit: 'contain' };
     case 'scoreboard':
       return {
         teamA: { name: 'EQUIPO A', code: 'EQA', score: 0, flag: '🏳️' },
@@ -83,7 +83,7 @@ const defaultModules = [
     type: 'media',
     label: 'Media Principal',
     gridPosition: { col: 2, row: 1, colSpan: 4, rowSpan: 2 },
-    content: { src: '/stadium-hero.png', mediaType: 'image', alt: 'Estadio Copa del Mundo', objectFit: 'cover' },
+    content: { src: '/stadium-hero.png', mediaType: 'image', alt: 'Estadio Copa del Mundo', objectFit: 'contain' },
   },
   {
     id: 'default_news',
@@ -109,7 +109,7 @@ const defaultModules = [
     type: 'media',
     label: 'Resultado Destacado',
     gridPosition: { col: 4, row: 3, colSpan: 1, rowSpan: 2 },
-    content: { src: '', mediaType: 'image', alt: 'Resultado Destacado', objectFit: 'cover', overlayText: 'RESULTADOS DEL\nPARTIDO\nESPAÑA 2 — ITALIA 2', showBrandOverlay: false },
+    content: { src: '', mediaType: 'image', alt: 'Resultado Destacado', objectFit: 'contain', overlayText: 'RESULTADOS DEL\nPARTIDO\nESPAÑA 2 — ITALIA 2', showBrandOverlay: false },
   },
   {
     id: 'default_upcoming',
@@ -138,6 +138,7 @@ const defaultModules = [
 const defaultData = {
   modules: defaultModules,
   grid: { cols: 5, rows: 5 },
+  orientation: 'horizontal',
 };
 
 const CMS_STORAGE_KEY = 'sports-billboard-cms-v3';
@@ -146,7 +147,19 @@ function loadFromStorage() {
   try {
     const stored = localStorage.getItem(CMS_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Migrate existing modules with 'cover' to 'contain' to ensure user's active layout is automatically adjusted
+      if (parsed && Array.isArray(parsed.modules)) {
+        parsed.modules = parsed.modules.map((mod) => {
+          if (mod.type === 'media' && mod.content) {
+            if (!mod.content.objectFit || mod.content.objectFit === 'cover') {
+              mod.content.objectFit = 'contain';
+            }
+          }
+          return mod;
+        });
+      }
+      return parsed;
     }
   } catch (e) {
     console.warn('Failed to load CMS data:', e);
@@ -167,6 +180,21 @@ export function CMSProvider({ children }) {
     }
   }, [data]);
 
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === CMS_STORAGE_KEY && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          setData(parsed);
+        } catch (err) {
+          console.warn('Failed to parse synced CMS data:', err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const addModule = useCallback((type) => {
     const newModule = {
       id: uid(),
@@ -174,6 +202,7 @@ export function CMSProvider({ children }) {
       label: MODULE_TYPES[type]?.label || 'Módulo',
       gridPosition: { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
       content: defaultContentForType(type),
+      visible: true,
     };
     setData((prev) => ({
       ...prev,
@@ -220,9 +249,37 @@ export function CMSProvider({ children }) {
   }, []);
 
   const updateGrid = useCallback((gridUpdates) => {
+    setData((prev) => {
+      const nextGrid = { ...prev.grid, ...gridUpdates };
+      const nextModules = prev.modules.map((mod) => {
+        let { col, row, colSpan, rowSpan } = mod.gridPosition;
+
+        // Ensure spans do not exceed new grid dimensions
+        colSpan = Math.max(1, Math.min(nextGrid.cols, colSpan));
+        rowSpan = Math.max(1, Math.min(nextGrid.rows, rowSpan));
+
+        // Ensure start positions fit inside new grid dimensions with the span
+        col = Math.max(1, Math.min(nextGrid.cols - colSpan + 1, col));
+        row = Math.max(1, Math.min(nextGrid.rows - rowSpan + 1, row));
+
+        return {
+          ...mod,
+          gridPosition: { col, row, colSpan, rowSpan },
+        };
+      });
+
+      return {
+        ...prev,
+        grid: nextGrid,
+        modules: nextModules,
+      };
+    });
+  }, []);
+
+  const updateOrientation = useCallback((orientation) => {
     setData((prev) => ({
       ...prev,
-      grid: { ...prev.grid, ...gridUpdates },
+      orientation,
     }));
   }, []);
 
@@ -241,6 +298,7 @@ export function CMSProvider({ children }) {
         updateModuleContent,
         moveModule,
         updateGrid,
+        updateOrientation,
         resetAll,
       }}
     >

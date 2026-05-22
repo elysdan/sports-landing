@@ -1,11 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useCMS, MODULE_TYPES, defaultContentForType } from '../context/CMSContext';
+import { useCMS, MODULE_TYPES } from '../context/CMSContext';
+import { RenderModule } from './DisplayView';
 
 /* ═══════════════════════════════════════════
    MODULE EDITOR — Dynamic form per module type
    ═══════════════════════════════════════════ */
-function ModuleEditor({ module, updateModule, updateModuleContent }) {
+function ModuleEditor({ module, updateModule, updateModuleContent, removeModule }) {
   const handleContentChange = (field, value) => {
     updateModuleContent(module.id, { [field]: value });
   };
@@ -22,10 +23,35 @@ function ModuleEditor({ module, updateModule, updateModuleContent }) {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const isVid = file.type.startsWith('video');
-      updateModuleContent(module.id, {
-        src: ev.target.result,
-        mediaType: isVid ? 'video' : (file.name.endsWith('.gif') ? 'gif' : 'image'),
-      });
+      const base64 = ev.target.result;
+
+      // Enviar el archivo base64 al endpoint local de Vite
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64: base64,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.url) {
+            updateModuleContent(module.id, {
+              src: data.url,
+              mediaType: isVid ? 'video' : (file.name.endsWith('.gif') ? 'gif' : 'image'),
+            });
+          } else {
+            console.error('Error al subir archivo:', data.error);
+            alert('Error al subir el archivo: ' + (data.error || 'Desconocido'));
+          }
+        })
+        .catch((err) => {
+          console.error('Error de red al subir archivo:', err);
+          alert('Error de red al intentar subir el archivo.');
+        });
     };
     reader.readAsDataURL(file);
   };
@@ -43,16 +69,30 @@ function ModuleEditor({ module, updateModule, updateModuleContent }) {
         </div>
       </div>
 
-      {/* Label */}
+      {/* General Config with Visibility */}
       <div className="editor-section">
         <div className="editor-section-title">Configuración General</div>
-        <div className="field">
-          <label>Nombre del módulo</label>
-          <input
-            type="text"
-            value={module.label}
-            onChange={(e) => updateModule(module.id, { label: e.target.value })}
-          />
+        <div className="field-row" style={{ gridTemplateColumns: '2fr 1fr', alignItems: 'center', gap: '24px' }}>
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label>Nombre del módulo</label>
+            <input
+              type="text"
+              value={module.label}
+              onChange={(e) => updateModule(module.id, { label: e.target.value })}
+            />
+          </div>
+          <div className="field" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <label>Visibilidad en Valla</label>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
+              <input
+                type="checkbox"
+                checked={module.visible !== false}
+                onChange={(e) => updateModule(module.id, { visible: e.target.checked })}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
+              />
+              Visible
+            </label>
+          </div>
         </div>
       </div>
 
@@ -101,6 +141,18 @@ function ModuleEditor({ module, updateModule, updateModuleContent }) {
           <TickerEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
         )}
       </div>
+
+      {/* Botones de Acción */}
+      <div className="editor-section" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
+        <button
+          type="button"
+          className="admin-btn admin-btn-danger"
+          style={{ width: '100%', justifyContent: 'center' }}
+          onClick={() => removeModule(module.id)}
+        >
+          🗑️ Eliminar Módulo
+        </button>
+      </div>
     </div>
   );
 }
@@ -119,9 +171,9 @@ function MediaEditor({ content, onChange, onUpload }) {
       {content.src && (
         <div className="media-preview">
           {content.mediaType === 'video' ? (
-            <video src={content.src} controls muted style={{ width: '100%', maxHeight: 200 }} />
+            <video className={content.objectFit || 'contain'} src={content.src} controls muted style={{ width: '100%', maxHeight: 200, objectFit: content.objectFit || 'contain' }} />
           ) : (
-            <img src={content.src} alt="Preview" />
+            <img className={content.objectFit || 'contain'} src={content.src} alt="Preview" style={{ objectFit: content.objectFit || 'contain' }} />
           )}
           <button className="media-preview-remove" onClick={() => onChange('src', '')}>✕</button>
         </div>
@@ -134,9 +186,10 @@ function MediaEditor({ content, onChange, onUpload }) {
 
       <div className="field">
         <label>Ajuste de imagen</label>
-        <select value={content.objectFit || 'cover'} onChange={(e) => onChange('objectFit', e.target.value)}>
+        <select value={content.objectFit || 'contain'} onChange={(e) => onChange('objectFit', e.target.value)}>
           <option value="cover">Cubrir (cover)</option>
           <option value="contain">Contener (contain)</option>
+          <option value="fill">Rellenar / Estirar (fill)</option>
         </select>
       </div>
 
@@ -378,34 +431,450 @@ function TickerEditor({ content, updateModuleContent, moduleId }) {
 }
 
 /* ═══════════════════════════════════════════
-   LAYOUT PREVIEW — Mini grid view
+   LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
-function LayoutPreview({ modules, grid, selectedId, onSelect }) {
+/* ─── LIVE PREVIEW — Miniature scaled preview ─── */
+function LivePreview({ modules, grid, isVertical }) {
+  const containerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+
+  const canvasWidth = isVertical ? 1080 : 1920;
+  const canvasHeight = isVertical ? 1920 : 1080;
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width, height } = entry.contentRect;
+        const scaleX = width / canvasWidth;
+        const scaleY = height / canvasHeight;
+        setScale(Math.min(scaleX, scaleY));
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [canvasWidth, canvasHeight]);
+
+  const visibleModules = modules.filter((m) => m.visible !== false);
+
   return (
-    <div className="layout-preview-container">
-      <div className="layout-preview-label">Vista previa del layout</div>
+    <div 
+      ref={containerRef} 
+      style={{ 
+        width: '100%', 
+        height: '100%', 
+        position: 'relative', 
+        overflow: 'hidden', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: '#050505',
+        borderRadius: 'var(--radius-sm)'
+      }}
+    >
       <div
-        className="layout-preview-grid"
+        className={`billboard-grid ${isVertical ? 'vertical' : ''}`}
         style={{
+          width: `${canvasWidth}px`,
+          height: `${canvasHeight}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: 'center center',
           gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-          gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
+          gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
+            visibleModules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
+          ).join(' '),
+          background: 'var(--color-border)',
+          gap: '2px',
+          display: 'grid',
+          position: 'absolute',
+          flexShrink: 0
         }}
       >
-        {modules.map((mod) => (
-          <div
-            key={mod.id}
-            className={`layout-preview-cell ${selectedId === mod.id ? 'active' : ''}`}
-            style={{
-              gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
-              gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-            }}
-            onClick={() => onSelect(mod.id)}
+        {visibleModules.map((mod) => {
+          const indexInMaster = modules.findIndex((m) => m.id === mod.id);
+          return (
+            <div
+              key={mod.id}
+              className="module-cell"
+              style={{
+                gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
+                gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                zIndex: modules.length - indexInMaster,
+              }}
+            >
+              <RenderModule module={mod} />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT PREVIEW — Interactive blueprint builder
+   ═══════════════════════════════════════════ */
+function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule }) {
+  const [dragState, setDragState] = useState(null);
+  const gridRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('blueprint');
+
+  // Generar celdas de cuadrícula de fondo estilo blueprint
+  const bgCells = [];
+  for (let r = 1; r <= grid.rows; r++) {
+    for (let c = 1; c <= grid.cols; c++) {
+      bgCells.push(
+        <div
+          key={`bg-${r}-${c}`}
+          className="layout-preview-bg-cell"
+          style={{
+            gridColumn: c,
+            gridRow: r,
+          }}
+        />
+      );
+    }
+  }
+
+  // Iniciar Arrastre para Mover (Mouse)
+  const handleMoveMouseDown = (e, mod) => {
+    if (e.target.closest('.layout-preview-cell-btn')) {
+      return;
+    }
+    e.stopPropagation();
+    e.preventDefault();
+    onSelect(mod.id);
+
+    setDragState({
+      type: 'move',
+      moduleId: mod.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      startCol: mod.gridPosition.col,
+      startRow: mod.gridPosition.row,
+    });
+  };
+
+  // Iniciar Arrastre para Mover (Touch)
+  const handleMoveTouchStart = (e, mod) => {
+    if (e.target.closest('.layout-preview-cell-btn')) {
+      return;
+    }
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+    onSelect(mod.id);
+
+    const touch = e.touches[0];
+    setDragState({
+      type: 'move',
+      moduleId: mod.id,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startCol: mod.gridPosition.col,
+      startRow: mod.gridPosition.row,
+    });
+  };
+
+  // Iniciar Redimensionamiento (Mouse)
+  const handleResizeMouseDown = (e, mod, direction) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onSelect(mod.id);
+
+    setDragState({
+      type: 'resize',
+      direction,
+      moduleId: mod.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      startColSpan: mod.gridPosition.colSpan,
+      startRowSpan: mod.gridPosition.rowSpan,
+    });
+  };
+
+  // Iniciar Redimensionamiento (Touch)
+  const handleResizeTouchStart = (e, mod, direction) => {
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+    onSelect(mod.id);
+
+    const touch = e.touches[0];
+    setDragState({
+      type: 'resize',
+      direction,
+      moduleId: mod.id,
+      startX: touch.clientX,
+      startY: touch.clientY,
+      startColSpan: mod.gridPosition.colSpan,
+      startRowSpan: mod.gridPosition.rowSpan,
+    });
+  };
+
+  // Controlar eventos del ratón y touch globales durante el arrastre
+  useEffect(() => {
+    if (!dragState) return;
+
+    const handleDragMove = (clientX, clientY) => {
+      const dx = clientX - dragState.startX;
+      const dy = clientY - dragState.startY;
+
+      const gridEl = gridRef.current;
+      if (!gridEl) return;
+      const rect = gridEl.getBoundingClientRect();
+      const cellWidth = rect.width / grid.cols;
+      const cellHeight = rect.height / grid.rows;
+
+      const mod = modules.find((m) => m.id === dragState.moduleId);
+      if (!mod) return;
+
+      if (dragState.type === 'move') {
+        const colDiff = Math.round(dx / cellWidth);
+        const rowDiff = Math.round(dy / cellHeight);
+
+        let newCol = dragState.startCol + colDiff;
+        let newRow = dragState.startRow + rowDiff;
+
+        // Limitar dentro del grid
+        newCol = Math.max(1, Math.min(grid.cols - mod.gridPosition.colSpan + 1, newCol));
+        newRow = Math.max(1, Math.min(grid.rows - mod.gridPosition.rowSpan + 1, newRow));
+
+        updateModule(dragState.moduleId, {
+          gridPosition: {
+            ...mod.gridPosition,
+            col: newCol,
+            row: newRow,
+          },
+        });
+      } else if (dragState.type === 'resize') {
+        const colSpanDiff = Math.round(dx / cellWidth);
+        const rowSpanDiff = Math.round(dy / cellHeight);
+
+        let newColSpan = dragState.startColSpan;
+        let newRowSpan = dragState.startRowSpan;
+
+        if (dragState.direction === 'e' || dragState.direction === 'se') {
+          newColSpan = dragState.startColSpan + colSpanDiff;
+          newColSpan = Math.max(1, Math.min(grid.cols - mod.gridPosition.col + 1, newColSpan));
+        }
+
+        if (dragState.direction === 's' || dragState.direction === 'se') {
+          newRowSpan = dragState.startRowSpan + rowSpanDiff;
+          newRowSpan = Math.max(1, Math.min(grid.rows - mod.gridPosition.row + 1, newRowSpan));
+        }
+
+        updateModule(dragState.moduleId, {
+          gridPosition: {
+            ...mod.gridPosition,
+            colSpan: newColSpan,
+            rowSpan: newRowSpan,
+          },
+        });
+      }
+    };
+
+    const handleMouseMove = (e) => {
+      handleDragMove(e.clientX, e.clientY);
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 0) return;
+      if (e.cancelable) e.preventDefault();
+      const touch = e.touches[0];
+      handleDragMove(touch.clientX, touch.clientY);
+    };
+
+    const handleDragEnd = () => {
+      setDragState(null);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleDragEnd);
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleDragEnd);
+    window.addEventListener('touchcancel', handleDragEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleDragEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleDragEnd);
+      window.removeEventListener('touchcancel', handleDragEnd);
+    };
+  }, [dragState, grid.cols, grid.rows, modules, updateModule]);
+
+  return (
+    <div className="layout-preview-container">
+      <div className="layout-preview-header">
+        <div className="layout-preview-label" style={{ marginBottom: 0 }}>
+          Vista previa del layout (Arrastra para mover o cambiar tamaño)
+        </div>
+        
+        {/* Tab Selector for mobile */}
+        <div className="layout-preview-tabs">
+          <button 
+            type="button"
+            className={`layout-preview-tab-btn ${activeTab === 'horizontal' ? 'active' : ''}`}
+            onClick={() => setActiveTab('horizontal')}
           >
-            <div className="layout-preview-cell-label">
-              {MODULE_TYPES[mod.type]?.icon} {mod.label}
+            🖥️ Horizontal
+          </button>
+          <button 
+            type="button"
+            className={`layout-preview-tab-btn ${activeTab === 'blueprint' ? 'active' : ''}`}
+            onClick={() => setActiveTab('blueprint')}
+          >
+            📐 Recuadros
+          </button>
+          <button 
+            type="button"
+            className={`layout-preview-tab-btn ${activeTab === 'vertical' ? 'active' : ''}`}
+            onClick={() => setActiveTab('vertical')}
+          >
+            📱 Vertical
+          </button>
+        </div>
+      </div>
+      <div className="layout-preview-panels">
+        {/* Panel Izquierdo: Vista Horizontal */}
+        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'horizontal' ? 'mobile-active' : 'mobile-hidden'}`}>
+          <div className="panel-header">
+            <span className="panel-icon">🖥️</span> Vista Horizontal
+          </div>
+          <div className="panel-content">
+            <LivePreview modules={modules} grid={grid} isVertical={false} />
+          </div>
+        </div>
+
+        {/* Panel Central: Recuadros */}
+        <div className={`layout-preview-panel center-blueprint ${activeTab === 'blueprint' ? 'mobile-active' : 'mobile-hidden'}`}>
+          <div className="panel-header">
+            <span className="panel-icon">📐</span> Recuadros
+          </div>
+          <div className="panel-content">
+            <div
+              ref={gridRef}
+              className="layout-preview-grid"
+              style={{
+                gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
+                gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
+              }}
+            >
+              {/* Cuadrícula de diseño blueprint de fondo */}
+              {bgCells}
+
+              {/* Celdas interactivas de módulos */}
+              {modules.map((mod) => {
+                const isSelected = selectedId === mod.id;
+                const isHidden = mod.visible === false;
+                const indexInMaster = modules.findIndex((m) => m.id === mod.id);
+
+                return (
+                  <div
+                    key={mod.id}
+                    className={`layout-preview-cell ${isSelected ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                    style={{
+                      gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
+                      gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                      zIndex: isSelected ? 100 : (modules.length - indexInMaster),
+                    }}
+                    onMouseDown={(e) => handleMoveMouseDown(e, mod)}
+                    onTouchStart={(e) => handleMoveTouchStart(e, mod)}
+                  >
+                    {mod.type === 'media' && mod.content?.src && (
+                      <div className="layout-preview-cell-media-bg">
+                        {isVideo(mod.content.src, mod.content.mediaType) ? (
+                          <video
+                            src={mod.content.src}
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                            className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
+                            style={{ objectFit: mod.content.objectFit || 'contain' }}
+                          />
+                        ) : (
+                          <img
+                            src={mod.content.src}
+                            alt=""
+                            className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
+                            style={{ objectFit: mod.content.objectFit || 'contain' }}
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    <div className="layout-preview-cell-content">
+                      <span className="layout-preview-cell-icon">
+                        {MODULE_TYPES[mod.type]?.icon}
+                      </span>
+                      <span className="layout-preview-cell-label">{mod.label}</span>
+                      {isHidden && <span className="layout-preview-cell-hidden-tag">Oculto</span>}
+                    </div>
+
+                    {/* Acciones rápidas (hover overlay) */}
+                    <div className="layout-preview-cell-actions">
+                      <button
+                        type="button"
+                        className="layout-preview-cell-btn visibility-btn"
+                        title={isHidden ? "Mostrar módulo" : "Ocultar módulo"}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          updateModule(mod.id, { visible: isHidden });
+                        }}
+                      >
+                        {isHidden ? '👁️' : '🕶️'}
+                      </button>
+                      <button
+                        type="button"
+                        className="layout-preview-cell-btn delete-btn"
+                        title="Eliminar módulo"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`¿Eliminar el módulo "${mod.label}"?`)) {
+                            removeModule(mod.id);
+                          }
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Manejadores de Redimensionamiento */}
+                    {isSelected && (
+                      <>
+                        <div
+                          className="resize-handle handle-e"
+                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 'e')}
+                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 'e')}
+                        />
+                        <div
+                          className="resize-handle handle-s"
+                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 's')}
+                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 's')}
+                        />
+                        <div
+                          className="resize-handle handle-se"
+                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 'se')}
+                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 'se')}
+                        />
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Panel Derecho: Vista Vertical */}
+        <div className={`layout-preview-panel vertical-preview ${activeTab === 'vertical' ? 'mobile-active' : 'mobile-hidden'}`}>
+          <div className="panel-header">
+            <span className="panel-icon">📱</span> Vista Vertical
+          </div>
+          <div className="panel-content">
+            <LivePreview modules={modules} grid={grid} isVertical={true} />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -415,7 +884,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect }) {
    ADMIN PANEL — Full screen CMS
    ═══════════════════════════════════════════ */
 export default function AdminPanel() {
-  const { data, addModule, removeModule, updateModule, updateModuleContent, moveModule, resetAll } = useCMS();
+  const { data, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll } = useCMS();
   const [selectedId, setSelectedId] = useState(data.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
 
@@ -460,25 +929,69 @@ export default function AdminPanel() {
           <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{data.modules.length}</span>
         </div>
 
-        <div className="admin-sidebar-list">
-          {data.modules.map((mod, idx) => (
-            <div
-              key={mod.id}
-              className={`module-list-item ${selectedId === mod.id ? 'active' : ''}`}
-              onClick={() => setSelectedId(mod.id)}
-            >
-              <span className="module-list-icon">{MODULE_TYPES[mod.type]?.icon}</span>
-              <div className="module-list-info">
-                <div className="module-list-label">{mod.label}</div>
-                <div className="module-list-type">{MODULE_TYPES[mod.type]?.label}</div>
-              </div>
-              <div className="module-list-actions">
-                <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'up'); }} title="Mover arriba" disabled={idx === 0}>↑</button>
-                <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'down'); }} title="Mover abajo" disabled={idx === data.modules.length - 1}>↓</button>
-                <button className="module-list-action-btn danger" onClick={(e) => { e.stopPropagation(); handleRemove(mod.id); }} title="Eliminar">✕</button>
-              </div>
+        {/* Control del Tamaño de la Cuadrícula */}
+        <div className="grid-size-selector">
+          <div className="grid-size-selector-title">Cuadrícula</div>
+          <div className="grid-size-selector-inputs">
+            <div className="grid-size-field">
+              <label>Columnas (Cols)</label>
+              <select
+                value={data.grid.cols}
+                onChange={(e) => updateGrid({ cols: parseInt(e.target.value) || 1 })}
+              >
+                {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
             </div>
-          ))}
+            <div className="grid-size-field">
+              <label>Filas (Rows)</label>
+              <select
+                value={data.grid.rows}
+                onChange={(e) => updateGrid({ rows: parseInt(e.target.value) || 1 })}
+              >
+                {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div className="admin-sidebar-list">
+          {data.modules.map((mod, idx) => {
+            const isHidden = mod.visible === false;
+            return (
+              <div
+                key={mod.id}
+                className={`module-list-item ${selectedId === mod.id ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                onClick={() => setSelectedId(mod.id)}
+              >
+                <span className="module-list-icon">{MODULE_TYPES[mod.type]?.icon}</span>
+                <div className="module-list-info">
+                  <div className="module-list-label">{mod.label}</div>
+                  <div className="module-list-type">
+                    {MODULE_TYPES[mod.type]?.label} {isHidden && '(Oculto)'}
+                  </div>
+                </div>
+                <div className="module-list-actions">
+                  <button
+                    className={`module-list-action-btn ${isHidden ? '' : 'active-visible'}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      updateModule(mod.id, { visible: isHidden });
+                    }}
+                    title={isHidden ? "Mostrar en la valla" : "Ocultar en la valla"}
+                  >
+                    {isHidden ? '👁️' : '🕶️'}
+                  </button>
+                  <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'up'); }} title="Mover arriba" disabled={idx === 0}>↑</button>
+                  <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'down'); }} title="Mover abajo" disabled={idx === data.modules.length - 1}>↓</button>
+                  <button className="module-list-action-btn danger" onClick={(e) => { e.stopPropagation(); handleRemove(mod.id); }} title="Eliminar">✕</button>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="admin-sidebar-footer">
@@ -509,12 +1022,14 @@ export default function AdminPanel() {
       <div className="admin-main">
         {selectedModule ? (
           <>
-            <div style={{ padding: '16px 48px 0' }}>
+            <div className="layout-preview-wrapper">
               <LayoutPreview
                 modules={data.modules}
                 grid={data.grid}
                 selectedId={selectedId}
                 onSelect={setSelectedId}
+                updateModule={updateModule}
+                removeModule={handleRemove}
               />
             </div>
             <ModuleEditor
@@ -522,6 +1037,7 @@ export default function AdminPanel() {
               module={selectedModule}
               updateModule={updateModule}
               updateModuleContent={updateModuleContent}
+              removeModule={handleRemove}
             />
           </>
         ) : (
@@ -534,4 +1050,10 @@ export default function AdminPanel() {
       </div>
     </div>
   );
+}
+
+function isVideo(src, mediaType) {
+  if (mediaType === 'video') return true;
+  if (!src) return false;
+  return src.match(/\.(mp4|webm|ogg)(\?|$)/i) || src.startsWith('data:video');
 }
