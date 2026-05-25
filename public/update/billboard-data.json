@@ -1,0 +1,90 @@
+{
+  "modules": [
+    {
+      "id": "default_upcoming",
+      "type": "upcoming",
+      "label": "Próximo Partido",
+      "gridPosition": {
+        "col": 8,
+        "row": 1,
+        "colSpan": 8,
+        "rowSpan": 6
+      },
+      "content": {
+        "label": "SIGUIENTE PARTIDO",
+        "time": "4:30PM",
+        "teamA": "ESPAÑA",
+        "teamB": "ITALIA"
+      }
+    },
+    {
+      "id": "mod_1779733096095_1",
+      "type": "media",
+      "label": "Multimedia",
+      "gridPosition": {
+        "col": 1,
+        "row": 8,
+        "colSpan": 7,
+        "rowSpan": 8
+      },
+      "content": {
+        "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+        "mediaType": "image",
+        "alt": "Contenido multimedia",
+        "objectFit": "fill"
+      },
+      "visible": true
+    },
+    {
+      "id": "mod_1779734811321_1",
+      "type": "media",
+      "label": "Multimedia",
+      "gridPosition": {
+        "col": 1,
+        "row": 1,
+        "colSpan": 7,
+        "rowSpan": 7
+      },
+      "content": {
+        "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+        "mediaType": "image",
+        "alt": "Contenido multimedia",
+        "objectFit": "fill"
+      },
+      "visible": true
+    },
+    {
+      "id": "mod_1779741358205_1",
+      "type": "scoreboard",
+      "label": "Marcador",
+      "gridPosition": {
+        "col": 8,
+        "row": 7,
+        "colSpan": 8,
+        "rowSpan": 9
+      },
+      "content": {
+        "teamA": {
+          "name": "EQUIPO A",
+          "code": "EQA",
+          "score": 0,
+          "flag": "🏳️"
+        },
+        "teamB": {
+          "name": "EQUIPO B",
+          "code": "EQB",
+          "score": 0,
+          "flag": "🏳️"
+        },
+        "status": "EN VIVO"
+      },
+      "visible": true
+    }
+  ],
+  "grid": {
+    "cols": 15,
+    "rows": 15
+  },
+  "orientation": "horizontal",
+  "version": 1779741445779
+}

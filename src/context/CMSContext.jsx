@@ -181,45 +181,94 @@ const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
   const [draftData, setDraftData] = useState(() => loadFromStorage(CMS_DRAFT_KEY));
-  const [liveData, setLiveData] = useState(() => {
+  const [liveData, setLiveData] = useState(() => loadFromStorage(CMS_LIVE_KEY));
+  const [currentVersion, setCurrentVersion] = useState(0);
+
+  // Fetch initial layout data from database on mount
+  useEffect(() => {
+    async function loadServerData() {
+      try {
+        const res = await fetch('/api/cms');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.modules) {
+            const migrated = migrateData(data);
+            setLiveData(migrated);
+            setDraftData(migrated);
+            if (migrated.version) {
+              setCurrentVersion(migrated.version);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[CMS] Fallback to localStorage: no se pudo cargar desde el servidor.", e);
+      }
+    }
+    loadServerData();
+  }, []);
+
+  // Polling to sync liveData in real-time
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/cms/version');
+        if (res.ok) {
+          const { version } = await res.json();
+          if (version && version > currentVersion) {
+            const dataRes = await fetch('/api/cms');
+            if (dataRes.ok) {
+              const data = await dataRes.json();
+              if (data && data.modules) {
+                const migrated = migrateData(data);
+                setLiveData(migrated);
+                setCurrentVersion(version);
+                setDraftData(migrated);
+                console.log(`[CMS] Vista actualizada a la versión: ${version}`);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        // Silently fail to avoid console flooding on offline
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [currentVersion]);
+  const CMS_SESSION_KEY = 'sports-billboard-cms-session';
+
+  const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const storedLive = localStorage.getItem(CMS_LIVE_KEY);
-      if (storedLive) {
-        return migrateData(JSON.parse(storedLive));
+      const stored = localStorage.getItem(CMS_SESSION_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const [users, setUsers] = useState([]);
+
+  const role = currentUser ? (currentUser.username === 'admin' ? 'admin' : currentUser.username) : null;
+  const setRole = useCallback(() => {}, []);
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await fetch('/api/users');
+      if (res.ok) {
+        const data = await res.json();
+        setUsers(data);
       }
     } catch (e) {
-      console.warn("Failed to load CMS live data:", e);
-    }
-    return loadFromStorage(CMS_DRAFT_KEY); // Default to whatever is in draft (or defaultData) on initial setup
-  });
-
-  const [users, setUsers] = useState(() => {
-    try {
-      const stored = localStorage.getItem(CMS_USERS_KEY);
-      return stored ? JSON.parse(stored) : defaultUsers;
-    } catch (e) {
-      return defaultUsers;
-    }
-  });
-
-  const [role, setRoleState] = useState(() => {
-    try {
-      let r = localStorage.getItem(CMS_ROLE_KEY) || 'admin';
-      if (r === 'editor') r = 'user_generic';
-      return r;
-    } catch (e) {
-      return 'admin';
-    }
-  });
-
-  const setRole = useCallback((newRole) => {
-    setRoleState(newRole);
-    try {
-      localStorage.setItem(CMS_ROLE_KEY, newRole);
-    } catch (e) {
-      console.warn("Failed to save role:", e);
+      console.error("[CMS] Error al cargar los usuarios:", e);
     }
   }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchUsers();
+    } else {
+      setUsers([]);
+    }
+  }, [currentUser, fetchUsers]);
 
   // Guardar draftData en almacenamiento local
   useEffect(() => {
@@ -239,15 +288,6 @@ export function CMSProvider({ children }) {
     }
   }, [liveData]);
 
-  // Guardar users en almacenamiento local
-  useEffect(() => {
-    try {
-      localStorage.setItem(CMS_USERS_KEY, JSON.stringify(users));
-    } catch (e) {
-      console.warn('Failed to save CMS users:', e);
-    }
-  }, [users]);
-
   // Sincronizar pestañas
   useEffect(() => {
     const handleStorageChange = (e) => {
@@ -257,10 +297,8 @@ export function CMSProvider({ children }) {
             setDraftData(migrateData(JSON.parse(e.newValue)));
           } else if (e.key === CMS_LIVE_KEY) {
             setLiveData(migrateData(JSON.parse(e.newValue)));
-          } else if (e.key === CMS_ROLE_KEY) {
-            setRoleState(e.newValue);
-          } else if (e.key === CMS_USERS_KEY) {
-            setUsers(JSON.parse(e.newValue));
+          } else if (e.key === CMS_SESSION_KEY) {
+            setCurrentUser(JSON.parse(e.newValue));
           }
         } catch (err) {
           console.warn('Failed to parse synced CMS data:', err);
@@ -270,6 +308,94 @@ export function CMSProvider({ children }) {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  const login = useCallback(async (username, password) => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (res.ok) {
+        const user = await res.json();
+        setCurrentUser(user);
+        localStorage.setItem(CMS_SESSION_KEY, JSON.stringify(user));
+        return { success: true };
+      } else {
+        const errorData = await res.json();
+        return { success: false, error: errorData.error || 'Acceso incorrecto' };
+      }
+    } catch (e) {
+      return { success: false, error: 'Error de red o conexión al servidor' };
+    }
+  }, []);
+
+  const logout = useCallback(() => {
+    setCurrentUser(null);
+    localStorage.removeItem(CMS_SESSION_KEY);
+  }, []);
+
+  const [templates, setTemplates] = useState([]);
+
+  const fetchTemplates = useCallback(async () => {
+    try {
+      const res = await fetch('/api/templates');
+      if (res.ok) {
+        const data = await res.json();
+        setTemplates(data);
+      }
+    } catch (e) {
+      console.error("[CMS] Error al cargar las plantillas:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      fetchTemplates();
+    } else {
+      setTemplates([]);
+    }
+  }, [currentUser, fetchTemplates]);
+
+  const createTemplate = useCallback(async (name) => {
+    try {
+      const res = await fetch('/api/templates', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, config: draftData })
+      });
+      if (res.ok) {
+        await fetchTemplates();
+        return true;
+      }
+    } catch (e) {
+      console.error("[CMS] Error al crear plantilla:", e);
+    }
+    return false;
+  }, [draftData, fetchTemplates]);
+
+  const applyTemplate = useCallback((templateConfig) => {
+    if (templateConfig && templateConfig.modules) {
+      setDraftData(migrateData(templateConfig));
+      return true;
+    }
+    return false;
+  }, []);
+
+  const deleteTemplate = useCallback(async (id) => {
+    try {
+      const res = await fetch(`/api/templates?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await fetchTemplates();
+        return true;
+      }
+    } catch (e) {
+      console.error("[CMS] Error al eliminar plantilla:", e);
+    }
+    return false;
+  }, [fetchTemplates]);
 
   const addModule = useCallback((type) => {
     const newModule = {
@@ -369,46 +495,76 @@ export function CMSProvider({ children }) {
     localStorage.removeItem(CMS_USERS_KEY);
   }, [setRole]);
 
-  const approveAndPublish = useCallback(() => {
-    setLiveData(draftData);
+  const approveAndPublish = useCallback(async () => {
+    const nextLive = { ...draftData };
+    setLiveData(nextLive);
+    try {
+      const res = await fetch('/api/cms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nextLive)
+      });
+      if (res.ok) {
+        const resData = await res.json();
+        if (resData.version) {
+          setCurrentVersion(resData.version);
+        }
+      }
+    } catch (e) {
+      console.error("[CMS] Error al guardar en base de datos:", e);
+    }
   }, [draftData]);
 
   const discardDraft = useCallback(() => {
     setDraftData(liveData);
   }, [liveData]);
 
-  const createEditor = useCallback((name, allowedTypes) => {
-    const newEditor = {
-      id: `user_${Date.now()}`,
-      name,
-      allowedTypes,
-    };
-    setUsers((prev) => [...prev, newEditor]);
-    return newEditor.id;
-  }, []);
-
-  const deleteEditor = useCallback((id) => {
-    setUsers((prev) => {
-      const nextUsers = prev.filter((u) => u.id !== id);
-      if (role === id) {
-        setRole('admin');
+  const createEditor = useCallback(async (username, password, name, allowedTypes) => {
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password, name, allowedTypes })
+      });
+      if (res.ok) {
+        await fetchUsers();
+        return true;
       }
-      return nextUsers;
-    });
-  }, [role, setRole]);
+    } catch (e) {
+      console.error("[CMS] Error al crear editor:", e);
+    }
+    return false;
+  }, [fetchUsers]);
+
+  const deleteEditor = useCallback(async (username) => {
+    try {
+      const res = await fetch(`/api/users?username=${encodeURIComponent(username)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await fetchUsers();
+        return true;
+      }
+    } catch (e) {
+      console.error("[CMS] Error al eliminar editor:", e);
+    }
+    return false;
+  }, [fetchUsers]);
 
   const hasPermission = useCallback((type) => {
-    if (role === 'admin') return true;
-    const currentUserProfile = users.find(u => u.id === role);
-    if (!currentUserProfile) return false;
-    return currentUserProfile.allowedTypes.includes('*') || currentUserProfile.allowedTypes.includes(type);
-  }, [role, users]);
+    if (!currentUser) return false;
+    if (currentUser.username === 'admin' || currentUser.allowedTypes.includes('*')) return true;
+    return currentUser.allowedTypes.includes(type);
+  }, [currentUser]);
 
   return (
     <CMSContext.Provider
       value={{
         draftData,
         liveData,
+        currentUser,
+        login,
+        logout,
         role,
         setRole,
         users,
@@ -426,6 +582,10 @@ export function CMSProvider({ children }) {
         updateGrid,
         updateOrientation,
         resetAll,
+        templates,
+        createTemplate,
+        applyTemplate,
+        deleteTemplate,
       }}
     >
       {children}

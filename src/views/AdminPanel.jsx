@@ -1010,7 +1010,8 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
    ADMIN PANEL — Full screen CMS
    ═══════════════════════════════════════════ */
 export default function AdminPanel() {
-  const { draftData, liveData, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll } = useCMS();
+  const { draftData, liveData, currentUser, login, logout, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll, templates, createTemplate, applyTemplate, deleteTemplate } = useCMS();
+  const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
   const [selectedId, setSelectedId] = useState(draftData.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   
@@ -1020,6 +1021,27 @@ export default function AdminPanel() {
 
   // Modo de vista: 'modules' (diseño de cuadrícula) o 'editors' (gestión de roles de editores)
   const [viewMode, setViewMode] = useState('modules');
+
+  // Login form state
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    if (!username.trim() || !password.trim()) {
+      setLoginError('Por favor ingresa usuario y contraseña');
+      return;
+    }
+    setLoading(true);
+    setLoginError('');
+    const result = await login(username.trim(), password.trim());
+    setLoading(false);
+    if (!result.success) {
+      setLoginError(result.error);
+    }
+  };
 
   const selectedModule = draftData.modules.find((m) => m.id === selectedId);
 
@@ -1040,6 +1062,151 @@ export default function AdminPanel() {
     setMediaModalOpen(true);
   }, []);
 
+  useEffect(() => {
+    if (viewMode === 'editors' && currentUser?.username !== 'admin') {
+      setViewMode('modules');
+    }
+  }, [viewMode, currentUser]);
+
+  if (!currentUser) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: '100vh',
+        background: 'radial-gradient(circle at center, var(--color-bg-card) 0%, var(--color-bg-primary) 100%)',
+        fontFamily: 'var(--font-body)',
+        color: 'var(--color-white)',
+        padding: '20px'
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '420px',
+          background: 'rgba(26, 26, 26, 0.65)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '40px',
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '24px'
+        }}>
+          {/* Logo / Title */}
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              fontSize: '48px',
+              color: 'var(--color-gold)',
+              marginBottom: '12px',
+              textShadow: '0 0 10px rgba(212, 168, 67, 0.3)'
+            }}>♣</div>
+            <h1 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '24px',
+              margin: 0,
+              letterSpacing: '1px',
+              textTransform: 'uppercase'
+            }}>
+              Billboard <span style={{ color: 'var(--color-gold)' }}>CMS</span>
+            </h1>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--color-text-secondary)',
+              marginTop: '8px',
+              marginRight: 0,
+              marginLeft: 0,
+              marginBottom: 0
+            }}>Ingresa tus credenciales para acceder al panel</p>
+          </div>
+
+          <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {loginError && (
+              <div style={{
+                background: 'rgba(239, 83, 80, 0.1)',
+                border: '1px solid rgba(239, 83, 80, 0.3)',
+                color: '#ef5350',
+                padding: '10px 14px',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>❌</span>
+                <span>{loginError}</span>
+              </div>
+            )}
+
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Usuario
+              </label>
+              <input
+                type="text"
+                placeholder="Ej. admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-white)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'border-color var(--transition-fast)'
+                }}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
+                Contraseña
+              </label>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--color-white)',
+                  fontSize: '14px',
+                  outline: 'none',
+                  transition: 'border-color var(--transition-fast)'
+                }}
+                disabled={loading}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="admin-btn admin-btn-primary"
+              style={{
+                width: '100%',
+                justifyContent: 'center',
+                padding: '14px',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                marginTop: '10px'
+              }}
+              disabled={loading}
+            >
+              {loading ? 'Iniciando Sesión...' : '🔑 Iniciar Sesión'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-layout">
       {/* ─── Header ─── */}
@@ -1051,77 +1218,25 @@ export default function AdminPanel() {
           </div>
         </div>
 
-        {/* Selector de Roles Integrado */}
-        <div className="role-switcher" style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px', marginLeft: '24px', gap: '4px' }}>
-          <button
-            type="button"
-            className="admin-btn admin-btn-sm"
-            style={{ 
-              background: role === 'admin' ? 'var(--color-gold)' : 'transparent', 
-              color: role === 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)', 
-              border: 'none', 
-              padding: '6px 12px', 
-              fontSize: '11px',
-              cursor: 'pointer',
-              borderRadius: 'var(--radius-sm)',
-              fontWeight: role === 'admin' ? 'bold' : 'normal'
-            }}
-            onClick={() => {
-              setRole('admin');
-              setViewMode('modules');
-            }}
+        {/* Logged in User Indicator & Logout */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)', marginLeft: '24px' }}>
+          <span style={{ fontSize: '14px' }}>👤</span>
+          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{currentUser.name}</span>
+          <span style={{ fontSize: '10px', background: 'rgba(212, 168, 67, 0.15)', color: 'var(--color-gold)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+            {currentUser.username === 'admin' ? 'Admin' : 'Editor'}
+          </span>
+          <button 
+            type="button" 
+            onClick={logout} 
+            className="admin-btn admin-btn-sm" 
+            style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', cursor: 'pointer', padding: '4px 10px', fontSize: '10px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition-fast)' }}
           >
-            👑 Administrador
+            🚪 Cerrar Sesión
           </button>
-          
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <select
-              value={role !== 'admin' ? role : ''}
-              onChange={(e) => {
-                const selectedVal = e.target.value;
-                if (selectedVal) {
-                  setRole(selectedVal);
-                  setViewMode('modules');
-                }
-              }}
-              style={{
-                background: role !== 'admin' ? 'var(--color-gold)' : 'transparent',
-                color: role !== 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
-                border: 'none',
-                padding: '6px 24px 6px 12px',
-                fontSize: '11px',
-                cursor: 'pointer',
-                borderRadius: 'var(--radius-sm)',
-                fontWeight: role !== 'admin' ? 'bold' : 'normal',
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                fontFamily: 'var(--font-body)',
-                outline: 'none',
-              }}
-            >
-              <option value="" disabled style={{ background: 'var(--color-bg-card)', color: 'var(--color-text-secondary)' }}>
-                ✍️ Actuar como Editor...
-              </option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id} style={{ background: 'var(--color-bg-card)', color: 'var(--color-white)' }}>
-                  ✍️ {u.name}
-                </option>
-              ))}
-            </select>
-            <span style={{
-              position: 'absolute',
-              right: '8px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              pointerEvents: 'none',
-              fontSize: '8px',
-              color: role !== 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)'
-            }}>▼</span>
-          </div>
         </div>
 
         <div className="admin-header-actions" style={{ marginLeft: 'auto' }}>
-          {role === 'admin' && (
+          {currentUser.username === 'admin' && (
             <button
               className={`admin-btn admin-btn-sm ${viewMode === 'editors' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
               onClick={() => setViewMode(prev => prev === 'editors' ? 'modules' : 'editors')}
@@ -1130,6 +1245,14 @@ export default function AdminPanel() {
               👥 {viewMode === 'editors' ? 'Ver Módulos' : 'Gestionar Editores'}
             </button>
           )}
+
+          <button
+            className={`admin-btn admin-btn-sm ${viewMode === 'templates' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+            onClick={() => setViewMode(prev => prev === 'templates' ? 'modules' : 'templates')}
+            style={{ marginRight: '8px', gap: '6px' }}
+          >
+            📋 {viewMode === 'templates' ? 'Ver Módulos' : 'Plantillas'}
+          </button>
 
           <button
             className="admin-btn admin-btn-secondary admin-btn-sm"
@@ -1164,6 +1287,10 @@ export default function AdminPanel() {
       {viewMode === 'editors' ? (
         <div className="admin-editors-fullpage" style={{ gridColumn: '1 / -1', gridRow: '2', padding: '40px', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
           <EditorsManagement />
+        </div>
+      ) : viewMode === 'templates' ? (
+        <div className="admin-editors-fullpage" style={{ gridColumn: '1 / -1', gridRow: '2', padding: '40px', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
+          <TemplatesManagement setViewMode={setViewMode} />
         </div>
       ) : (
         <>
@@ -1291,13 +1418,13 @@ export default function AdminPanel() {
               flexShrink: 0
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '20px' }}>{role === 'admin' ? '👑' : '✍️'}</span>
+                <span style={{ fontSize: '20px' }}>{canApprove ? '👑' : '✍️'}</span>
                 <div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-white)', fontFamily: 'var(--font-display)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Modo {role === 'admin' ? 'Administrador' : 'Editor'}
+                    Modo {currentUser?.username === 'admin' ? 'Administrador' : canApprove ? 'Aprobador' : 'Editor'}
                   </div>
                   <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                    {role === 'admin' 
+                    {canApprove 
                       ? (hasPendingChanges 
                           ? '⚠️ Hay cambios en borrador pendientes de aprobación para la valla pública.' 
                           : '✅ El borrador de edición coincide con la valla pública en vivo.')
@@ -1308,20 +1435,20 @@ export default function AdminPanel() {
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                {role !== 'admin' && (
+                {!canApprove && (
                   <button
                     type="button"
                     className="admin-btn admin-btn-primary admin-btn-sm"
                     style={{ gap: '6px' }}
                     onClick={() => {
-                      alert('Borrador guardado correctamente. Los cambios están listos para ser aprobados por un Administrador.');
+                      alert('Borrador guardado correctamente. Los cambios están listos para ser aprobados por un Administrador o Aprobador.');
                     }}
                   >
                     💾 Guardar Borrador
                   </button>
                 )}
 
-                {role === 'admin' && hasPendingChanges && (
+                {canApprove && hasPendingChanges && (
                   <>
                     <button
                       type="button"
@@ -1406,11 +1533,39 @@ function isVideo(src, mediaType) {
    EDITORS MANAGEMENT — Editor Roles Dashboard
    ═══════════════════════════════════════════ */
 function EditorsManagement() {
-  const { users, createEditor, deleteEditor, role, setRole } = useCMS();
+  const { users, createEditor, deleteEditor, currentUser } = useCMS();
   const [name, setName] = useState('');
+  const [usernameInput, setUsernameInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
   const [selectedTypes, setSelectedTypes] = useState([]); // List of module type keys allowed
   const [allSelected, setAllSelected] = useState(false);
+  const [canApprovePermission, setCanApprovePermission] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
+
+  const [editingUsername, setEditingUsername] = useState(null);
+
+  const handleEditClick = (u) => {
+    setEditingUsername(u.username);
+    setName(u.name);
+    setUsernameInput(u.username);
+    setPasswordInput(''); // Deja vacío para conservar la clave actual
+    
+    const hasAll = u.allowedTypes.includes('*');
+    setAllSelected(hasAll);
+    setCanApprovePermission(u.allowedTypes.includes('approve'));
+    setSelectedTypes(u.allowedTypes.filter(t => t !== 'approve' && t !== '*'));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUsername(null);
+    setName('');
+    setUsernameInput('');
+    setPasswordInput('');
+    setSelectedTypes([]);
+    setAllSelected(false);
+    setCanApprovePermission(false);
+    setFeedback(null);
+  };
 
   const handleToggleType = (typeKey) => {
     if (typeKey === '*') {
@@ -1445,24 +1600,36 @@ function EditorsManagement() {
     }
   }, [selectedTypes, allSelected]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      setFeedback({ type: 'error', message: 'El nombre del editor es requerido.' });
+      setFeedback({ type: 'error', message: 'El nombre completo es requerido.' });
+      return;
+    }
+    if (!usernameInput.trim()) {
+      setFeedback({ type: 'error', message: 'El nombre de usuario (login) es requerido.' });
+      return;
+    }
+    if (!editingUsername && !passwordInput.trim()) {
+      setFeedback({ type: 'error', message: 'La contraseña es requerida.' });
       return;
     }
     const finalTypes = allSelected ? ['*'] : selectedTypes;
-    if (finalTypes.length === 0) {
-      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso.' });
+    if (finalTypes.length === 0 && !canApprovePermission) {
+      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso o habilitar la aprobación.' });
       return;
     }
 
-    createEditor(name.trim(), finalTypes);
-    setName('');
-    setSelectedTypes([]);
-    setAllSelected(false);
-    setFeedback({ type: 'success', message: `Editor "${name}" creado exitosamente.` });
-    setTimeout(() => setFeedback(null), 3000);
+    const typesToSend = canApprovePermission ? [...finalTypes, 'approve'] : finalTypes;
+
+    const success = await createEditor(usernameInput.trim(), passwordInput.trim(), name.trim(), typesToSend);
+    if (success) {
+      handleCancelEdit();
+      setFeedback({ type: 'success', message: editingUsername ? `Usuario "${usernameInput}" actualizado exitosamente.` : `Usuario "${usernameInput}" guardado exitosamente.` });
+      setTimeout(() => setFeedback(null), 3000);
+    } else {
+      setFeedback({ type: 'error', message: editingUsername ? 'No se pudo actualizar el usuario.' : 'No se pudo guardar el usuario.' });
+    }
   };
 
   return (
@@ -1498,15 +1665,15 @@ function EditorsManagement() {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span>👥</span> Editores Configurados
+          <span>👥</span> Usuarios Configurados
         </h2>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', maxHeight: '600px', paddingRight: '4px' }}>
           {users.map((u) => {
-            const isActive = role === u.id;
+            const isActive = currentUser.username.toLowerCase() === u.username.toLowerCase();
             const isAll = u.allowedTypes.includes('*');
             return (
-              <div key={u.id} style={{
+              <div key={u.username} style={{
                 background: isActive ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                 border: isActive ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-md)',
@@ -1521,9 +1688,9 @@ function EditorsManagement() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '18px' }}>✍️</span>
                     <span style={{ fontWeight: 'bold', fontSize: '15px', color: isActive ? 'var(--color-gold)' : 'var(--color-white)' }}>
-                      {u.name}
+                      {u.name} <span style={{ fontWeight: 'normal', color: 'var(--color-text-secondary)', fontSize: '13px' }}>({u.username})</span>
                     </span>
-                    {u.id === 'user_generic' && (
+                    {u.username.toLowerCase() === 'admin' && (
                       <span style={{
                         fontSize: '9px',
                         background: 'rgba(255, 255, 255, 0.1)',
@@ -1542,12 +1709,28 @@ function EditorsManagement() {
                         color: 'var(--color-bg-primary)',
                         fontWeight: 'bold',
                         textTransform: 'uppercase'
-                      }}>Activo</span>
+                      }}>Sesión Activa</span>
                     )}
                   </div>
                   
                   {/* Badges for allowed module types */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {u.allowedTypes.includes('approve') && (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'rgba(212, 168, 67, 0.15)',
+                        border: '1px solid rgba(212, 168, 67, 0.3)',
+                        color: 'var(--color-gold)',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        ✅ Permiso de Aprobación
+                      </span>
+                    )}
+
                     {isAll ? (
                       <span style={{
                         fontSize: '11px',
@@ -1586,35 +1769,27 @@ function EditorsManagement() {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <button
                     type="button"
-                    className="admin-btn admin-btn-sm"
-                    style={{
-                      background: isActive ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
-                      border: isActive ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
-                      color: isActive ? 'var(--color-gold)' : 'var(--color-white)',
-                      padding: '6px 12px',
-                      cursor: 'pointer',
-                      fontSize: '11px',
-                      borderRadius: 'var(--radius-sm)'
-                    }}
-                    onClick={() => setRole(u.id)}
-                    disabled={isActive}
+                    className="admin-btn-icon"
+                    title="Editar Usuario"
+                    style={{ padding: '8px', cursor: 'pointer', margin: 0, background: 'rgba(212, 168, 67, 0.1)', border: '1px solid rgba(212, 168, 67, 0.3)', color: 'var(--color-gold)', borderRadius: 'var(--radius-sm)' }}
+                    onClick={() => handleEditClick(u)}
                   >
-                    {isActive ? 'Actuando' : 'Actuar como'}
+                    ✏️
                   </button>
 
-                  {/* Disable delete for default Editor General */}
-                  {u.id !== 'user_generic' && (
+                  {/* Disable delete for default admin */}
+                  {u.username.toLowerCase() !== 'admin' && (
                     <button
                       type="button"
                       className="admin-btn-icon danger"
                       title="Eliminar Perfil"
                       style={{ padding: '8px', cursor: 'pointer', margin: 0 }}
                       onClick={() => {
-                        if (window.confirm(`¿Seguro que deseas eliminar al editor "${u.name}"?`)) {
-                          deleteEditor(u.id);
+                        if (window.confirm(`¿Seguro que deseas eliminar al editor "${u.name}" (${u.username})?`)) {
+                          deleteEditor(u.username);
                         }
                       }}
                     >
@@ -1651,7 +1826,7 @@ function EditorsManagement() {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span>➕</span> Nuevo Perfil de Editor
+          <span>{editingUsername ? '✏️' : '➕'}</span> {editingUsername ? 'Editar Usuario' : 'Nuevo Usuario / Editor'}
         </h2>
 
         {feedback && (
@@ -1673,13 +1848,62 @@ function EditorsManagement() {
 
         <div className="field">
           <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>
-            Nombre del Editor
+            Nombre Completo
           </label>
           <input
             type="text"
-            placeholder="Ej. Redactor de Marcadores o Juan Pérez"
+            placeholder="Ej. Juan Pérez"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              background: 'var(--color-bg-primary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-white)',
+              fontSize: '14px',
+              fontFamily: 'var(--font-body)',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div className="field">
+          <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>
+            Nombre de Usuario (Login) {editingUsername && <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-text-secondary)', fontSize: '11px' }}>(No modificable)</span>}
+          </label>
+          <input
+            type="text"
+            placeholder="Ej. juanp"
+            value={usernameInput}
+            onChange={(e) => setUsernameInput(e.target.value)}
+            disabled={!!editingUsername}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              background: 'var(--color-bg-primary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: editingUsername ? 'var(--color-text-secondary)' : 'var(--color-white)',
+              fontSize: '14px',
+              fontFamily: 'var(--font-body)',
+              outline: 'none',
+              cursor: editingUsername ? 'not-allowed' : 'text',
+              opacity: editingUsername ? 0.7 : 1
+            }}
+          />
+        </div>
+
+        <div className="field">
+          <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>
+            Contraseña {editingUsername && <span style={{ textTransform: 'none', fontWeight: 'normal', color: 'var(--color-gold)', fontSize: '11px' }}>(Opcional, dejar vacío para conservar)</span>}
+          </label>
+          <input
+            type="password"
+            placeholder={editingUsername ? "Dejar en blanco para no cambiar" : "Clave de acceso"}
+            value={passwordInput}
+            onChange={(e) => setPasswordInput(e.target.value)}
             style={{
               width: '100%',
               padding: '10px 14px',
@@ -1727,6 +1951,37 @@ function EditorsManagement() {
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
                   Permite agregar y editar cualquier tipo de módulo en la valla
+                </div>
+              </div>
+            </div>
+
+            {/* Special toggle for "Approval" */}
+            <div
+              onClick={() => setCanApprovePermission(prev => !prev)}
+              style={{
+                background: canApprovePermission ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                border: canApprovePermission ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={canApprovePermission}
+                onChange={() => {}} // Controlled click on container
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: canApprovePermission ? 'var(--color-gold)' : 'var(--color-white)' }}>
+                  ✅ 📑 Habilitar Aprobación y Publicación
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                  Permite aprobar y publicar cambios pendientes en la valla (Aprobador)
                 </div>
               </div>
             </div>
@@ -1780,9 +2035,433 @@ function EditorsManagement() {
           className="admin-btn admin-btn-primary"
           style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px', marginTop: '12px' }}
         >
-          ➕ Crear Perfil de Editor
+          {editingUsername ? '💾 Guardar Cambios' : '➕ Crear Usuario'}
         </button>
+
+        {editingUsername && (
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary"
+            onClick={handleCancelEdit}
+            style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px', marginTop: '8px' }}
+          >
+            Cancelar Edición
+          </button>
+        )}
       </form>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════
+   TEMPLATES MANAGEMENT — Load, Apply, Delete
+   ═══════════════════════════════════════════ */
+function TemplatesManagement({ setViewMode }) {
+  const { templates, createTemplate, applyTemplate, deleteTemplate, currentUser } = useCMS();
+  const [templateName, setTemplateName] = useState('');
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
+  const [saving, setSaving] = useState(false);
+
+  const isAdmin = currentUser?.username === 'admin';
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    const name = templateName.trim();
+    if (!name) {
+      setFeedback({ type: 'error', message: 'El nombre de la plantilla es requerido.' });
+      return;
+    }
+
+    const exists = templates.some(t => t.template_name.toLowerCase() === name.toLowerCase());
+    if (exists) {
+      if (!window.confirm(`Ya existe una plantilla llamada "${name}". ¿Deseas sobrescribirla?`)) {
+        return;
+      }
+    }
+
+    setSaving(true);
+    setFeedback(null);
+    const success = await createTemplate(name);
+    setSaving(false);
+
+    if (success) {
+      setTemplateName('');
+      setFeedback({ type: 'success', message: `Plantilla "${name}" guardada con éxito.` });
+      setTimeout(() => setFeedback(null), 3000);
+    } else {
+      setFeedback({ type: 'error', message: 'Error al guardar la plantilla.' });
+    }
+  };
+
+  const handleApply = (t) => {
+    if (window.confirm(`¿Seguro que deseas cargar la plantilla "${t.template_name}"? Esto reemplazará el borrador actual.`)) {
+      const success = applyTemplate(t.config_data);
+      if (success) {
+        setViewMode('modules');
+      } else {
+        alert('Error al aplicar la plantilla.');
+      }
+    }
+  };
+
+  const handleDelete = async (t) => {
+    if (window.confirm(`¿Seguro que deseas eliminar la plantilla "${t.template_name}" permanentemente?`)) {
+      const success = await deleteTemplate(t.id);
+      if (success) {
+        setFeedback({ type: 'success', message: `Plantilla "${t.template_name}" eliminada.` });
+        setTimeout(() => setFeedback(null), 3000);
+      } else {
+        alert('Error al eliminar la plantilla.');
+      }
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString(undefined, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  return (
+    <div className="templates-mgmt-container" style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      display: 'grid',
+      gridTemplateColumns: isAdmin ? '1.2fr 2fr' : '1fr',
+      gap: '32px',
+      fontFamily: 'var(--font-body)',
+      color: 'var(--color-white)'
+    }}>
+      {/* Form panel for Admin / Info panel for Editor */}
+      {isAdmin ? (
+        <form onSubmit={handleSave} className="templates-create-panel" style={{
+          background: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          alignSelf: 'start'
+        }}>
+          <h2 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: '24px',
+            letterSpacing: '0.5px',
+            color: 'var(--color-white)',
+            borderBottom: '1px solid var(--color-border)',
+            paddingBottom: '12px',
+            margin: 0,
+            textTransform: 'uppercase',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>📋</span> Guardar Plantilla
+          </h2>
+          
+          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', lineHeight: '1.6' }}>
+            Guarda la configuración actual del borrador (cuadrícula, orientación y todos sus módulos) como una plantilla reutilizable.
+          </p>
+
+          {feedback && (
+            <div style={{
+              background: feedback.type === 'success' ? 'rgba(56, 161, 105, 0.12)' : 'rgba(229, 62, 62, 0.12)',
+              border: feedback.type === 'success' ? '1px solid rgba(56, 161, 105, 0.3)' : '1px solid rgba(229, 62, 62, 0.3)',
+              color: feedback.type === 'success' ? '#48bb78' : '#feb2b2',
+              padding: '10px 14px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>{feedback.type === 'success' ? '✅' : '❌'}</span>
+              <span>{feedback.message}</span>
+            </div>
+          )}
+
+          <div className="field">
+            <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>
+              Nombre de la Plantilla
+            </label>
+            <input
+              type="text"
+              placeholder="Ej. Diseño Mundial de Fútbol"
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              disabled={saving}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                background: 'var(--color-bg-primary)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--color-white)',
+                fontSize: '14px',
+                fontFamily: 'var(--font-body)',
+                outline: 'none'
+              }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="admin-btn admin-btn-primary"
+            disabled={saving}
+            style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px', marginTop: '12px' }}
+          >
+            💾 {saving ? 'Guardando...' : 'Guardar Diseño Actual'}
+          </button>
+        </form>
+      ) : (
+        <div style={{
+          background: 'rgba(212, 168, 67, 0.05)',
+          border: '1px solid var(--color-border-gold)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '24px',
+          alignSelf: 'start',
+          lineHeight: '1.6'
+        }}>
+          <h3 style={{ color: 'var(--color-gold)', marginBottom: '8px', fontSize: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>ℹ️</span> Modo de Editor (Lectura)
+          </h3>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
+            Como Editor, puedes examinar y aplicar cualquiera de las plantillas creadas por el Administrador. 
+            No tienes privilegios para crear nuevas plantillas ni eliminar las existentes.
+          </p>
+        </div>
+      )}
+
+      {/* Gallery Section */}
+      <div className="templates-list-panel" style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '24px',
+          letterSpacing: '0.5px',
+          color: 'var(--color-white)',
+          borderBottom: '1px solid var(--color-border)',
+          paddingBottom: '12px',
+          margin: 0,
+          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>📂</span> Plantillas Disponibles
+        </h2>
+
+        {templates.length === 0 ? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '60px 20px',
+            textAlign: 'center',
+            border: '1px dashed var(--color-border)',
+            borderRadius: 'var(--radius-md)',
+            background: 'rgba(255, 255, 255, 0.01)'
+          }}>
+            <span style={{ fontSize: '48px', marginBottom: '16px' }}>📋</span>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--color-white)' }}>No hay plantillas guardadas</div>
+            <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '8px', maxWidth: '320px' }}>
+              {isAdmin 
+                ? 'Ingresa un nombre en el panel izquierdo y guarda la configuración de valla actual.' 
+                : 'No se han creado plantillas aún en el sistema.'}
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: '20px',
+            overflowY: 'auto',
+            maxHeight: '650px',
+            paddingRight: '4px'
+          }}>
+            {templates.map((t) => {
+              const config = t.config_data || {};
+              const cols = config.grid?.cols || 5;
+              const rows = config.grid?.rows || 5;
+              const orientation = config.orientation || 'horizontal';
+              const modulesCount = config.modules?.length || 0;
+
+              return (
+                <div
+                  key={t.id}
+                  className="template-card"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    gap: '16px',
+                    transition: 'transform var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast)'
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: '8px' }}>
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '16px',
+                        color: 'var(--color-white)',
+                        fontWeight: 'bold',
+                        wordBreak: 'break-word',
+                        lineHeight: '1.3'
+                      }}>
+                        {t.template_name}
+                      </h3>
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(t)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            color: 'var(--color-danger)',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            padding: '4px',
+                            opacity: 0.7,
+                            transition: 'opacity var(--transition-fast)'
+                          }}
+                          title="Eliminar plantilla"
+                          onMouseEnter={(e) => e.target.style.opacity = '1'}
+                          onMouseLeave={(e) => e.target.style.opacity = '0.7'}
+                        >
+                          🗑️
+                        </button>
+                      )}
+                    </div>
+                    
+                    <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>
+                      🕒 {formatDate(t.created_at)}
+                    </span>
+
+                    <div style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '8px',
+                      marginTop: '8px',
+                      fontSize: '11px'
+                    }}>
+                      <span style={{
+                        background: 'rgba(212, 168, 67, 0.08)',
+                        border: '1px solid rgba(212, 168, 67, 0.2)',
+                        color: 'var(--color-gold)',
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        fontWeight: '500'
+                      }}>
+                        📐 Cuadrícula: {cols}x{rows}
+                      </span>
+                      <span style={{
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-secondary)',
+                        padding: '2px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        {orientation === 'vertical' ? '📱 Vertical' : '🖥️ Horizontal'}
+                      </span>
+                      <span style={{
+                        background: 'rgba(255, 255, 255, 0.04)',
+                        border: '1px solid var(--color-border)',
+                        color: 'var(--color-text-secondary)',
+                        padding: '2px 8px',
+                        borderRadius: '4px'
+                      }}>
+                        📦 {modulesCount} Módulos
+                      </span>
+                    </div>
+
+                    {/* Módulos inside this template */}
+                    {modulesCount > 0 && (
+                      <div style={{
+                        marginTop: '12px',
+                        borderTop: '1px solid rgba(255,255,255,0.05)',
+                        paddingTop: '10px'
+                      }}>
+                        <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginBottom: '6px', fontWeight: 'bold' }}>
+                          Módulos Incluidos:
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {config.modules?.slice(0, 5).map((mod, idx) => (
+                            <span
+                              key={mod.id || idx}
+                              style={{
+                                fontSize: '10px',
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                color: 'var(--color-white)',
+                                padding: '1px 6px',
+                                borderRadius: '3px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '3px'
+                              }}
+                            >
+                              <span>{MODULE_TYPES[mod.type]?.icon || '⚙️'}</span>
+                              <span>{mod.label}</span>
+                            </span>
+                          ))}
+                          {modulesCount > 5 && (
+                            <span style={{
+                              fontSize: '10px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              color: 'var(--color-text-secondary)',
+                              padding: '1px 6px',
+                              borderRadius: '3px'
+                            }}>
+                              +{modulesCount - 5} más
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary admin-btn-sm"
+                    onClick={() => handleApply(t)}
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      gap: '6px',
+                      padding: '10px',
+                      fontWeight: 'bold',
+                      fontSize: '13px'
+                    }}
+                  >
+                    📥 Cargar Plantilla
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
