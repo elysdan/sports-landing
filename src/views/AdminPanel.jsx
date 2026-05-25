@@ -1,24 +1,27 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useCMS, MODULE_TYPES } from '../context/CMSContext';
-import { RenderModule } from './DisplayView';
+import { RenderModule, getVerticalLayout } from './DisplayView';
 import MediaLibraryModal from '../components/MediaLibraryModal';
 
 /* ═══════════════════════════════════════════
    MODULE EDITOR — Dynamic form per module type
    ═══════════════════════════════════════════ */
-function ModuleEditor({ module, updateModule, updateModuleContent, removeModule, onOpenLibrary }) {
+function ModuleEditor({ module, updateModule, updateModuleContent, removeModule, onOpenLibrary, canEdit }) {
   const handleContentChange = (field, value) => {
+    if (!canEdit) return;
     updateModuleContent(module.id, { [field]: value });
   };
 
   const handleGridChange = (field, value) => {
+    if (!canEdit) return;
     updateModule(module.id, {
       gridPosition: { ...module.gridPosition, [field]: parseInt(value) || 1 },
     });
   };
 
   const handleImageUpload = (e) => {
+    if (!canEdit) return;
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -58,111 +61,124 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
   };
 
   const handleSelectFromLibrary = (url, type) => {
+    if (!canEdit) return;
     updateModuleContent(module.id, { src: url, mediaType: type });
   };
 
   return (
     <div className="admin-main-scroll">
-      {/* Editor Header */}
-      <div className="editor-header">
-        <div>
-          <div className="editor-title">{module.label}</div>
+      {/* Warning Badge if read-only */}
+      {!canEdit && (
+        <div style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', padding: '10px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>🔒</span>
+          <span>No tienes permisos para modificar este tipo de módulo (Sólo Lectura).</span>
         </div>
-        <div className="editor-badge">
-          <span>{MODULE_TYPES[module.type]?.icon}</span>
-          <span>{MODULE_TYPES[module.type]?.label}</span>
-        </div>
-      </div>
+      )}
 
-      {/* General Config with Visibility */}
-      <div className="editor-section">
-        <div className="editor-section-title">Configuración General</div>
-        <div className="field-row" style={{ gridTemplateColumns: '2fr 1fr', alignItems: 'center', gap: '24px' }}>
-          <div className="field" style={{ marginBottom: 0 }}>
-            <label>Nombre del módulo</label>
-            <input
-              type="text"
-              value={module.label}
-              onChange={(e) => updateModule(module.id, { label: e.target.value })}
-            />
+      <fieldset disabled={!canEdit} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '24px', opacity: canEdit ? 1 : 0.85 }}>
+        {/* Editor Header */}
+        <div className="editor-header">
+          <div>
+            <div className="editor-title">{module.label}</div>
           </div>
-          <div className="field" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <label>Visibilidad en Valla</label>
-            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
+          <div className="editor-badge">
+            <span>{MODULE_TYPES[module.type]?.icon}</span>
+            <span>{MODULE_TYPES[module.type]?.label}</span>
+          </div>
+        </div>
+
+        {/* General Config with Visibility */}
+        <div className="editor-section">
+          <div className="editor-section-title">Configuración General</div>
+          <div className="field-row" style={{ gridTemplateColumns: '2fr 1fr', alignItems: 'center', gap: '24px' }}>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Nombre del módulo</label>
               <input
-                type="checkbox"
-                checked={module.visible !== false}
-                onChange={(e) => updateModule(module.id, { visible: e.target.checked })}
-                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
+                type="text"
+                value={module.label}
+                onChange={(e) => updateModule(module.id, { label: e.target.value })}
               />
-              Visible
-            </label>
+            </div>
+            <div className="field" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label>Visibilidad en Valla</label>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
+                <input
+                  type="checkbox"
+                  checked={module.visible !== false}
+                  onChange={(e) => updateModule(module.id, { visible: e.target.checked })}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
+                />
+                Visible
+              </label>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Grid Position */}
-      <div className="editor-section">
-        <div className="editor-section-title">Posición en Grid</div>
-        <div className="grid-position-editor">
-          <div className="field">
-            <label>Columna</label>
-            <input type="number" min="1" value={module.gridPosition.col} onChange={(e) => handleGridChange('col', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Fila</label>
-            <input type="number" min="1" value={module.gridPosition.row} onChange={(e) => handleGridChange('row', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Ancho (cols)</label>
-            <input type="number" min="1" value={module.gridPosition.colSpan} onChange={(e) => handleGridChange('colSpan', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>Alto (rows)</label>
-            <input type="number" min="1" value={module.gridPosition.rowSpan} onChange={(e) => handleGridChange('rowSpan', e.target.value)} />
+        {/* Grid Position */}
+        <div className="editor-section">
+          <div className="editor-section-title">Posición en Grid</div>
+          <div className="grid-position-editor">
+            <div className="field">
+              <label>Columna</label>
+              <input type="number" min="1" value={module.gridPosition.col} onChange={(e) => handleGridChange('col', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Fila</label>
+              <input type="number" min="1" value={module.gridPosition.row} onChange={(e) => handleGridChange('row', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Ancho (cols)</label>
+              <input type="number" min="1" value={module.gridPosition.colSpan} onChange={(e) => handleGridChange('colSpan', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Alto (rows)</label>
+              <input type="number" min="1" value={module.gridPosition.rowSpan} onChange={(e) => handleGridChange('rowSpan', e.target.value)} />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Type-specific content editor */}
-      <div className="editor-section">
-        <div className="editor-section-title">Contenido</div>
-        {module.type === 'media' && (
-          <MediaEditor
-            content={module.content}
-            onChange={handleContentChange}
-            onUpload={handleImageUpload}
-            onOpenLibrary={() => onOpenLibrary(handleSelectFromLibrary)}
-          />
-        )}
-        {module.type === 'scoreboard' && (
-          <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} />
-        )}
-        {module.type === 'results' && (
-          <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
-        )}
-        {module.type === 'upcoming' && (
-          <UpcomingEditor content={module.content} onChange={handleContentChange} />
-        )}
-        {module.type === 'news' && (
-          <NewsEditor content={module.content} onChange={handleContentChange} />
-        )}
-        {module.type === 'ticker' && (
-          <TickerEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
-        )}
-      </div>
+        {/* Type-specific content editor */}
+        <div className="editor-section">
+          <div className="editor-section-title">Contenido</div>
+          {module.type === 'media' && (
+            <MediaEditor
+              content={module.content}
+              onChange={handleContentChange}
+              onUpload={handleImageUpload}
+              onOpenLibrary={() => onOpenLibrary(handleSelectFromLibrary)}
+            />
+          )}
+          {module.type === 'scoreboard' && (
+            <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} />
+          )}
+          {module.type === 'results' && (
+            <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
+          )}
+          {module.type === 'upcoming' && (
+            <UpcomingEditor content={module.content} onChange={handleContentChange} />
+          )}
+          {module.type === 'news' && (
+            <NewsEditor content={module.content} onChange={handleContentChange} />
+          )}
+          {module.type === 'ticker' && (
+            <TickerEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
+          )}
+        </div>
+      </fieldset>
 
       {/* Botones de Acción */}
-      <div className="editor-section" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
-        <button
-          type="button"
-          className="admin-btn admin-btn-danger"
-          style={{ width: '100%', justifyContent: 'center' }}
-          onClick={() => removeModule(module.id)}
-        >
-          🗑️ Eliminar Módulo
-        </button>
-      </div>
+      {canEdit && (
+        <div className="editor-section" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid var(--color-border)' }}>
+          <button
+            type="button"
+            className="admin-btn admin-btn-danger"
+            style={{ width: '100%', justifyContent: 'center' }}
+            onClick={() => removeModule(module.id)}
+          >
+            🗑️ Eliminar Módulo
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -490,6 +506,8 @@ function LivePreview({ modules, grid, screenType }) {
   }, [canvasWidth, canvasHeight]);
 
   const visibleModules = modules.filter((m) => m.visible !== false);
+  const isVerticalPreview = screenType === 'vertical';
+  const layout = isVerticalPreview ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid };
 
   return (
     <div 
@@ -513,10 +531,30 @@ function LivePreview({ modules, grid, screenType }) {
           height: `${canvasHeight}px`,
           transform: `scale(${scale})`,
           transformOrigin: 'center center',
-          gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-          gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
-            visibleModules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
-          ).join(' '),
+          gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
+          gridTemplateRows: isVerticalPreview
+            ? Array.from({ length: layout.grid.rows }).map((_, i) => {
+                const rowNum = i + 1;
+                const mod = layout.modules.find(m => 
+                  m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
+                );
+                if (!mod) return '1fr';
+                if (mod.type === 'ticker') return '80px';
+                const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
+                if (isBrand) return '80px';
+                
+                let baseWeight = 1.5;
+                if (mod.type === 'media') baseWeight = 2.5;
+                else if (mod.type === 'scoreboard') baseWeight = 1.8;
+                else if (mod.type === 'upcoming') baseWeight = 1.5;
+                else if (mod.type === 'results') baseWeight = 1.8;
+                else if (mod.type === 'news') baseWeight = 1.8;
+                
+                return `${baseWeight / mod.gridPosition.rowSpan}fr`;
+              }).join(' ')
+            : Array.from({ length: layout.grid.rows }).map((_, i) => 
+                layout.modules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
+              ).join(' '),
           background: 'var(--color-border)',
           gap: '2px',
           display: 'grid',
@@ -524,7 +562,7 @@ function LivePreview({ modules, grid, screenType }) {
           flexShrink: 0
         }}
       >
-        {visibleModules.map((mod) => {
+        {layout.modules.map((mod) => {
           const indexInMaster = modules.findIndex((m) => m.id === mod.id);
           return (
             <div
@@ -533,7 +571,7 @@ function LivePreview({ modules, grid, screenType }) {
               style={{
                 gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
                 gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-                zIndex: modules.length - indexInMaster,
+                zIndex: modules.length - indexInMaster
               }}
             >
               <RenderModule module={mod} />
@@ -548,7 +586,7 @@ function LivePreview({ modules, grid, screenType }) {
 /* ═══════════════════════════════════════════
    LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
-function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule }) {
+function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule, hasPermission }) {
   const [dragState, setDragState] = useState(null);
   const gridRef = useRef(null);
   const [activeTab, setActiveTab] = useState('blueprint'); // 'blueprint' or 'live'
@@ -576,6 +614,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
 
   // Iniciar Arrastre para Mover (Mouse)
   const handleMoveMouseDown = (e, mod) => {
+    if (hasPermission && !hasPermission(mod.type)) return;
     if (e.target.closest('.layout-preview-cell-btn')) {
       return;
     }
@@ -595,6 +634,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
 
   // Iniciar Arrastre para Mover (Touch)
   const handleMoveTouchStart = (e, mod) => {
+    if (hasPermission && !hasPermission(mod.type)) return;
     if (e.target.closest('.layout-preview-cell-btn')) {
       return;
     }
@@ -615,6 +655,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
 
   // Iniciar Redimensionamiento (Mouse)
   const handleResizeMouseDown = (e, mod, direction) => {
+    if (hasPermission && !hasPermission(mod.type)) return;
     e.stopPropagation();
     e.preventDefault();
     onSelect(mod.id);
@@ -632,6 +673,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
 
   // Iniciar Redimensionamiento (Touch)
   const handleResizeTouchStart = (e, mod, direction) => {
+    if (hasPermission && !hasPermission(mod.type)) return;
     e.stopPropagation();
     if (e.cancelable) e.preventDefault();
     onSelect(mod.id);
@@ -676,13 +718,15 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
         newCol = Math.max(1, Math.min(grid.cols - mod.gridPosition.colSpan + 1, newCol));
         newRow = Math.max(1, Math.min(grid.rows - mod.gridPosition.rowSpan + 1, newRow));
 
-        updateModule(dragState.moduleId, {
-          gridPosition: {
-            ...mod.gridPosition,
-            col: newCol,
-            row: newRow,
-          },
-        });
+        if (newCol !== mod.gridPosition.col || newRow !== mod.gridPosition.row) {
+          updateModule(dragState.moduleId, {
+            gridPosition: {
+              ...mod.gridPosition,
+              col: newCol,
+              row: newRow,
+            },
+          });
+        }
       } else if (dragState.type === 'resize') {
         const colSpanDiff = Math.round(dx / cellWidth);
         const rowSpanDiff = Math.round(dy / cellHeight);
@@ -700,13 +744,15 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
           newRowSpan = Math.max(1, Math.min(grid.rows - mod.gridPosition.row + 1, newRowSpan));
         }
 
-        updateModule(dragState.moduleId, {
-          gridPosition: {
-            ...mod.gridPosition,
-            colSpan: newColSpan,
-            rowSpan: newRowSpan,
-          },
-        });
+        if (newColSpan !== mod.gridPosition.colSpan || newRowSpan !== mod.gridPosition.rowSpan) {
+          updateModule(dragState.moduleId, {
+            gridPosition: {
+              ...mod.gridPosition,
+              colSpan: newColSpan,
+              rowSpan: newRowSpan,
+            },
+          });
+        }
       }
     };
 
@@ -838,9 +884,10 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
               {bgCells}
 
               {/* Celdas interactivas de módulos */}
-              {modules.map((mod) => {
+               {modules.map((mod) => {
                 const isSelected = selectedId === mod.id;
                 const isHidden = mod.visible === false;
+                const canEdit = !hasPermission || hasPermission(mod.type);
                 const indexInMaster = modules.findIndex((m) => m.id === mod.id);
 
                 return (
@@ -851,6 +898,8 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                       gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
                       gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
                       zIndex: isSelected ? 100 : (modules.length - indexInMaster),
+                      cursor: canEdit ? 'move' : 'not-allowed',
+                      opacity: canEdit ? 1 : 0.75
                     }}
                     onMouseDown={(e) => handleMoveMouseDown(e, mod)}
                     onTouchStart={(e) => handleMoveTouchStart(e, mod)}
@@ -882,7 +931,9 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                       <span className="layout-preview-cell-icon">
                         {MODULE_TYPES[mod.type]?.icon}
                       </span>
-                      <span className="layout-preview-cell-label">{mod.label}</span>
+                      <span className="layout-preview-cell-label">
+                        {mod.label} {!canEdit && '🔒'}
+                      </span>
                       {isHidden && <span className="layout-preview-cell-hidden-tag">Oculto</span>}
                     </div>
 
@@ -894,7 +945,12 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                         title={isHidden ? "Mostrar módulo" : "Ocultar módulo"}
                         onClick={(e) => {
                           e.stopPropagation();
-                          updateModule(mod.id, { visible: isHidden });
+                          if (canEdit) updateModule(mod.id, { visible: isHidden });
+                        }}
+                        disabled={!canEdit}
+                        style={{
+                          opacity: canEdit ? 1 : 0.3,
+                          cursor: canEdit ? 'pointer' : 'not-allowed'
                         }}
                       >
                         {isHidden ? '👁️' : '🕶️'}
@@ -905,9 +961,14 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                         title="Eliminar módulo"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`¿Eliminar el módulo "${mod.label}"?`)) {
+                          if (canEdit && window.confirm(`¿Eliminar el módulo "${mod.label}"?`)) {
                             removeModule(mod.id);
                           }
+                        }}
+                        disabled={!canEdit}
+                        style={{
+                          opacity: canEdit ? 1 : 0.3,
+                          cursor: canEdit ? 'pointer' : 'not-allowed'
                         }}
                       >
                         ✕
@@ -915,7 +976,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                     </div>
 
                     {/* Manejadores de Redimensionamiento */}
-                    {isSelected && (
+                    {isSelected && canEdit && (
                       <>
                         <div
                           className="resize-handle handle-e"
@@ -949,15 +1010,18 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
    ADMIN PANEL — Full screen CMS
    ═══════════════════════════════════════════ */
 export default function AdminPanel() {
-  const { data, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll } = useCMS();
-  const [selectedId, setSelectedId] = useState(data.modules[0]?.id || null);
+  const { draftData, liveData, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll } = useCMS();
+  const [selectedId, setSelectedId] = useState(draftData.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   
   // Estados para la Biblioteca de Medios
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaSelectCallback, setMediaSelectCallback] = useState(null);
 
-  const selectedModule = data.modules.find((m) => m.id === selectedId);
+  // Modo de vista: 'modules' (diseño de cuadrícula) o 'editors' (gestión de roles de editores)
+  const [viewMode, setViewMode] = useState('modules');
+
+  const selectedModule = draftData.modules.find((m) => m.id === selectedId);
 
   const handleAddModule = useCallback((type) => {
     const newId = addModule(type);
@@ -968,8 +1032,8 @@ export default function AdminPanel() {
   const handleRemove = useCallback((id) => {
     if (!window.confirm('¿Eliminar este módulo?')) return;
     removeModule(id);
-    setSelectedId(data.modules.find((m) => m.id !== id)?.id || null);
-  }, [removeModule, data.modules]);
+    setSelectedId(draftData.modules.find((m) => m.id !== id)?.id || null);
+  }, [removeModule, draftData.modules]);
 
   const openMediaLibraryForSelection = useCallback((callback) => {
     setMediaSelectCallback(() => callback);
@@ -986,7 +1050,87 @@ export default function AdminPanel() {
             Billboard <span>CMS</span>
           </div>
         </div>
-        <div className="admin-header-actions">
+
+        {/* Selector de Roles Integrado */}
+        <div className="role-switcher" style={{ display: 'flex', alignItems: 'center', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '2px', marginLeft: '24px', gap: '4px' }}>
+          <button
+            type="button"
+            className="admin-btn admin-btn-sm"
+            style={{ 
+              background: role === 'admin' ? 'var(--color-gold)' : 'transparent', 
+              color: role === 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)', 
+              border: 'none', 
+              padding: '6px 12px', 
+              fontSize: '11px',
+              cursor: 'pointer',
+              borderRadius: 'var(--radius-sm)',
+              fontWeight: role === 'admin' ? 'bold' : 'normal'
+            }}
+            onClick={() => {
+              setRole('admin');
+              setViewMode('modules');
+            }}
+          >
+            👑 Administrador
+          </button>
+          
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <select
+              value={role !== 'admin' ? role : ''}
+              onChange={(e) => {
+                const selectedVal = e.target.value;
+                if (selectedVal) {
+                  setRole(selectedVal);
+                  setViewMode('modules');
+                }
+              }}
+              style={{
+                background: role !== 'admin' ? 'var(--color-gold)' : 'transparent',
+                color: role !== 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)',
+                border: 'none',
+                padding: '6px 24px 6px 12px',
+                fontSize: '11px',
+                cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)',
+                fontWeight: role !== 'admin' ? 'bold' : 'normal',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                fontFamily: 'var(--font-body)',
+                outline: 'none',
+              }}
+            >
+              <option value="" disabled style={{ background: 'var(--color-bg-card)', color: 'var(--color-text-secondary)' }}>
+                ✍️ Actuar como Editor...
+              </option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id} style={{ background: 'var(--color-bg-card)', color: 'var(--color-white)' }}>
+                  ✍️ {u.name}
+                </option>
+              ))}
+            </select>
+            <span style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              pointerEvents: 'none',
+              fontSize: '8px',
+              color: role !== 'admin' ? 'var(--color-bg-primary)' : 'var(--color-text-secondary)'
+            }}>▼</span>
+          </div>
+        </div>
+
+        <div className="admin-header-actions" style={{ marginLeft: 'auto' }}>
+          {role === 'admin' && (
+            <button
+              className={`admin-btn admin-btn-sm ${viewMode === 'editors' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+              onClick={() => setViewMode(prev => prev === 'editors' ? 'modules' : 'editors')}
+              style={{ marginRight: '8px', gap: '6px' }}
+            >
+              👥 {viewMode === 'editors' ? 'Ver Módulos' : 'Gestionar Editores'}
+            </button>
+          )}
+
           <button
             className="admin-btn admin-btn-secondary admin-btn-sm"
             onClick={() => {
@@ -1017,133 +1161,231 @@ export default function AdminPanel() {
         </div>
       </div>
 
-      {/* ─── Sidebar — Module List ─── */}
-      <div className="admin-sidebar">
-        <div className="admin-sidebar-header">
-          <div className="admin-sidebar-title">Módulos</div>
-          <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{data.modules.length}</span>
+      {viewMode === 'editors' ? (
+        <div className="admin-editors-fullpage" style={{ gridColumn: '1 / -1', gridRow: '2', padding: '40px', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
+          <EditorsManagement />
         </div>
-
-        {/* Control del Tamaño de la Cuadrícula */}
-        <div className="grid-size-selector">
-          <div className="grid-size-selector-title">Cuadrícula</div>
-          <div className="grid-size-selector-inputs">
-            <div className="grid-size-field">
-              <label>Columnas (Cols)</label>
-              <select
-                value={data.grid.cols}
-                onChange={(e) => updateGrid({ cols: parseInt(e.target.value) || 1 })}
-              >
-                {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
+      ) : (
+        <>
+          {/* ─── Sidebar — Module List ─── */}
+          <div className="admin-sidebar">
+            <div className="admin-sidebar-header">
+              <div className="admin-sidebar-title">Módulos</div>
+              <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>{draftData.modules.length}</span>
             </div>
-            <div className="grid-size-field">
-              <label>Filas (Rows)</label>
-              <select
-                value={data.grid.rows}
-                onChange={(e) => updateGrid({ rows: parseInt(e.target.value) || 1 })}
-              >
-                {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
-                  <option key={n} value={n}>{n}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
 
-        <div className="admin-sidebar-list">
-          {data.modules.map((mod, idx) => {
-            const isHidden = mod.visible === false;
-            return (
-              <div
-                key={mod.id}
-                className={`module-list-item ${selectedId === mod.id ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
-                onClick={() => setSelectedId(mod.id)}
-              >
-                <span className="module-list-icon">{MODULE_TYPES[mod.type]?.icon}</span>
-                <div className="module-list-info">
-                  <div className="module-list-label">{mod.label}</div>
-                  <div className="module-list-type">
-                    {MODULE_TYPES[mod.type]?.label} {isHidden && '(Oculto)'}
-                  </div>
-                </div>
-                <div className="module-list-actions">
-                  <button
-                    className={`module-list-action-btn ${isHidden ? '' : 'active-visible'}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      updateModule(mod.id, { visible: isHidden });
-                    }}
-                    title={isHidden ? "Mostrar en la valla" : "Ocultar en la valla"}
+            {/* Control del Tamaño de la Cuadrícula */}
+            <div className="grid-size-selector">
+              <div className="grid-size-selector-title">Cuadrícula</div>
+              <div className="grid-size-selector-inputs">
+                <div className="grid-size-field">
+                  <label>Columnas (Cols)</label>
+                  <select
+                    value={draftData.grid.cols}
+                    onChange={(e) => updateGrid({ cols: parseInt(e.target.value) || 1 })}
                   >
-                    {isHidden ? '👁️' : '🕶️'}
-                  </button>
-                  <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'up'); }} title="Mover arriba" disabled={idx === 0}>↑</button>
-                  <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'down'); }} title="Mover abajo" disabled={idx === data.modules.length - 1}>↓</button>
-                  <button className="module-list-action-btn danger" onClick={(e) => { e.stopPropagation(); handleRemove(mod.id); }} title="Eliminar">✕</button>
+                    {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid-size-field">
+                  <label>Filas (Rows)</label>
+                  <select
+                    value={draftData.grid.rows}
+                    onChange={(e) => updateGrid({ rows: parseInt(e.target.value) || 1 })}
+                  >
+                    {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
 
-        <div className="admin-sidebar-footer">
-          {showAddMenu ? (
-            <div className="add-module-menu">
-              {Object.entries(MODULE_TYPES).map(([key, type]) => (
-                <button key={key} className="add-module-option" onClick={() => handleAddModule(key)}>
-                  <span className="add-module-option-icon">{type.icon}</span>
-                  <div>
-                    <div className="add-module-option-label">{type.label}</div>
-                    <div className="add-module-option-desc">{type.description}</div>
+            <div className="admin-sidebar-list">
+              {draftData.modules.map((mod, idx) => {
+                const isHidden = mod.visible === false;
+                const canEdit = hasPermission(mod.type);
+                return (
+                  <div
+                    key={mod.id}
+                    className={`module-list-item ${selectedId === mod.id ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                    onClick={() => setSelectedId(mod.id)}
+                    style={{ opacity: canEdit ? 1 : 0.7 }}
+                  >
+                    <span className="module-list-icon">{MODULE_TYPES[mod.type]?.icon}</span>
+                    <div className="module-list-info">
+                      <div className="module-list-label">
+                        {mod.label} {!canEdit && <span style={{ marginLeft: 6, fontSize: 11 }}>🔒</span>}
+                      </div>
+                      <div className="module-list-type">
+                        {MODULE_TYPES[mod.type]?.label} {isHidden && '(Oculto)'}
+                      </div>
+                    </div>
+                    <div className="module-list-actions">
+                      <button
+                        className={`module-list-action-btn ${isHidden ? '' : 'active-visible'}`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (canEdit) updateModule(mod.id, { visible: isHidden });
+                        }}
+                        title={isHidden ? "Mostrar en la valla" : "Ocultar en la valla"}
+                        disabled={!canEdit}
+                        style={{ opacity: canEdit ? 1 : 0.3, cursor: canEdit ? 'pointer' : 'not-allowed' }}
+                      >
+                        {isHidden ? '👁️' : '🕶️'}
+                      </button>
+                      <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'up'); }} title="Mover arriba" disabled={idx === 0 || !canEdit} style={{ opacity: canEdit ? 1 : 0.3, cursor: canEdit ? 'pointer' : 'not-allowed' }}>↑</button>
+                      <button className="module-list-action-btn" onClick={(e) => { e.stopPropagation(); moveModule(mod.id, 'down'); }} title="Mover abajo" disabled={idx === draftData.modules.length - 1 || !canEdit} style={{ opacity: canEdit ? 1 : 0.3, cursor: canEdit ? 'pointer' : 'not-allowed' }}>↓</button>
+                      <button className="module-list-action-btn danger" onClick={(e) => { e.stopPropagation(); if (canEdit) handleRemove(mod.id); }} title="Eliminar" disabled={!canEdit} style={{ opacity: canEdit ? 1 : 0.3, cursor: canEdit ? 'pointer' : 'not-allowed' }}>✕</button>
+                    </div>
                   </div>
-                </button>
-              ))}
-              <button className="add-module-btn" style={{ marginTop: 8 }} onClick={() => setShowAddMenu(false)}>
-                Cancelar
-              </button>
+                );
+              })}
             </div>
-          ) : (
-            <button className="add-module-btn" onClick={() => setShowAddMenu(true)}>
-              + Agregar Módulo
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* ─── Main Content — Editor ─── */}
-      <div className="admin-main">
-        {selectedModule ? (
-          <>
-            <div className="layout-preview-wrapper">
-              <LayoutPreview
-                modules={data.modules}
-                grid={data.grid}
-                selectedId={selectedId}
-                onSelect={setSelectedId}
-                updateModule={updateModule}
-                removeModule={handleRemove}
-              />
+            <div className="admin-sidebar-footer">
+              {showAddMenu ? (
+                <div className="add-module-menu">
+                  {Object.entries(MODULE_TYPES).filter(([key]) => hasPermission(key)).length === 0 ? (
+                    <div style={{ padding: 12, fontSize: 12, color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                      No tienes permisos para agregar módulos.
+                    </div>
+                  ) : (
+                    Object.entries(MODULE_TYPES)
+                      .filter(([key]) => hasPermission(key))
+                      .map(([key, type]) => (
+                        <button key={key} className="add-module-option" onClick={() => handleAddModule(key)}>
+                          <span className="add-module-option-icon">{type.icon}</span>
+                          <div>
+                            <div className="add-module-option-label">{type.label}</div>
+                            <div className="add-module-option-desc">{type.description}</div>
+                          </div>
+                        </button>
+                      ))
+                  )}
+                  <button className="add-module-btn" style={{ marginTop: 8 }} onClick={() => setShowAddMenu(false)}>
+                    Cancelar
+                  </button>
+                </div>
+              ) : (
+                <button className="add-module-btn" onClick={() => setShowAddMenu(true)}>
+                  + Agregar Módulo
+                </button>
+              )}
             </div>
-            <ModuleEditor
-              key={selectedModule.id}
-              module={selectedModule}
-              updateModule={updateModule}
-              updateModuleContent={updateModuleContent}
-              removeModule={handleRemove}
-              onOpenLibrary={openMediaLibraryForSelection}
-            />
-          </>
-        ) : (
-          <div className="admin-empty-state">
-            <div className="admin-empty-icon">📋</div>
-            <div className="admin-empty-text">Selecciona un módulo</div>
-            <div className="admin-empty-hint">O agrega uno nuevo desde la barra lateral</div>
           </div>
-        )}
-      </div>
+
+          {/* ─── Main Content — Editor ─── */}
+          <div className="admin-main">
+            {/* Barra de Flujo de Trabajo / Aprobación */}
+            <div className="workflow-status-bar" style={{
+              background: hasPendingChanges ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+              borderBottom: '1px solid var(--color-border)',
+              padding: '12px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '16px',
+              flexShrink: 0
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '20px' }}>{role === 'admin' ? '👑' : '✍️'}</span>
+                <div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-white)', fontFamily: 'var(--font-display)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    Modo {role === 'admin' ? 'Administrador' : 'Editor'}
+                  </div>
+                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                    {role === 'admin' 
+                      ? (hasPendingChanges 
+                          ? '⚠️ Hay cambios en borrador pendientes de aprobación para la valla pública.' 
+                          : '✅ El borrador de edición coincide con la valla pública en vivo.')
+                      : '📝 Tienes permisos para modificar borradores. Recuerda guardar el borrador para que sea aprobado.'
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {role !== 'admin' && (
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-primary admin-btn-sm"
+                    style={{ gap: '6px' }}
+                    onClick={() => {
+                      alert('Borrador guardado correctamente. Los cambios están listos para ser aprobados por un Administrador.');
+                    }}
+                  >
+                    💾 Guardar Borrador
+                  </button>
+                )}
+
+                {role === 'admin' && hasPendingChanges && (
+                  <>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-primary admin-btn-sm"
+                      style={{ background: 'var(--color-success)', color: 'var(--color-white)', gap: '6px' }}
+                      onClick={() => {
+                        approveAndPublish();
+                        alert('¡Excelente! Los cambios en borrador han sido aprobados y publicados a la valla en vivo.');
+                      }}
+                    >
+                      ✓ Aprobar y Publicar
+                    </button>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-danger admin-btn-sm"
+                      style={{ gap: '6px' }}
+                      onClick={() => {
+                        if (window.confirm('¿Seguro que deseas descartar todos los cambios pendientes en borrador y volver al último estado público?')) {
+                          discardDraft();
+                        }
+                      }}
+                    >
+                      ✕ Descartar Cambios
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="admin-main-content-wrapper" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
+              {selectedModule ? (
+                <>
+                  <div className="layout-preview-wrapper">
+                    <LayoutPreview
+                      modules={draftData.modules}
+                      grid={draftData.grid}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      updateModule={updateModule}
+                      removeModule={handleRemove}
+                      hasPermission={hasPermission}
+                    />
+                  </div>
+                  <ModuleEditor
+                    key={selectedModule.id}
+                    module={selectedModule}
+                    updateModule={updateModule}
+                    updateModuleContent={updateModuleContent}
+                    removeModule={handleRemove}
+                    onOpenLibrary={openMediaLibraryForSelection}
+                    canEdit={hasPermission(selectedModule.type)}
+                  />
+                </>
+              ) : (
+                <div className="admin-empty-state">
+                  <div className="admin-empty-icon">📋</div>
+                  <div className="admin-empty-text">Selecciona un módulo</div>
+                  <div className="admin-empty-hint">O agrega uno nuevo desde la barra lateral</div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       <MediaLibraryModal
         isOpen={mediaModalOpen}
@@ -1158,4 +1400,389 @@ function isVideo(src, mediaType) {
   if (mediaType === 'video') return true;
   if (!src) return false;
   return src.match(/\.(mp4|webm|ogg)(\?|$)/i) || src.startsWith('data:video');
+}
+
+/* ═══════════════════════════════════════════
+   EDITORS MANAGEMENT — Editor Roles Dashboard
+   ═══════════════════════════════════════════ */
+function EditorsManagement() {
+  const { users, createEditor, deleteEditor, role, setRole } = useCMS();
+  const [name, setName] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState([]); // List of module type keys allowed
+  const [allSelected, setAllSelected] = useState(false);
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
+
+  const handleToggleType = (typeKey) => {
+    if (typeKey === '*') {
+      if (allSelected) {
+        setSelectedTypes([]);
+        setAllSelected(false);
+      } else {
+        setSelectedTypes(['*']);
+        setAllSelected(true);
+      }
+    } else {
+      setAllSelected(false);
+      setSelectedTypes((prev) => {
+        // If it was '*', clear it first
+        const cleaned = prev.filter(t => t !== '*');
+        if (cleaned.includes(typeKey)) {
+          return cleaned.filter((t) => t !== typeKey);
+        } else {
+          return [...cleaned, typeKey];
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    // If all individual types are selected, toggle allSelected
+    const individualTypes = Object.keys(MODULE_TYPES);
+    const hasAllIndividual = individualTypes.every(t => selectedTypes.includes(t));
+    if (hasAllIndividual && !allSelected) {
+      setAllSelected(true);
+      setSelectedTypes(['*']);
+    }
+  }, [selectedTypes, allSelected]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name.trim()) {
+      setFeedback({ type: 'error', message: 'El nombre del editor es requerido.' });
+      return;
+    }
+    const finalTypes = allSelected ? ['*'] : selectedTypes;
+    if (finalTypes.length === 0) {
+      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso.' });
+      return;
+    }
+
+    createEditor(name.trim(), finalTypes);
+    setName('');
+    setSelectedTypes([]);
+    setAllSelected(false);
+    setFeedback({ type: 'success', message: `Editor "${name}" creado exitosamente.` });
+    setTimeout(() => setFeedback(null), 3000);
+  };
+
+  return (
+    <div className="editors-mgmt-container" style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
+      display: 'grid',
+      gridTemplateColumns: '1.2fr 1fr',
+      gap: '32px',
+      fontFamily: 'var(--font-body)',
+      color: 'var(--color-white)'
+    }}>
+      {/* List section */}
+      <div className="editors-list-panel" style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '24px',
+          letterSpacing: '0.5px',
+          color: 'var(--color-white)',
+          borderBottom: '1px solid var(--color-border)',
+          paddingBottom: '12px',
+          margin: 0,
+          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>👥</span> Editores Configurados
+        </h2>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto', maxHeight: '600px', paddingRight: '4px' }}>
+          {users.map((u) => {
+            const isActive = role === u.id;
+            const isAll = u.allowedTypes.includes('*');
+            return (
+              <div key={u.id} style={{
+                background: isActive ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                border: isActive ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '16px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '16px',
+                transition: 'var(--transition-fast)'
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '18px' }}>✍️</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '15px', color: isActive ? 'var(--color-gold)' : 'var(--color-white)' }}>
+                      {u.name}
+                    </span>
+                    {u.id === 'user_generic' && (
+                      <span style={{
+                        fontSize: '9px',
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        color: 'var(--color-text-secondary)',
+                        textTransform: 'uppercase'
+                      }}>Predeterminado</span>
+                    )}
+                    {isActive && (
+                      <span style={{
+                        fontSize: '9px',
+                        background: 'var(--color-gold)',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        color: 'var(--color-bg-primary)',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase'
+                      }}>Activo</span>
+                    )}
+                  </div>
+                  
+                  {/* Badges for allowed module types */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {isAll ? (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'rgba(56, 161, 105, 0.15)',
+                        border: '1px solid rgba(56, 161, 105, 0.3)',
+                        color: '#48bb78',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        🟢 Acceso Completo (Todos los módulos)
+                      </span>
+                    ) : (
+                      Object.entries(MODULE_TYPES).map(([typeKey, typeInfo]) => {
+                        const hasPerm = u.allowedTypes.includes(typeKey);
+                        return (
+                          <span key={typeKey} style={{
+                            fontSize: '11px',
+                            background: hasPerm ? 'rgba(56, 161, 105, 0.15)' : 'rgba(255, 255, 255, 0.05)',
+                            border: hasPerm ? '1px solid rgba(56, 161, 105, 0.3)' : '1px solid var(--color-border)',
+                            color: hasPerm ? '#48bb78' : 'var(--color-text-secondary)',
+                            padding: '2px 8px',
+                            borderRadius: '12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            opacity: hasPerm ? 1 : 0.4
+                          }}>
+                            {hasPerm ? '🟢' : '🔒'} {typeInfo.icon} {typeInfo.label}
+                          </span>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <button
+                    type="button"
+                    className="admin-btn admin-btn-sm"
+                    style={{
+                      background: isActive ? 'transparent' : 'rgba(255, 255, 255, 0.05)',
+                      border: isActive ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                      color: isActive ? 'var(--color-gold)' : 'var(--color-white)',
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                      fontSize: '11px',
+                      borderRadius: 'var(--radius-sm)'
+                    }}
+                    onClick={() => setRole(u.id)}
+                    disabled={isActive}
+                  >
+                    {isActive ? 'Actuando' : 'Actuar como'}
+                  </button>
+
+                  {/* Disable delete for default Editor General */}
+                  {u.id !== 'user_generic' && (
+                    <button
+                      type="button"
+                      className="admin-btn-icon danger"
+                      title="Eliminar Perfil"
+                      style={{ padding: '8px', cursor: 'pointer', margin: 0 }}
+                      onClick={() => {
+                        if (window.confirm(`¿Seguro que deseas eliminar al editor "${u.name}"?`)) {
+                          deleteEditor(u.id);
+                        }
+                      }}
+                    >
+                      🗑️
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Creation form panel */}
+      <form onSubmit={handleSubmit} className="editors-create-panel" style={{
+        background: 'var(--color-bg-card)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <h2 style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: '24px',
+          letterSpacing: '0.5px',
+          color: 'var(--color-white)',
+          borderBottom: '1px solid var(--color-border)',
+          paddingBottom: '12px',
+          margin: 0,
+          textTransform: 'uppercase',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <span>➕</span> Nuevo Perfil de Editor
+        </h2>
+
+        {feedback && (
+          <div style={{
+            background: feedback.type === 'success' ? 'rgba(56, 161, 105, 0.12)' : 'rgba(229, 62, 62, 0.12)',
+            border: feedback.type === 'success' ? '1px solid rgba(56, 161, 105, 0.3)' : '1px solid rgba(229, 62, 62, 0.3)',
+            color: feedback.type === 'success' ? '#48bb78' : '#feb2b2',
+            padding: '10px 14px',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '13px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <span>{feedback.type === 'success' ? '✅' : '❌'}</span>
+            <span>{feedback.message}</span>
+          </div>
+        )}
+
+        <div className="field">
+          <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '8px', display: 'block', fontWeight: 'bold' }}>
+            Nombre del Editor
+          </label>
+          <input
+            type="text"
+            placeholder="Ej. Redactor de Marcadores o Juan Pérez"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px 14px',
+              background: 'var(--color-bg-primary)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-white)',
+              fontSize: '14px',
+              fontFamily: 'var(--font-body)',
+              outline: 'none'
+            }}
+          />
+        </div>
+
+        <div className="field">
+          <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '12px', display: 'block', fontWeight: 'bold' }}>
+            Asignar Permisos por Módulo
+          </label>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* Special toggle for "All Modules" */}
+            <div
+              onClick={() => handleToggleType('*')}
+              style={{
+                background: allSelected ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                border: allSelected ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={() => {}} // Controlled click on container
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: allSelected ? 'var(--color-gold)' : 'var(--color-white)' }}>
+                  👑 Acceso Completo (Super-Editor)
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                  Permite agregar y editar cualquier tipo de módulo en la valla
+                </div>
+              </div>
+            </div>
+
+            <div style={{ borderTop: '1px solid var(--color-border)', margin: '8px 0' }} />
+
+            {/* Individual module toggles */}
+            {Object.entries(MODULE_TYPES).map(([typeKey, typeInfo]) => {
+              const isChecked = selectedTypes.includes(typeKey) || allSelected;
+              return (
+                <div
+                  key={typeKey}
+                  onClick={() => !allSelected && handleToggleType(typeKey)}
+                  style={{
+                    background: isChecked ? 'rgba(212, 168, 67, 0.05)' : 'rgba(255, 255, 255, 0.01)',
+                    border: isChecked ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '12px 16px',
+                    cursor: allSelected ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    transition: 'var(--transition-fast)',
+                    opacity: allSelected ? 0.6 : 1
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    disabled={allSelected}
+                    onChange={() => {}} // Controlled click on container
+                    style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: allSelected ? 'not-allowed' : 'pointer' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '13px', color: isChecked ? 'var(--color-gold)' : 'var(--color-white)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{typeInfo.icon}</span>
+                      <span>{typeInfo.label}</span>
+                    </div>
+                    <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                      {typeInfo.description}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          className="admin-btn admin-btn-primary"
+          style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: '14px', marginTop: '12px' }}
+        >
+          ➕ Crear Perfil de Editor
+        </button>
+      </form>
+    </div>
+  );
 }

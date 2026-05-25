@@ -141,28 +141,38 @@ const defaultData = {
   orientation: 'horizontal',
 };
 
-const CMS_STORAGE_KEY = 'sports-billboard-cms-v3';
+const CMS_DRAFT_KEY = 'sports-billboard-cms-draft-v4';
+const CMS_LIVE_KEY = 'sports-billboard-cms-live-v4';
+const CMS_ROLE_KEY = 'sports-billboard-cms-role';
+const CMS_USERS_KEY = 'sports-billboard-cms-users-v4';
 
-function loadFromStorage() {
+const defaultUsers = [
+  { id: 'user_generic', name: 'Editor General', allowedTypes: ['*'] }
+];
+
+function migrateData(parsed) {
+  if (parsed && Array.isArray(parsed.modules)) {
+    parsed.modules = parsed.modules.map((mod) => {
+      if (mod.type === 'media' && mod.content) {
+        if (!mod.content.objectFit) {
+          mod.content.objectFit = 'contain';
+        }
+      }
+      return mod;
+    });
+  }
+  return parsed;
+}
+
+function loadFromStorage(key) {
   try {
-    const stored = localStorage.getItem(CMS_STORAGE_KEY);
+    const stored = localStorage.getItem(key);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Migrate existing modules with 'cover' to 'contain' to ensure user's active layout is automatically adjusted
-      if (parsed && Array.isArray(parsed.modules)) {
-        parsed.modules = parsed.modules.map((mod) => {
-          if (mod.type === 'media' && mod.content) {
-            if (!mod.content.objectFit || mod.content.objectFit === 'cover') {
-              mod.content.objectFit = 'contain';
-            }
-          }
-          return mod;
-        });
-      }
-      return parsed;
+      return migrateData(parsed);
     }
   } catch (e) {
-    console.warn('Failed to load CMS data:', e);
+    console.warn(`Failed to load CMS data for ${key}:`, e);
   }
   return defaultData;
 }
@@ -170,22 +180,88 @@ function loadFromStorage() {
 const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
-  const [data, setData] = useState(loadFromStorage);
+  const [draftData, setDraftData] = useState(() => loadFromStorage(CMS_DRAFT_KEY));
+  const [liveData, setLiveData] = useState(() => {
+    try {
+      const storedLive = localStorage.getItem(CMS_LIVE_KEY);
+      if (storedLive) {
+        return migrateData(JSON.parse(storedLive));
+      }
+    } catch (e) {
+      console.warn("Failed to load CMS live data:", e);
+    }
+    return loadFromStorage(CMS_DRAFT_KEY); // Default to whatever is in draft (or defaultData) on initial setup
+  });
 
+  const [users, setUsers] = useState(() => {
+    try {
+      const stored = localStorage.getItem(CMS_USERS_KEY);
+      return stored ? JSON.parse(stored) : defaultUsers;
+    } catch (e) {
+      return defaultUsers;
+    }
+  });
+
+  const [role, setRoleState] = useState(() => {
+    try {
+      let r = localStorage.getItem(CMS_ROLE_KEY) || 'admin';
+      if (r === 'editor') r = 'user_generic';
+      return r;
+    } catch (e) {
+      return 'admin';
+    }
+  });
+
+  const setRole = useCallback((newRole) => {
+    setRoleState(newRole);
+    try {
+      localStorage.setItem(CMS_ROLE_KEY, newRole);
+    } catch (e) {
+      console.warn("Failed to save role:", e);
+    }
+  }, []);
+
+  // Guardar draftData en almacenamiento local
   useEffect(() => {
     try {
-      localStorage.setItem(CMS_STORAGE_KEY, JSON.stringify(data));
+      localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(draftData));
     } catch (e) {
-      console.warn('Failed to save CMS data:', e);
+      console.warn('Failed to save CMS draft data:', e);
     }
-  }, [data]);
+  }, [draftData]);
 
+  // Guardar liveData en almacenamiento local
+  useEffect(() => {
+    try {
+      localStorage.setItem(CMS_LIVE_KEY, JSON.stringify(liveData));
+    } catch (e) {
+      console.warn('Failed to save CMS live data:', e);
+    }
+  }, [liveData]);
+
+  // Guardar users en almacenamiento local
+  useEffect(() => {
+    try {
+      localStorage.setItem(CMS_USERS_KEY, JSON.stringify(users));
+    } catch (e) {
+      console.warn('Failed to save CMS users:', e);
+    }
+  }, [users]);
+
+  // Sincronizar pestañas
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key === CMS_STORAGE_KEY && e.newValue) {
+      if (e.newValue) {
         try {
-          const parsed = JSON.parse(e.newValue);
-          setData(parsed);
+          if (e.key === CMS_DRAFT_KEY) {
+            setDraftData(migrateData(JSON.parse(e.newValue)));
+          } else if (e.key === CMS_LIVE_KEY) {
+            setLiveData(migrateData(JSON.parse(e.newValue)));
+          } else if (e.key === CMS_ROLE_KEY) {
+            setRoleState(e.newValue);
+          } else if (e.key === CMS_USERS_KEY) {
+            setUsers(JSON.parse(e.newValue));
+          }
         } catch (err) {
           console.warn('Failed to parse synced CMS data:', err);
         }
@@ -204,7 +280,7 @@ export function CMSProvider({ children }) {
       content: defaultContentForType(type),
       visible: true,
     };
-    setData((prev) => ({
+    setDraftData((prev) => ({
       ...prev,
       modules: [...prev.modules, newModule],
     }));
@@ -212,14 +288,14 @@ export function CMSProvider({ children }) {
   }, []);
 
   const removeModule = useCallback((id) => {
-    setData((prev) => ({
+    setDraftData((prev) => ({
       ...prev,
       modules: prev.modules.filter((m) => m.id !== id),
     }));
   }, []);
 
   const updateModule = useCallback((id, updates) => {
-    setData((prev) => ({
+    setDraftData((prev) => ({
       ...prev,
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, ...updates } : m
@@ -228,7 +304,7 @@ export function CMSProvider({ children }) {
   }, []);
 
   const updateModuleContent = useCallback((id, contentUpdates) => {
-    setData((prev) => ({
+    setDraftData((prev) => ({
       ...prev,
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, content: { ...m.content, ...contentUpdates } } : m
@@ -237,7 +313,7 @@ export function CMSProvider({ children }) {
   }, []);
 
   const moveModule = useCallback((id, direction) => {
-    setData((prev) => {
+    setDraftData((prev) => {
       const modules = [...prev.modules];
       const idx = modules.findIndex((m) => m.id === id);
       if (idx === -1) return prev;
@@ -249,7 +325,7 @@ export function CMSProvider({ children }) {
   }, []);
 
   const updateGrid = useCallback((gridUpdates) => {
-    setData((prev) => {
+    setDraftData((prev) => {
       const nextGrid = { ...prev.grid, ...gridUpdates };
       const nextModules = prev.modules.map((mod) => {
         let { col, row, colSpan, rowSpan } = mod.gridPosition;
@@ -277,21 +353,71 @@ export function CMSProvider({ children }) {
   }, []);
 
   const updateOrientation = useCallback((orientation) => {
-    setData((prev) => ({
+    setDraftData((prev) => ({
       ...prev,
       orientation,
     }));
   }, []);
 
   const resetAll = useCallback(() => {
-    setData(defaultData);
-    localStorage.removeItem(CMS_STORAGE_KEY);
+    setDraftData(defaultData);
+    setLiveData(defaultData);
+    setUsers(defaultUsers);
+    setRole('admin');
+    localStorage.removeItem(CMS_DRAFT_KEY);
+    localStorage.removeItem(CMS_LIVE_KEY);
+    localStorage.removeItem(CMS_USERS_KEY);
+  }, [setRole]);
+
+  const approveAndPublish = useCallback(() => {
+    setLiveData(draftData);
+  }, [draftData]);
+
+  const discardDraft = useCallback(() => {
+    setDraftData(liveData);
+  }, [liveData]);
+
+  const createEditor = useCallback((name, allowedTypes) => {
+    const newEditor = {
+      id: `user_${Date.now()}`,
+      name,
+      allowedTypes,
+    };
+    setUsers((prev) => [...prev, newEditor]);
+    return newEditor.id;
   }, []);
+
+  const deleteEditor = useCallback((id) => {
+    setUsers((prev) => {
+      const nextUsers = prev.filter((u) => u.id !== id);
+      if (role === id) {
+        setRole('admin');
+      }
+      return nextUsers;
+    });
+  }, [role, setRole]);
+
+  const hasPermission = useCallback((type) => {
+    if (role === 'admin') return true;
+    const currentUserProfile = users.find(u => u.id === role);
+    if (!currentUserProfile) return false;
+    return currentUserProfile.allowedTypes.includes('*') || currentUserProfile.allowedTypes.includes(type);
+  }, [role, users]);
 
   return (
     <CMSContext.Provider
       value={{
-        data,
+        draftData,
+        liveData,
+        role,
+        setRole,
+        users,
+        createEditor,
+        deleteEditor,
+        hasPermission,
+        hasPendingChanges: JSON.stringify(draftData) !== JSON.stringify(liveData),
+        approveAndPublish,
+        discardDraft,
         addModule,
         removeModule,
         updateModule,

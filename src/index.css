@@ -66,23 +66,22 @@ html, body, #root {
    ███ DISPLAY / BILLBOARD — 1920×1080 FIXED ███
    ═══════════════════════════════════════════════════ */
 .viewport-container {
-  width: 1920px;
-  height: 1080px;
+  width: 100%;
+  height: 100%;
   position: absolute;
-  top: 50%; left: 50%;
-  transform-origin: center center;
+  top: 0; left: 0;
   overflow: hidden;
   background: var(--color-bg-primary);
 }
 
 .viewport-container.vertical {
-  width: 1080px;
-  height: 1920px;
+  width: 100%;
+  height: 100%;
 }
 
 .billboard-grid {
-  width: 1920px;
-  height: 1080px;
+  width: 100%;
+  height: 100%;
   display: grid;
   gap: 2px;
   overflow: hidden;
@@ -90,8 +89,8 @@ html, body, #root {
 }
 
 .billboard-grid.vertical {
-  width: 1080px;
-  height: 1920px;
+  width: 100%;
+  height: 100%;
 }
 
 /* ─── Module cell ─── */
@@ -1876,3 +1875,136 @@ html, body, #root {
     right: 16px;
   }
 }
+
+/* ═══════════════════════════════════════════
+   VERTICAL RESPONSIVE OVERRIDES (PORTRAIT MODE)
+   ═══════════════════════════════════════════ */
+.vertical .brand-overlay {
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: var(--gap-lg) !important;
+  gap: var(--gap-md) !important;
+  text-align: left;
+}
+
+.vertical .brand-icon {
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 28px !important;
+}
+
+.vertical .brand-name-display {
+  font-size: 40px !important;
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.2) !important;
+}
+
+.vertical .module-scoreboard-display {
+  padding: var(--gap-xl) !important;
+}
+
+.vertical .sb-main {
+  gap: var(--gap-lg) !important;
+}
+
+.vertical .sb-score {
+  font-size: 96px !important;
+}
+
+.vertical .sb-divider {
+  font-size: 48px !important;
+}
+
+.vertical .sb-team-code {
+  font-size: 42px !important;
+}
+
+.vertical .sb-team-label {
+  font-size: 18px !important;
+  display: block !important;
+}
+
+.vertical .sb-team-flag {
+  font-size: 20px !important;
+  padding: 4px 12px !important;
+}
+
+.vertical .sb-status {
+  margin-top: var(--gap-md) !important;
+  font-size: 16px !important;
+  padding: 4px 16px !important;
+}
+
+.vertical .module-upcoming-display {
+  padding: var(--gap-xl) !important;
+}
+
+.vertical .upcoming-label-display {
+  font-size: 22px !important;
+}
+
+.vertical .upcoming-time-display {
+  font-size: 56px !important;
+}
+
+.vertical .upcoming-vs-card {
+  padding: var(--gap-lg) var(--gap-xl) !important;
+  gap: var(--gap-md) !important;
+}
+
+.vertical .upcoming-team {
+  font-size: 40px !important;
+}
+
+.vertical .upcoming-vs-badge {
+  font-size: 16px !important;
+  padding: 2px 8px !important;
+}
+
+.vertical .module-news-display {
+  padding: var(--gap-xl) !important;
+}
+
+.vertical .news-title-display {
+  font-size: 36px !important;
+  margin-bottom: var(--gap-md) !important;
+}
+
+.vertical .news-content-display {
+  font-size: 22px !important;
+  line-height: 1.5 !important;
+}
+
+.vertical .module-results-display {
+  padding: var(--gap-xl) !important;
+}
+
+.vertical .results-title-display {
+  font-size: 28px !important;
+  margin-bottom: var(--gap-md) !important;
+  padding-bottom: var(--gap-xs) !important;
+}
+
+.vertical .result-team-display {
+  font-size: 28px !important;
+}
+
+.vertical .result-score-display {
+  font-size: 32px !important;
+  min-width: 60px !important;
+}
+
+.vertical .ticker-live-badge {
+  font-size: 26px !important;
+  padding: 0 var(--gap-xl) !important;
+}
+
+.vertical .ticker-live-dot {
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.vertical .ticker-text {
+  font-size: 28px !important;
+  padding: 0 var(--gap-xl) !important;
+}
+

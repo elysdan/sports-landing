@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCMS } from '../context/CMSContext';
-import { Link } from 'react-router-dom';
 
 /* ─── Render a single module based on its type ─── */
 export function RenderModule({ module }) {
@@ -189,101 +188,156 @@ function TickerModule({ content }) {
 /* ═══════════════════════════════════════════
    DISPLAY VIEW — BILLBOARD 1920×1080
    ═══════════════════════════════════════════ */
+/* ─── DYNAMIC VERTICAL LAYOUT PACKER ─── */
+export function getVerticalLayout(modules) {
+  const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label.toLowerCase().includes('logo')));
+  const ticker = modules.find(m => m.type === 'ticker');
+  
+  // Clone and filter rest of the modules
+  const rest = modules.filter(m => m !== brand && m !== ticker).map(m => ({ ...m }));
+  
+  const verticalModules = [];
+  let currentRow = 1;
+
+  // 1. Brand/Logo at the top
+  if (brand) {
+    verticalModules.push({
+      ...brand,
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 1 }
+    });
+    currentRow++;
+  }
+
+  // 2. Scoreboard
+  const scoreboard = rest.find(m => m.type === 'scoreboard');
+  if (scoreboard) {
+    verticalModules.push({
+      ...scoreboard,
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 1 }
+    });
+    rest.splice(rest.indexOf(scoreboard), 1);
+    currentRow++;
+  }
+
+  // 3. Hero Media (Stadium / Main Image)
+  const hero = rest.find(m => m.id === 'default_hero' || (m.type === 'media' && !m.label.toLowerCase().includes('logo') && m.id !== 'default_featured'));
+  if (hero) {
+    verticalModules.push({
+      ...hero,
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 2 } // Hero is taller, spanning 2 rows
+    });
+    rest.splice(rest.indexOf(hero), 1);
+    currentRow += 2;
+  }
+
+  // 4. Pack all other modules one by one (stacked vertically)
+  while (rest.length > 0) {
+    const next = rest.shift();
+    // For media or featured modules, we make them span 2 rows to look good
+    const isMedia = next.type === 'media' || next.id === 'default_featured';
+    const rowSpan = isMedia ? 2 : 1;
+
+    verticalModules.push({
+      ...next,
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan }
+    });
+    currentRow += rowSpan;
+  }
+
+  // 5. Ticker at the bottom
+  if (ticker) {
+    verticalModules.push({
+      ...ticker,
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 1 }
+    });
+  }
+
+  return {
+    modules: verticalModules,
+    grid: { cols: 1, rows: ticker ? currentRow : (currentRow - 1) }
+  };
+}
+
 export default function DisplayView() {
-  const { data } = useCMS();
-  const containerRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const [screenConfig, setScreenConfig] = useState({ width: 1920, height: 1080, label: 'horizontal' });
+  const { liveData } = useCMS();
+  const [isVertical, setIsVertical] = useState(window.innerWidth < window.innerHeight);
 
   useEffect(() => {
-    // Obtener tipo de pantalla de la URL una sola vez al montar
-    const params = new URLSearchParams(window.location.search);
-    const screenParam = params.get('screen');
-
     function handleResize() {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      
-      let config = { width: 1920, height: 1080, label: 'horizontal' };
-
-      if (screenParam === '12x6' || screenParam === '2:1') {
-        config = { width: 1536, height: 768, label: 'screen-12x6' };
-      } else if (screenParam === '9x9' || screenParam === '1:1') {
-        config = { width: 1152, height: 1152, label: 'screen-9x9' };
-      } else if (screenParam === 'vertical') {
-        config = { width: 1080, height: 1920, label: 'vertical' };
-      } else if (screenParam === 'horizontal') {
-        config = { width: 1920, height: 1080, label: 'horizontal' };
-      } else {
-        // Autodetección si no hay parámetro
-        const ratio = vw / vh;
-        if (ratio >= 1.8 && ratio <= 2.2) {
-          config = { width: 1536, height: 768, label: 'screen-12x6' };
-        } else if (ratio >= 0.9 && ratio <= 1.1) {
-          config = { width: 1152, height: 1152, label: 'screen-9x9' };
-        } else if (vw < vh) {
-          config = { width: 1080, height: 1920, label: 'vertical' };
-        } else {
-          config = { width: 1920, height: 1080, label: 'horizontal' };
-        }
-      }
-
-      setScreenConfig(config);
-      setScale(Math.min(vw / config.width, vh / config.height));
+      setIsVertical(window.innerWidth < window.innerHeight);
     }
-    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const { modules, grid } = data;
+  const { modules, grid } = liveData;
   const visibleModules = modules.filter(m => m.visible !== false);
+  const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid };
 
   return (
-    <>
+    <div
+      className={`viewport-container ${isVertical ? 'vertical' : 'horizontal'}`}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        overflow: 'hidden',
+        background: 'var(--color-bg-primary)'
+      }}
+    >
       <div
-        ref={containerRef}
-        className={`viewport-container ${screenConfig.label}`}
+        className={`billboard-grid ${isVertical ? 'vertical' : 'horizontal'}`}
         style={{
-          width: `${screenConfig.width}px`,
-          height: `${screenConfig.height}px`,
-          transform: `translate(-50%, -50%) scale(${scale})`
+          width: '100%',
+          height: '100%',
+          gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
+          gridTemplateRows: isVertical
+            ? Array.from({ length: layout.grid.rows }).map((_, i) => {
+                const rowNum = i + 1;
+                const mod = layout.modules.find(m => 
+                  m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
+                );
+                if (!mod) return '1fr';
+                if (mod.type === 'ticker') return '80px';
+                const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
+                if (isBrand) return '80px';
+                
+                let baseWeight = 1.5;
+                if (mod.type === 'media') baseWeight = 2.5;
+                else if (mod.type === 'scoreboard') baseWeight = 1.8;
+                else if (mod.type === 'upcoming') baseWeight = 1.5;
+                else if (mod.type === 'results') baseWeight = 1.8;
+                else if (mod.type === 'news') baseWeight = 1.8;
+                
+                return `${baseWeight / mod.gridPosition.rowSpan}fr`;
+              }).join(' ')
+            : Array.from({ length: layout.grid.rows }).map((_, i) => 
+                layout.modules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
+              ).join(' '),
+          display: 'grid',
+          gap: '2px',
+          background: 'var(--color-border)'
         }}
       >
-        <div
-          className={`billboard-grid ${screenConfig.label}`}
-          style={{
-            width: `${screenConfig.width}px`,
-            height: `${screenConfig.height}px`,
-            gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-            gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
-              visibleModules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
-            ).join(' '),
-          }}
-        >
-          {visibleModules.map((mod) => {
-            const indexInMaster = data.modules.findIndex((m) => m.id === mod.id);
-            return (
-              <div
-                key={mod.id}
-                className="module-cell"
-                style={{
-                  gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
-                  gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-                  zIndex: data.modules.length - indexInMaster,
-                }}
-              >
-                <RenderModule module={mod} />
-              </div>
-            );
-          })}
-        </div>
+        {layout.modules.map((mod) => {
+          const indexInMaster = modules.findIndex((m) => m.id === mod.id);
+          return (
+            <div
+              key={mod.id}
+              className="module-cell"
+              style={{
+                gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
+                gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                zIndex: modules.length - indexInMaster
+              }}
+            >
+              <RenderModule module={mod} />
+            </div>
+          );
+        })}
       </div>
-
-      <Link to="/admin" className="floating-admin-btn" title="Panel de Administración">
-        <span>⚙️</span>
-        <span className="floating-admin-text">Administrador</span>
-      </Link>
-    </>
+    </div>
   );
 }
