@@ -193,17 +193,43 @@ export default function DisplayView() {
   const { data } = useCMS();
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
-  const [isVertical, setIsVertical] = useState(false);
+  const [screenConfig, setScreenConfig] = useState({ width: 1920, height: 1080, label: 'horizontal' });
 
   useEffect(() => {
+    // Obtener tipo de pantalla de la URL una sola vez al montar
+    const params = new URLSearchParams(window.location.search);
+    const screenParam = params.get('screen');
+
     function handleResize() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const vertical = vw < vh;
-      setIsVertical(vertical);
-      const canvasWidth = vertical ? 1080 : 1920;
-      const canvasHeight = vertical ? 1920 : 1080;
-      setScale(Math.min(vw / canvasWidth, vh / canvasHeight));
+      
+      let config = { width: 1920, height: 1080, label: 'horizontal' };
+
+      if (screenParam === '12x6' || screenParam === '2:1') {
+        config = { width: 1536, height: 768, label: 'screen-12x6' };
+      } else if (screenParam === '9x9' || screenParam === '1:1') {
+        config = { width: 1152, height: 1152, label: 'screen-9x9' };
+      } else if (screenParam === 'vertical') {
+        config = { width: 1080, height: 1920, label: 'vertical' };
+      } else if (screenParam === 'horizontal') {
+        config = { width: 1920, height: 1080, label: 'horizontal' };
+      } else {
+        // Autodetección si no hay parámetro
+        const ratio = vw / vh;
+        if (ratio >= 1.8 && ratio <= 2.2) {
+          config = { width: 1536, height: 768, label: 'screen-12x6' };
+        } else if (ratio >= 0.9 && ratio <= 1.1) {
+          config = { width: 1152, height: 1152, label: 'screen-9x9' };
+        } else if (vw < vh) {
+          config = { width: 1080, height: 1920, label: 'vertical' };
+        } else {
+          config = { width: 1920, height: 1080, label: 'horizontal' };
+        }
+      }
+
+      setScreenConfig(config);
+      setScale(Math.min(vw / config.width, vh / config.height));
     }
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -217,12 +243,18 @@ export default function DisplayView() {
     <>
       <div
         ref={containerRef}
-        className={`viewport-container ${isVertical ? 'vertical' : ''}`}
-        style={{ transform: `translate(-50%, -50%) scale(${scale})` }}
+        className={`viewport-container ${screenConfig.label}`}
+        style={{
+          width: `${screenConfig.width}px`,
+          height: `${screenConfig.height}px`,
+          transform: `translate(-50%, -50%) scale(${scale})`
+        }}
       >
         <div
-          className={`billboard-grid ${isVertical ? 'vertical' : ''}`}
+          className={`billboard-grid ${screenConfig.label}`}
           style={{
+            width: `${screenConfig.width}px`,
+            height: `${screenConfig.height}px`,
             gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
             gridTemplateRows: Array.from({ length: grid.rows }).map((_, i) => 
               visibleModules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'

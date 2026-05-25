@@ -1,12 +1,13 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useCMS, MODULE_TYPES } from '../context/CMSContext';
 import { RenderModule } from './DisplayView';
+import MediaLibraryModal from '../components/MediaLibraryModal';
 
 /* ═══════════════════════════════════════════
    MODULE EDITOR — Dynamic form per module type
    ═══════════════════════════════════════════ */
-function ModuleEditor({ module, updateModule, updateModuleContent, removeModule }) {
+function ModuleEditor({ module, updateModule, updateModuleContent, removeModule, onOpenLibrary }) {
   const handleContentChange = (field, value) => {
     updateModuleContent(module.id, { [field]: value });
   };
@@ -54,6 +55,10 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule 
         });
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSelectFromLibrary = (url, type) => {
+    updateModuleContent(module.id, { src: url, mediaType: type });
   };
 
   return (
@@ -123,7 +128,12 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule 
       <div className="editor-section">
         <div className="editor-section-title">Contenido</div>
         {module.type === 'media' && (
-          <MediaEditor content={module.content} onChange={handleContentChange} onUpload={handleImageUpload} />
+          <MediaEditor
+            content={module.content}
+            onChange={handleContentChange}
+            onUpload={handleImageUpload}
+            onOpenLibrary={() => onOpenLibrary(handleSelectFromLibrary)}
+          />
         )}
         {module.type === 'scoreboard' && (
           <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} />
@@ -158,7 +168,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule 
 }
 
 /* ─── Media Editor ─── */
-function MediaEditor({ content, onChange, onUpload }) {
+function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
   return (
     <>
       <div className="media-upload-zone">
@@ -167,6 +177,15 @@ function MediaEditor({ content, onChange, onUpload }) {
         <div className="media-upload-formats">Soporta: JPG, PNG, GIF, MP4, WebM</div>
         <input type="file" accept="image/*,video/mp4,video/webm,.gif" onChange={onUpload} />
       </div>
+
+      <button
+        type="button"
+        className="admin-btn admin-btn-secondary"
+        style={{ width: '100%', marginTop: '8px', justifyContent: 'center', gap: '8px' }}
+        onClick={onOpenLibrary}
+      >
+        🖼️ Seleccionar de Biblioteca
+      </button>
 
       {content.src && (
         <div className="media-preview">
@@ -434,12 +453,27 @@ function TickerEditor({ content, updateModuleContent, moduleId }) {
    LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
 /* ─── LIVE PREVIEW — Miniature scaled preview ─── */
-function LivePreview({ modules, grid, isVertical }) {
+function LivePreview({ modules, grid, screenType }) {
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
 
-  const canvasWidth = isVertical ? 1080 : 1920;
-  const canvasHeight = isVertical ? 1920 : 1080;
+  let canvasWidth = 1920;
+  let canvasHeight = 1080;
+  let labelClass = 'horizontal';
+
+  if (screenType === 'vertical') {
+    canvasWidth = 1080;
+    canvasHeight = 1920;
+    labelClass = 'vertical';
+  } else if (screenType === '12x6') {
+    canvasWidth = 1536;
+    canvasHeight = 768;
+    labelClass = 'screen-12x6';
+  } else if (screenType === '9x9') {
+    canvasWidth = 1152;
+    canvasHeight = 1152;
+    labelClass = 'screen-9x9';
+  }
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -473,7 +507,7 @@ function LivePreview({ modules, grid, isVertical }) {
       }}
     >
       <div
-        className={`billboard-grid ${isVertical ? 'vertical' : ''}`}
+        className={`billboard-grid ${labelClass}`}
         style={{
           width: `${canvasWidth}px`,
           height: `${canvasHeight}px`,
@@ -517,24 +551,28 @@ function LivePreview({ modules, grid, isVertical }) {
 function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule }) {
   const [dragState, setDragState] = useState(null);
   const gridRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('blueprint');
+  const [activeTab, setActiveTab] = useState('blueprint'); // 'blueprint' or 'live'
+  const [previewType, setPreviewType] = useState('horizontal'); // 'horizontal', 'vertical', '12x6', '9x9'
 
-  // Generar celdas de cuadrícula de fondo estilo blueprint
-  const bgCells = [];
-  for (let r = 1; r <= grid.rows; r++) {
-    for (let c = 1; c <= grid.cols; c++) {
-      bgCells.push(
-        <div
-          key={`bg-${r}-${c}`}
-          className="layout-preview-bg-cell"
-          style={{
-            gridColumn: c,
-            gridRow: r,
-          }}
-        />
-      );
+  // Generar celdas de cuadrícula de fondo estilo blueprint (optimizado con useMemo)
+  const bgCells = useMemo(() => {
+    const cells = [];
+    for (let r = 1; r <= grid.rows; r++) {
+      for (let c = 1; c <= grid.cols; c++) {
+        cells.push(
+          <div
+            key={`bg-${r}-${c}`}
+            className="layout-preview-bg-cell"
+            style={{
+              gridColumn: c,
+              gridRow: r,
+            }}
+          />
+        );
+      }
     }
-  }
+    return cells;
+  }, [grid.rows, grid.cols]);
 
   // Iniciar Arrastre para Mover (Mouse)
   const handleMoveMouseDown = (e, mod) => {
@@ -706,18 +744,36 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     <div className="layout-preview-container">
       <div className="layout-preview-header">
         <div className="layout-preview-label" style={{ marginBottom: 0 }}>
-          Vista previa del layout (Arrastra para mover o cambiar tamaño)
+          Diseño y Vista Previa (Arrastra o redimensiona)
         </div>
         
+        {/* Selector de Pantalla en Vivo para la previsualización */}
+        <div className="layout-preview-screen-select" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto', marginRight: '16px' }}>
+          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Proporción:</span>
+          <select
+            value={previewType}
+            onChange={(e) => setPreviewType(e.target.value)}
+            style={{
+              padding: '4px 10px',
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-white)',
+              fontSize: '11px',
+              cursor: 'pointer',
+              outline: 'none',
+              fontFamily: 'var(--font-body)'
+            }}
+          >
+            <option value="horizontal">🖥️ Horizontal (16:9)</option>
+            <option value="vertical">📱 Vertical (9:16)</option>
+            <option value="12x6">📐 Pantalla 12x6 Mts (2:1)</option>
+            <option value="9x9">⬛ Pantalla 9x9 Mts (1:1)</option>
+          </select>
+        </div>
+
         {/* Tab Selector for mobile */}
         <div className="layout-preview-tabs">
-          <button 
-            type="button"
-            className={`layout-preview-tab-btn ${activeTab === 'horizontal' ? 'active' : ''}`}
-            onClick={() => setActiveTab('horizontal')}
-          >
-            🖥️ Horizontal
-          </button>
           <button 
             type="button"
             className={`layout-preview-tab-btn ${activeTab === 'blueprint' ? 'active' : ''}`}
@@ -727,28 +783,43 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
           </button>
           <button 
             type="button"
-            className={`layout-preview-tab-btn ${activeTab === 'vertical' ? 'active' : ''}`}
-            onClick={() => setActiveTab('vertical')}
+            className={`layout-preview-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
+            onClick={() => setActiveTab('live')}
           >
-            📱 Vertical
+            👁️ En Vivo
           </button>
         </div>
       </div>
       <div className="layout-preview-panels">
-        {/* Panel Izquierdo: Vista Horizontal */}
-        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'horizontal' ? 'mobile-active' : 'mobile-hidden'}`}>
-          <div className="panel-header">
-            <span className="panel-icon">🖥️</span> Vista Horizontal
+        {/* Panel Izquierdo: Vista en Vivo con dropdown */}
+        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
+          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>
+              <span className="panel-icon">👁️</span> Vista en Vivo: {
+                previewType === 'horizontal' ? 'Horizontal (16:9)' :
+                previewType === 'vertical' ? 'Vertical (9:16)' :
+                previewType === '12x6' ? 'Pantalla 12.00 x 6.00 Mts (2:1)' :
+                'Pantalla 9.00 x 9.00 Mts (1:1)'
+              }
+            </span>
+            <span style={{ fontSize: '9px', color: 'var(--color-gold)', letterSpacing: '0.5px' }}>
+              {
+                previewType === 'horizontal' ? '1920x1080' :
+                previewType === 'vertical' ? '1080x1920' :
+                previewType === '12x6' ? '768x384 (Exposición 72m²)' :
+                '576x576 (Exposición 81m²)'
+              }
+            </span>
           </div>
           <div className="panel-content">
-            <LivePreview modules={modules} grid={grid} isVertical={false} />
+            <LivePreview modules={modules} grid={grid} screenType={previewType} />
           </div>
         </div>
 
-        {/* Panel Central: Recuadros */}
+        {/* Panel Derecho: Recuadros Editor */}
         <div className={`layout-preview-panel center-blueprint ${activeTab === 'blueprint' ? 'mobile-active' : 'mobile-hidden'}`}>
           <div className="panel-header">
-            <span className="panel-icon">📐</span> Recuadros
+            <span className="panel-icon">📐</span> Editor de Recuadros (Grid {grid.cols}x{grid.rows})
           </div>
           <div className="panel-content">
             <div
@@ -757,6 +828,10 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
               style={{
                 gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
                 gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
+                aspectRatio: 
+                  previewType === 'horizontal' ? '16/9' :
+                  previewType === 'vertical' ? '9/16' :
+                  previewType === '12x6' ? '2/1' : '1/1'
               }}
             >
               {/* Cuadrícula de diseño blueprint de fondo */}
@@ -865,16 +940,6 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
             </div>
           </div>
         </div>
-
-        {/* Panel Derecho: Vista Vertical */}
-        <div className={`layout-preview-panel vertical-preview ${activeTab === 'vertical' ? 'mobile-active' : 'mobile-hidden'}`}>
-          <div className="panel-header">
-            <span className="panel-icon">📱</span> Vista Vertical
-          </div>
-          <div className="panel-content">
-            <LivePreview modules={modules} grid={grid} isVertical={true} />
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -887,6 +952,10 @@ export default function AdminPanel() {
   const { data, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll } = useCMS();
   const [selectedId, setSelectedId] = useState(data.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  
+  // Estados para la Biblioteca de Medios
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [mediaSelectCallback, setMediaSelectCallback] = useState(null);
 
   const selectedModule = data.modules.find((m) => m.id === selectedId);
 
@@ -902,6 +971,11 @@ export default function AdminPanel() {
     setSelectedId(data.modules.find((m) => m.id !== id)?.id || null);
   }, [removeModule, data.modules]);
 
+  const openMediaLibraryForSelection = useCallback((callback) => {
+    setMediaSelectCallback(() => callback);
+    setMediaModalOpen(true);
+  }, []);
+
   return (
     <div className="admin-layout">
       {/* ─── Header ─── */}
@@ -913,12 +987,33 @@ export default function AdminPanel() {
           </div>
         </div>
         <div className="admin-header-actions">
+          <button
+            className="admin-btn admin-btn-secondary admin-btn-sm"
+            onClick={() => {
+              setMediaSelectCallback(null);
+              setMediaModalOpen(true);
+            }}
+          >
+            🖼️ Biblioteca
+          </button>
+          
+          <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
+
+          <Link to="/" className="admin-btn admin-btn-primary admin-btn-sm" target="_blank">
+            👁️ Ver Valla (16:9)
+          </Link>
+          <Link to="/?screen=12x6" className="admin-btn admin-btn-secondary admin-btn-sm" target="_blank">
+            🖥️ Valla 12x6 (2:1)
+          </Link>
+          <Link to="/?screen=9x9" className="admin-btn admin-btn-secondary admin-btn-sm" target="_blank">
+            ⬛ Valla 9x9 (1:1)
+          </Link>
+
+          <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
+
           <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => { if (window.confirm('¿Restablecer todo a valores por defecto?')) resetAll(); }}>
             Restablecer
           </button>
-          <Link to="/" className="admin-btn admin-btn-primary admin-btn-sm" target="_blank">
-            👁️ Ver Valla
-          </Link>
         </div>
       </div>
 
@@ -1038,6 +1133,7 @@ export default function AdminPanel() {
               updateModule={updateModule}
               updateModuleContent={updateModuleContent}
               removeModule={handleRemove}
+              onOpenLibrary={openMediaLibraryForSelection}
             />
           </>
         ) : (
@@ -1048,6 +1144,12 @@ export default function AdminPanel() {
           </div>
         )}
       </div>
+
+      <MediaLibraryModal
+        isOpen={mediaModalOpen}
+        onClose={() => setMediaModalOpen(false)}
+        onSelect={mediaSelectCallback}
+      />
     </div>
   );
 }

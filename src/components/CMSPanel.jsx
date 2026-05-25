@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useCMS } from '../context/CMSContext';
+import MediaLibraryModal from './MediaLibraryModal';
 
 const TABS = [
   { key: 'brand', label: 'Marca' },
@@ -15,6 +16,10 @@ const TABS = [
 export default function CMSPanel() {
   const { data, updateSection, resetAll, cmsOpen, setCmsOpen } = useCMS();
   const [activeTab, setActiveTab] = useState('brand');
+  
+  // Estados para la Biblioteca de Medios
+  const [mediaModalOpen, setMediaModalOpen] = useState(false);
+  const [mediaSelectCallback, setMediaSelectCallback] = useState(null);
 
   const handleImageUpload = useCallback(
     (section, field) => (e) => {
@@ -295,6 +300,24 @@ export default function CMSPanel() {
             onChange={handleImageUpload('heroMedia', 'src')}
           />
         </div>
+        
+        <button
+          type="button"
+          className="cms-ticker-add"
+          style={{ width: '100%', marginTop: '8px', marginBottom: '8px', padding: '10px' }}
+          onClick={() => {
+            setMediaSelectCallback(() => (url, type) => {
+              updateSection('heroMedia', (prev) => ({
+                ...prev,
+                src: url,
+                type: type,
+              }));
+            });
+            setMediaModalOpen(true);
+          }}
+        >
+          🖼️ Seleccionar de Biblioteca
+        </button>
         {data.heroMedia.src && (
           <>
             {data.heroMedia.type === 'video' ? (
@@ -732,6 +755,12 @@ export default function CMSPanel() {
           </button>
         </div>
       </div>
+
+      <MediaLibraryModal
+        isOpen={mediaModalOpen}
+        onClose={() => setMediaModalOpen(false)}
+        onSelect={mediaSelectCallback}
+      />
     </>
   );
 }
