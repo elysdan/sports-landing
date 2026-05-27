@@ -151,16 +151,17 @@ const defaultUsers = [
 ];
 
 function migrateData(parsed) {
-  if (parsed && Array.isArray(parsed.modules)) {
-    parsed.modules = parsed.modules.map((mod) => {
-      if (mod.type === 'media' && mod.content) {
-        if (!mod.content.objectFit) {
-          mod.content.objectFit = 'contain';
-        }
-      }
-      return mod;
-    });
+  if (!parsed || !Array.isArray(parsed.modules)) {
+    return defaultData;
   }
+  parsed.modules = parsed.modules.map((mod) => {
+    if (mod.type === 'media' && mod.content) {
+      if (!mod.content.objectFit) {
+        mod.content.objectFit = 'contain';
+      }
+    }
+    return mod;
+  });
   return parsed;
 }
 
