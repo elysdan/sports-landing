@@ -19,12 +19,21 @@
   },
   {
     "id": "user_1779741857467",
-    "username": "Luis1",
+    "username": "luis1",
     "password": "juni2026*",
-    "name": "Luis",
+    "name": "luis",
     "allowedTypes": [
       "*",
       "approve"
+    ]
+  },
+  {
+    "id": "user_1779900851735",
+    "username": "elys",
+    "password": "juni2026*",
+    "name": "elys",
+    "allowedTypes": [
+      "*"
     ]
   }
 ]
