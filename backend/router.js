@@ -1,4 +1,4 @@
-import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory } from './controllers/cmsController.js';
+import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory, handleGetCmsDraft, handlePostCmsDraft } from './controllers/cmsController.js';
 import { handleLogin, handleGetUsers, handlePostUsers, handleDeleteUser } from './controllers/authController.js';
 import { handleGetTemplates, handlePostTemplates, handleDeleteTemplate } from './controllers/templateController.js';
 import { handlePostUpload, handleGetMedia, handleDeleteMedia } from './controllers/mediaController.js';
@@ -11,6 +11,14 @@ export async function dispatchApiRoute(req, res) {
   // CMS Endpoints
   if (method === 'GET' && pathname === '/api/cms') {
     await handleGetCms(req, res);
+    return true;
+  }
+  if (method === 'GET' && pathname === '/api/cms/draft') {
+    await handleGetCmsDraft(req, res);
+    return true;
+  }
+  if (method === 'POST' && pathname === '/api/cms/draft') {
+    await handlePostCmsDraft(req, res);
     return true;
   }
   if (method === 'GET' && pathname === '/api/cms/version') {

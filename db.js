@@ -247,16 +247,18 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
   data.modifiedBy = modifiedBy;
   data.approvedBy = approvedBy;
 
-  // Always write fallback JSON as secondary backup
-  saveFallback({ ...data, version });
-  saveHistoryFallback({ 
-    username: approvedBy, 
-    approved_by: approvedBy, 
-    modified_by: modifiedBy, 
-    config_data: data, 
-    version, 
-    created_at: new Date().toISOString() 
-  });
+  if (keyName === 'live') {
+    // Always write fallback JSON as secondary backup
+    saveFallback({ ...data, version });
+    saveHistoryFallback({ 
+      username: approvedBy, 
+      approved_by: approvedBy, 
+      modified_by: modifiedBy, 
+      config_data: data, 
+      version, 
+      created_at: new Date().toISOString() 
+    });
+  }
   
   if (useFallback) {
     return true;
@@ -271,27 +273,29 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
     `, [keyName, jsonStr, version]);
     console.log(`[DB] Configuración '${keyName}' guardada en PostgreSQL. Versión: ${version}`);
 
-    // Save in history table with all metadata
-    await pool.query(`
-      INSERT INTO billboard_history (username, approved_by, modified_by, config_data, version)
-      VALUES ($1, $2, $3, $4, $5)
-    `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
-    console.log(`[DB] Historial registrado. Aprobado por: ${approvedBy}, Modificado por: ${modifiedBy}`);
+    if (keyName === 'live') {
+      // Save in history table with all metadata
+      await pool.query(`
+        INSERT INTO billboard_history (username, approved_by, modified_by, config_data, version)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
+      console.log(`[DB] Historial registrado. Aprobado por: ${approvedBy}, Modificado por: ${modifiedBy}`);
 
-    // Limitar el historial en PostgreSQL a los últimos 10 cambios
-    await pool.query(`
-      DELETE FROM billboard_history
-      WHERE id NOT IN (
-        SELECT id FROM billboard_history
-        ORDER BY id DESC
-        LIMIT 10
-      )
-    `);
-    console.log('[DB] Historial en PostgreSQL limitado a los últimos 10 cambios.');
+      // Limitar el historial en PostgreSQL a los últimos 10 cambios
+      await pool.query(`
+        DELETE FROM billboard_history
+        WHERE id NOT IN (
+          SELECT id FROM billboard_history
+          ORDER BY id DESC
+          LIMIT 10
+        )
+      `);
+      console.log('[DB] Historial en PostgreSQL limitado a los últimos 10 cambios.');
+    }
 
     return true;
   } catch (err) {
-    console.error('[DB] Error al guardar en PostgreSQL, guardado únicamente en JSON local:', err.message);
+    console.error(`[DB] Error al guardar '${keyName}' en PostgreSQL:`, err.message);
     return false;
   }
 }

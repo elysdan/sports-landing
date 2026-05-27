@@ -44,3 +44,27 @@ export async function handleGetCmsHistory(req, res, parsedUrl) {
     sendJson(res, 500, { error: err.message });
   }
 }
+
+export async function handleGetCmsDraft(req, res) {
+  try {
+    let config = await getConfig('draft');
+    if (!config || !config.modules) {
+      // Fallback to live config if draft is empty
+      config = await getConfig('live');
+    }
+    sendJson(res, 200, config || {});
+  } catch (err) {
+    sendJson(res, 500, { error: err.message });
+  }
+}
+
+export async function handlePostCmsDraft(req, res) {
+  try {
+    const { config, modifiedBy } = await readJsonBody(req);
+    const version = Date.now();
+    await saveConfig('draft', config, version, 'Sistema', modifiedBy || 'Desconocido');
+    sendJson(res, 200, { success: true, version });
+  } catch (err) {
+    sendJson(res, 500, { error: err.message });
+  }
+}

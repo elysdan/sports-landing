@@ -183,25 +183,42 @@ export function CMSProvider({ children }) {
   const [draftData, setDraftData] = useState(() => loadFromStorage(CMS_DRAFT_KEY));
   const [liveData, setLiveData] = useState(() => loadFromStorage(CMS_LIVE_KEY));
   const [currentVersion, setCurrentVersion] = useState(0);
+  const [hasLoadedFromServer, setHasLoadedFromServer] = useState(false);
 
   // Fetch initial layout data from database on mount
   useEffect(() => {
     async function loadServerData() {
       try {
-        const res = await fetch('/api/cms');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.modules) {
-            const migrated = migrateData(data);
-            setLiveData(migrated);
-            setDraftData(migrated);
-            if (migrated.version) {
-              setCurrentVersion(migrated.version);
-            }
+        const resLive = await fetch('/api/cms');
+        let serverLive = null;
+        if (resLive.ok) {
+          serverLive = await resLive.json();
+        }
+
+        const resDraft = await fetch('/api/cms/draft');
+        let serverDraft = null;
+        if (resDraft.ok) {
+          serverDraft = await resDraft.json();
+        }
+
+        if (serverLive && serverLive.modules) {
+          const migratedLive = migrateData(serverLive);
+          setLiveData(migratedLive);
+
+          if (serverDraft && serverDraft.modules) {
+            setDraftData(migrateData(serverDraft));
+          } else {
+            setDraftData(migratedLive);
+          }
+
+          if (migratedLive.version) {
+            setCurrentVersion(migratedLive.version);
           }
         }
+        setHasLoadedFromServer(true);
       } catch (e) {
         console.warn("[CMS] Fallback to localStorage: no se pudo cargar desde el servidor.", e);
+        setHasLoadedFromServer(true);
       }
     }
     loadServerData();
@@ -222,7 +239,6 @@ export function CMSProvider({ children }) {
                 const migrated = migrateData(data);
                 setLiveData(migrated);
                 setCurrentVersion(version);
-                setDraftData(migrated);
                 console.log(`[CMS] Vista actualizada a la versión: ${version}`);
               }
             }
@@ -234,6 +250,29 @@ export function CMSProvider({ children }) {
     }, 3000);
     return () => clearInterval(interval);
   }, [currentVersion]);
+
+  // Debounced auto-save of draftData to PostgreSQL server
+  useEffect(() => {
+    if (!hasLoadedFromServer || !currentUser) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        await fetch('/api/cms/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            config: draftData,
+            modifiedBy: currentUser.username
+          })
+        });
+      } catch (e) {
+        console.error("[CMS] Error auto-saving draft to database:", e);
+      }
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(timer);
+  }, [draftData, hasLoadedFromServer, currentUser]);
+
   const CMS_SESSION_KEY = 'sports-billboard-cms-session';
 
   const [currentUser, setCurrentUser] = useState(() => {
