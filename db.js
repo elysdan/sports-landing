@@ -7,6 +7,7 @@ dotenv.config();
 
 let pool = null;
 let useFallback = false;
+let dbErrorMsg = '';
 const fallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-data.json');
 const usersFallbackFilePath = path.resolve(process.cwd(), 'public/update/users-data.json');
 const historyFallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-history.json');
@@ -29,15 +30,17 @@ async function initDb() {
         connectionString: process.env.PG_CONNECTION_STRING,
         ...poolConfig
       });
-    } else {
+    } else if (process.env.PG_HOST) {
       pool = new Pool({
-        host: process.env.PG_HOST || 'localhost',
+        host: process.env.PG_HOST,
         port: parseInt(process.env.PG_PORT || '5432'),
         user: process.env.PG_USER || 'postgres',
         password: process.env.PG_PASSWORD || 'postgres',
         database: process.env.PG_DATABASE || 'sportlanding',
         ...poolConfig
       });
+    } else {
+      throw new Error('No se encontró configuración de base de datos. Por favor configure la variable de entorno PG_CONNECTION_STRING en el panel de Netlify.');
     }
 
     // Test connection
@@ -218,6 +221,7 @@ async function initDb() {
 
     useFallback = false;
   } catch (err) {
+    dbErrorMsg = err.message;
     console.warn(`[DB] No se pudo conectar a PostgreSQL: ${err.message}`);
     console.warn(`[DB] Usando modo de respaldo: Archivos JSON locales`);
     useFallback = true;
@@ -372,7 +376,7 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
   }
   
   if (useFallback) {
-    throw new Error('La base de datos PostgreSQL no está disponible y el almacenamiento de respaldo local no es persistente.');
+    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento de respaldo local no es persistente. Detalle: ${dbErrorMsg}`);
   }
   try {
     const jsonStr = JSON.stringify(data);
@@ -511,7 +515,7 @@ export async function createDbUser(username, password, name, allowedTypes) {
   saveUsersFallback(list);
 
   if (useFallback) {
-    return true;
+    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
   }
   try {
     const allowedTypesStr = JSON.stringify(allowedTypes);
@@ -533,7 +537,7 @@ export async function createDbUser(username, password, name, allowedTypes) {
     return true;
   } catch (err) {
     console.error('[DB] Error al guardar usuario en PostgreSQL:', err.message);
-    return false;
+    throw err;
   }
 }
 
@@ -550,7 +554,7 @@ export async function deleteDbUser(username) {
   saveUsersFallback(filtered);
 
   if (useFallback) {
-    return true;
+    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
   }
   try {
     await pool.query('DELETE FROM users WHERE LOWER(username) = LOWER($1)', [username]);
@@ -558,7 +562,7 @@ export async function deleteDbUser(username) {
     return true;
   } catch (err) {
     console.error('[DB] Error al eliminar usuario de PostgreSQL:', err.message);
-    return false;
+    throw err;
   }
 }
 
@@ -586,7 +590,7 @@ export async function getDbTemplates() {
 export async function createDbTemplate(name, configData) {
   await ensureDb();
   if (useFallback) {
-    return false;
+    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
   }
   try {
     const configDataStr = JSON.stringify(configData);
@@ -600,14 +604,14 @@ export async function createDbTemplate(name, configData) {
     return true;
   } catch (err) {
     console.error('[DB] Error al guardar plantilla en PostgreSQL:', err.message);
-    return false;
+    throw err;
   }
 }
 
 export async function deleteDbTemplate(id) {
   await ensureDb();
   if (useFallback) {
-    return false;
+    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
   }
   try {
     if (isNaN(id)) {
@@ -619,7 +623,7 @@ export async function deleteDbTemplate(id) {
     return true;
   } catch (err) {
     console.error('[DB] Error al eliminar plantilla de PostgreSQL:', err.message);
-    return false;
+    throw err;
   }
 }
 
