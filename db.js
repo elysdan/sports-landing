@@ -15,12 +15,19 @@ const historyFallbackFilePath = path.resolve(process.cwd(), 'public/update/billb
 async function initDb() {
   try {
     const { Pool } = pg;
+    const poolConfig = {
+      ssl: {
+        rejectUnauthorized: false
+      },
+      max: 2, // Optimize for serverless: limit connections per container
+      idleTimeoutMillis: 2000, // Close idle connections quickly
+      connectionTimeoutMillis: 5000 // Fast timeout if the database is unreachable
+    };
+
     if (process.env.PG_CONNECTION_STRING) {
       pool = new Pool({
         connectionString: process.env.PG_CONNECTION_STRING,
-        ssl: {
-          rejectUnauthorized: false
-        }
+        ...poolConfig
       });
     } else {
       pool = new Pool({
@@ -29,6 +36,7 @@ async function initDb() {
         user: process.env.PG_USER || 'postgres',
         password: process.env.PG_PASSWORD || 'postgres',
         database: process.env.PG_DATABASE || 'sportlanding',
+        ...poolConfig
       });
     }
 
@@ -364,7 +372,7 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
   }
   
   if (useFallback) {
-    return true;
+    throw new Error('La base de datos PostgreSQL no está disponible y el almacenamiento de respaldo local no es persistente.');
   }
   try {
     const jsonStr = JSON.stringify(data);
@@ -399,7 +407,7 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
     return true;
   } catch (err) {
     console.error(`[DB] Error al guardar '${keyName}' en PostgreSQL:`, err.message);
-    return false;
+    throw err;
   }
 }
 

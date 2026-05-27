@@ -562,7 +562,6 @@ export function CMSProvider({ children }) {
 
   const approveAndPublish = useCallback(async () => {
     const nextLive = { ...draftData };
-    setLiveData(nextLive);
     try {
       const res = await fetch('/api/cms', {
         method: 'POST',
@@ -575,12 +574,18 @@ export function CMSProvider({ children }) {
       });
       if (res.ok) {
         const resData = await res.json();
+        setLiveData(nextLive);
         if (resData.version) {
           setCurrentVersion(resData.version);
         }
+        alert('¡Configuración publicada exitosamente!');
+      } else {
+        const errData = await res.json();
+        alert('Error al publicar: ' + (errData.error || 'Error desconocido del servidor.'));
       }
     } catch (e) {
       console.error("[CMS] Error al guardar en base de datos:", e);
+      alert('Error de red al intentar guardar en base de datos: ' + e.message);
     }
   }, [draftData, currentUser]);
 
