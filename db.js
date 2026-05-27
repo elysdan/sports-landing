@@ -22,15 +22,22 @@ async function initDb() {
       },
       max: 2, // Optimize for serverless: limit connections per container
       idleTimeoutMillis: 2000, // Close idle connections quickly
-      connectionTimeoutMillis: 5000 // Fast timeout if the database is unreachable
+      connectionTimeoutMillis: 15000 // 15s timeout to allow cold-started Neon DBs to wake up
     };
 
     if (process.env.PG_CONNECTION_STRING) {
+      try {
+        const dbUrl = new URL(process.env.PG_CONNECTION_STRING);
+        console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING. Host: ${dbUrl.hostname}, DB: ${dbUrl.pathname}`);
+      } catch (e) {
+        console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING (formato no-URL o SSL string)`);
+      }
       pool = new Pool({
         connectionString: process.env.PG_CONNECTION_STRING,
         ...poolConfig
       });
     } else if (process.env.PG_HOST) {
+      console.log(`[DB] Inicializando Pool con variables individuales. Host: ${process.env.PG_HOST}, DB: ${process.env.PG_DATABASE}`);
       pool = new Pool({
         host: process.env.PG_HOST,
         port: parseInt(process.env.PG_PORT || '5432'),

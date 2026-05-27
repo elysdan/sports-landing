@@ -7,6 +7,12 @@
   node_bundler = "esbuild"
   external_node_modules = ["pg"]
 
+# Route all API calls explicitly to our serverless api function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
 # SPA routing: Redirect all requests to index.html so React Router handles them
 [[redirects]]
   from = "/*"
