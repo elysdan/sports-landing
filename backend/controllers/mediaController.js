@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { readJsonBody, sendJson } from '../utils.js';
+import { saveMediaAsset, getMediaAsset, listMediaAssets, deleteMediaAsset, useFallback } from '../../db.js';
 
 export async function handlePostUpload(req, res) {
   try {
@@ -14,19 +15,22 @@ export async function handlePostUpload(req, res) {
 
     const base64Data = base64.replace(/^data:[^;]+;base64,/, "");
     const buffer = Buffer.from(base64Data, 'base64');
-
-    const uploadDir = path.resolve(process.cwd(), 'public/update');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
     const timestamp = Date.now();
     const safeName = `${timestamp}_${filename.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
-    const filePath = path.join(uploadDir, safeName);
 
-    fs.writeFileSync(filePath, buffer);
-
-    sendJson(res, 200, { url: `/update/${safeName}` });
+    if (!useFallback) {
+      const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
+      await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
+      sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
+    } else {
+      const uploadDir = path.resolve(process.cwd(), 'public/update');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, safeName);
+      fs.writeFileSync(filePath, buffer);
+      sendJson(res, 200, { url: `/update/${safeName}` });
+    }
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
@@ -63,10 +67,28 @@ export async function handleGetMedia(req, res) {
       }
     };
 
-    // Scan dynamic uploads first, then development public folder and production dist folder
+    // Scan local directories
     scanDir(path.resolve(process.cwd(), 'public/update'), '/update/');
     scanDir(path.resolve(process.cwd(), 'public'), '/');
     scanDir(path.resolve(process.cwd(), 'dist'), '/');
+
+    // Merge database assets if database is active
+    if (!useFallback) {
+      const dbAssets = await listMediaAssets();
+      dbAssets.forEach(asset => {
+        const url = `/api/media/file?name=${asset.filename}`;
+        const ext = path.extname(asset.filename).toLowerCase();
+        const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
+        
+        mediaMap.set(url, {
+          url,
+          filename: asset.filename,
+          type: isVideo ? 'video' : 'image',
+          size: asset.sizeBytes,
+          mtime: new Date(asset.createdAt).getTime()
+        });
+      });
+    }
 
     const mediaFiles = Array.from(mediaMap.values());
     mediaFiles.sort((a, b) => b.mtime - a.mtime);
@@ -86,6 +108,19 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
       return;
     }
 
+    // Handle database assets
+    if (mediaUrl.startsWith('/api/media/file')) {
+      const filename = new URL(mediaUrl, 'http://localhost').searchParams.get('name');
+      if (!filename) {
+        sendJson(res, 400, { error: 'Falta el nombre del archivo' });
+        return;
+      }
+      await deleteMediaAsset(filename);
+      sendJson(res, 200, { success: true });
+      return;
+    }
+
+    // Handle filesystem assets
     if (!mediaUrl.startsWith('/update/')) {
       sendJson(res, 403, { error: 'Solo se pueden eliminar archivos subidos dinámicamente (/update/).' });
       return;
@@ -107,6 +142,33 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
     } else {
       sendJson(res, 404, { error: 'Archivo no encontrado en el servidor' });
     }
+  } catch (err) {
+    sendJson(res, 500, { error: err.message });
+  }
+}
+
+export async function handleGetMediaFile(req, res, parsedUrl) {
+  try {
+    const filename = parsedUrl.searchParams.get('name');
+    if (!filename) {
+      sendJson(res, 400, { error: 'Falta el nombre del archivo' });
+      return;
+    }
+
+    const asset = await getMediaAsset(filename);
+    if (!asset) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Archivo no encontrado en la base de datos' }));
+      return;
+    }
+
+    const buffer = Buffer.from(asset.fileData, 'base64');
+    res.writeHead(200, {
+      'Content-Type': asset.mimeType,
+      'Content-Length': buffer.length,
+      'Cache-Control': 'public, max-age=31536000, immutable'
+    });
+    res.end(buffer);
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }

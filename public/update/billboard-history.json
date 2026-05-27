@@ -2,6 +2,250 @@
   {
     "username": "admin",
     "approved_by": "admin",
+    "modified_by": "Elys1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "mod_1779912912012_8",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 10,
+            "rowSpan": 15
+          },
+          "content": {
+            "src": "/update/Loop1.mp4",
+            "mediaType": "video",
+            "alt": "Contenido multimedia",
+            "objectFit": "contain"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779913208555_12",
+          "type": "news",
+          "label": "Noticias",
+          "gridPosition": {
+            "col": 11,
+            "row": 8,
+            "colSpan": 5,
+            "rowSpan": 3
+          },
+          "content": {
+            "title": "APUESTA LA REMONTADA DE URUGUAY Y GANA MÁS DEL 1000% DE TU APUESTA ",
+            "content": "Contenido de la noticia aquí..."
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779912970460_9",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 11,
+            "row": 1,
+            "colSpan": 5,
+            "rowSpan": 4
+          },
+          "content": {
+            "teamA": {
+              "name": "URUGUAY",
+              "code": "EQA",
+              "score": 2,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "ESPAÑA",
+              "code": "EQB",
+              "score": 3,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779913052220_10",
+          "type": "results",
+          "label": "Resultados",
+          "gridPosition": {
+            "col": 11,
+            "row": 5,
+            "colSpan": 5,
+            "rowSpan": 3
+          },
+          "content": {
+            "title": "RESULTADOS DEL PARTIDO",
+            "matches": [
+              {
+                "teamA": "URUGUAY",
+                "teamB": "ESPAÑA",
+                "scoreA": 2,
+                "scoreB": 3
+              }
+            ]
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779913124820_11",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 11,
+            "row": 11,
+            "colSpan": 5,
+            "rowSpan": 5
+          },
+          "content": {
+            "label": "PROX. ENCUENTRO - BRASIL vs. FRANCIA ",
+            "time": "20:30",
+            "teamA": "BRASIL",
+            "teamB": "FRANCIA "
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779906427884,
+      "publishedBy": "admin",
+      "modifiedBy": "Elys1",
+      "approvedBy": "admin",
+      "lastModifiedBy": "Elys1"
+    },
+    "version": 1779914911636,
+    "created_at": "2026-05-27T20:48:31.637Z"
+  },
+  {
+    "username": "admin",
+    "approved_by": "admin",
+    "modified_by": "admin",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_odds",
+          "type": "results",
+          "label": "Cuotas / Siguiente",
+          "gridPosition": {
+            "col": 14,
+            "row": 1,
+            "colSpan": 1,
+            "rowSpan": 1
+          },
+          "content": {
+            "title": "SIGUIENTE PARTIDO",
+            "matches": [
+              {
+                "teamA": "INGLATERRA",
+                "teamB": "ALEMANIA",
+                "scoreA": 3,
+                "scoreB": 1.1
+              }
+            ]
+          }
+        },
+        {
+          "id": "default_results",
+          "type": "results",
+          "label": "Resultados",
+          "gridPosition": {
+            "col": 12,
+            "row": 1,
+            "colSpan": 2,
+            "rowSpan": 2
+          },
+          "content": {
+            "title": "RESULTADOS DEL PARTIDO",
+            "matches": [
+              {
+                "teamA": "ESPAÑA",
+                "teamB": "PAISES BAJOS",
+                "scoreA": 1,
+                "scoreB": 3
+              }
+            ]
+          }
+        },
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 12,
+            "row": 1,
+            "colSpan": 4,
+            "rowSpan": 4
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "default_featured",
+          "type": "media",
+          "label": "Resultado Destacado",
+          "gridPosition": {
+            "col": 8,
+            "row": 5,
+            "colSpan": 8,
+            "rowSpan": 11
+          },
+          "content": {
+            "src": "",
+            "mediaType": "image",
+            "alt": "Resultado Destacado",
+            "objectFit": "contain",
+            "overlayText": "RESULTADOS DEL\nPARTIDO\nESPAÑA 2 — ITALIA 2",
+            "showBrandOverlay": false
+          }
+        },
+        {
+          "id": "default_ticker",
+          "type": "ticker",
+          "label": "Ticker En Vivo",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 3,
+            "rowSpan": 15
+          },
+          "content": {
+            "isLive": true,
+            "messages": [
+              "GOL DE JAMES - COLOMBIA VS. CHILE",
+              "NEYMAR JR. TARJETA AMARILLA",
+              "INFORMACIÓN DE ÚLTIMA HORA",
+              "MESSI: MEJOR JUGADOR DEL PARTIDO"
+            ]
+          }
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779904876874,
+      "publishedBy": "admin",
+      "modifiedBy": "admin",
+      "approvedBy": "admin",
+      "lastModifiedBy": "admin"
+    },
+    "version": 1779906427884,
+    "created_at": "2026-05-27T18:27:07.885Z"
+  },
+  {
+    "username": "admin",
+    "approved_by": "admin",
     "modified_by": "admin",
     "config_data": {
       "modules": [

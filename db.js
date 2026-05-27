@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 let pool = null;
-let useFallback = false;
+export let useFallback = false;
 let dbErrorMsg = '';
 const fallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-data.json');
 const usersFallbackFilePath = path.resolve(process.cwd(), 'public/update/users-data.json');
@@ -90,6 +90,19 @@ async function initDb() {
       )
     `);
     console.log('[DB] Tabla billboard_templates verificada/creada.');
+
+    // Create media_assets table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_assets (
+        id SERIAL PRIMARY KEY,
+        filename VARCHAR(255) UNIQUE NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        file_data TEXT NOT NULL,
+        size_bytes INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DB] Tabla media_assets verificada/creada.');
 
     // Create billboard_history table if not exists
     await pool.query(`
@@ -630,6 +643,81 @@ export async function deleteDbTemplate(id) {
     return true;
   } catch (err) {
     console.error('[DB] Error al eliminar plantilla de PostgreSQL:', err.message);
+    throw err;
+  }
+}
+
+// --- Media Assets Storage Functions ---
+
+export async function saveMediaAsset(filename, mimeType, base64Data, sizeBytes) {
+  await ensureDb();
+  if (useFallback) {
+    return true;
+  }
+  try {
+    await pool.query(`
+      INSERT INTO media_assets (filename, mime_type, file_data, size_bytes)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (filename) DO UPDATE 
+      SET mime_type = EXCLUDED.mime_type, file_data = EXCLUDED.file_data, size_bytes = EXCLUDED.size_bytes
+    `, [filename, mimeType, base64Data, sizeBytes]);
+    console.log(`[DB] Archivo multimedia '${filename}' guardado en PostgreSQL.`);
+    return true;
+  } catch (err) {
+    console.error(`[DB] Error al guardar archivo multimedia en PostgreSQL:`, err.message);
+    throw err;
+  }
+}
+
+export async function getMediaAsset(filename) {
+  await ensureDb();
+  if (useFallback) {
+    return null;
+  }
+  try {
+    const res = await pool.query('SELECT mime_type, file_data FROM media_assets WHERE filename = $1', [filename]);
+    if (res.rows.length > 0) {
+      return {
+        mimeType: res.rows[0].mime_type,
+        fileData: res.rows[0].file_data
+      };
+    }
+  } catch (err) {
+    console.error(`[DB] Error al obtener archivo de PostgreSQL:`, err.message);
+  }
+  return null;
+}
+
+export async function listMediaAssets() {
+  await ensureDb();
+  if (useFallback) {
+    return [];
+  }
+  try {
+    const res = await pool.query('SELECT filename, mime_type, size_bytes, created_at FROM media_assets ORDER BY created_at DESC');
+    return res.rows.map(r => ({
+      filename: r.filename,
+      mimeType: r.mime_type,
+      sizeBytes: r.size_bytes,
+      createdAt: r.created_at
+    }));
+  } catch (err) {
+    console.error(`[DB] Error al listar archivos de PostgreSQL:`, err.message);
+    return [];
+  }
+}
+
+export async function deleteMediaAsset(filename) {
+  await ensureDb();
+  if (useFallback) {
+    return true;
+  }
+  try {
+    await pool.query('DELETE FROM media_assets WHERE filename = $1', [filename]);
+    console.log(`[DB] Archivo '${filename}' eliminado de PostgreSQL.`);
+    return true;
+  } catch (err) {
+    console.error(`[DB] Error al eliminar archivo de PostgreSQL:`, err.message);
     throw err;
   }
 }

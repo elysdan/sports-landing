@@ -1,7 +1,7 @@
 import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory, handleGetCmsDraft, handlePostCmsDraft } from './controllers/cmsController.js';
 import { handleLogin, handleGetUsers, handlePostUsers, handleDeleteUser } from './controllers/authController.js';
 import { handleGetTemplates, handlePostTemplates, handleDeleteTemplate } from './controllers/templateController.js';
-import { handlePostUpload, handleGetMedia, handleDeleteMedia } from './controllers/mediaController.js';
+import { handlePostUpload, handleGetMedia, handleDeleteMedia, handleGetMediaFile } from './controllers/mediaController.js';
 
 export async function dispatchApiRoute(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -69,6 +69,10 @@ export async function dispatchApiRoute(req, res) {
   // Media Endpoints
   if (method === 'POST' && pathname === '/api/upload') {
     await handlePostUpload(req, res);
+    return true;
+  }
+  if (method === 'GET' && pathname === '/api/media/file') {
+    await handleGetMediaFile(req, res, parsedUrl);
     return true;
   }
   if (method === 'GET' && pathname === '/api/media') {
