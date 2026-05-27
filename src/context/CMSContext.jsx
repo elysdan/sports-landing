@@ -252,6 +252,17 @@ export function CMSProvider({ children }) {
     return () => clearInterval(interval);
   }, [currentVersion]);
 
+  const CMS_SESSION_KEY = 'sports-billboard-cms-session';
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(CMS_SESSION_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
   // Debounced auto-save of draftData to PostgreSQL server
   useEffect(() => {
     if (!hasLoadedFromServer || !currentUser) return;
@@ -273,17 +284,6 @@ export function CMSProvider({ children }) {
 
     return () => clearTimeout(timer);
   }, [draftData, hasLoadedFromServer, currentUser]);
-
-  const CMS_SESSION_KEY = 'sports-billboard-cms-session';
-
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem(CMS_SESSION_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch (e) {
-      return null;
-    }
-  });
 
   const [users, setUsers] = useState([]);
 
