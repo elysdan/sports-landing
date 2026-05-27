@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getConfig, saveConfig, getVersion, authenticateDbUser, getDbUsers, createDbUser, deleteDbUser, getDbTemplates, createDbTemplate, deleteDbTemplate } from './db.js';
+import { getConfig, saveConfig, getVersion, authenticateDbUser, getDbUsers, createDbUser, deleteDbUser, getDbTemplates, createDbTemplate, deleteDbTemplate, getDbHistory, isUserApprover } from './db.js';
 
 // Resolve __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -82,10 +82,26 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'POST' && pathname === '/api/cms') {
     try {
-      const data = await readJsonBody(req);
+      const { config, approvedBy, modifiedBy } = await readJsonBody(req);
       const version = Date.now();
-      await saveConfig('live', data, version);
+      await saveConfig('live', config, version, approvedBy, modifiedBy);
       sendJson(res, 200, { success: true, version });
+    } catch (err) {
+      sendJson(res, 500, { error: err.message });
+    }
+    return;
+  }
+
+  if (req.method === 'GET' && pathname === '/api/cms/history') {
+    try {
+      const username = parsedUrl.searchParams.get('username');
+      const isApprover = await isUserApprover(username);
+      if (!isApprover) {
+        sendJson(res, 403, { error: 'Acceso denegado: Solo los usuarios aprobadores pueden ver el histórico.' });
+        return;
+      }
+      const historyList = await getDbHistory();
+      sendJson(res, 200, historyList);
     } catch (err) {
       sendJson(res, 500, { error: err.message });
     }

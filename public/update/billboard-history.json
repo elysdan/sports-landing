@@ -1,0 +1,603 @@
+[
+  {
+    "username": "Luis1",
+    "approved_by": "Luis1",
+    "modified_by": "Elys1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 8,
+            "rowSpan": 4
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 5,
+            "rowSpan": 7
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 8,
+            "colSpan": 8,
+            "rowSpan": 8
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779893040267,
+      "publishedBy": "Luis1",
+      "lastModifiedBy": "Elys1",
+      "modifiedBy": "Elys1",
+      "approvedBy": "Luis1"
+    },
+    "version": 1779893313075,
+    "created_at": "2026-05-27T14:48:33.076Z"
+  },
+  {
+    "username": "Luis1",
+    "approved_by": "Luis1",
+    "modified_by": "Elys1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 6,
+            "rowSpan": 7
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 5,
+            "rowSpan": 5
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 8,
+            "colSpan": 8,
+            "rowSpan": 8
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779892632524,
+      "publishedBy": "Luis1",
+      "lastModifiedBy": "Elys1",
+      "modifiedBy": "Elys1",
+      "approvedBy": "Luis1"
+    },
+    "version": 1779893040267,
+    "created_at": "2026-05-27T14:44:00.268Z"
+  },
+  {
+    "username": "Luis1",
+    "approved_by": "Luis1",
+    "modified_by": "Luis1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 6,
+            "rowSpan": 7
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 7,
+            "rowSpan": 6
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 8,
+            "colSpan": 8,
+            "rowSpan": 8
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779892632524,
+      "publishedBy": "Luis1",
+      "lastModifiedBy": "Luis1",
+      "modifiedBy": "Luis1",
+      "approvedBy": "Luis1"
+    },
+    "version": 1779892965758,
+    "created_at": "2026-05-27T14:42:45.759Z"
+  },
+  {
+    "username": "admin",
+    "approved_by": "admin",
+    "modified_by": "admin",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 8,
+            "rowSpan": 7
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 7,
+            "rowSpan": 7
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 8,
+            "colSpan": 8,
+            "rowSpan": 8
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779892577501,
+      "publishedBy": "admin",
+      "lastModifiedBy": "admin",
+      "modifiedBy": "admin",
+      "approvedBy": "admin"
+    },
+    "version": 1779892632524,
+    "created_at": "2026-05-27T14:37:12.526Z"
+  },
+  {
+    "username": "Luis1",
+    "approved_by": "Luis1",
+    "modified_by": "Elys1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 8,
+            "rowSpan": 6
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 7,
+            "rowSpan": 6
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 7,
+            "colSpan": 8,
+            "rowSpan": 9
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779891989246,
+      "publishedBy": "Luis1",
+      "lastModifiedBy": "Elys1",
+      "modifiedBy": "Elys1",
+      "approvedBy": "Luis1"
+    },
+    "version": 1779892577501,
+    "created_at": "2026-05-27T14:36:17.502Z"
+  },
+  {
+    "username": "Luis1",
+    "config_data": {
+      "modules": [
+        {
+          "id": "default_upcoming",
+          "type": "upcoming",
+          "label": "Próximo Partido",
+          "gridPosition": {
+            "col": 8,
+            "row": 1,
+            "colSpan": 6,
+            "rowSpan": 6
+          },
+          "content": {
+            "label": "SIGUIENTE PARTIDO",
+            "time": "4:30PM",
+            "teamA": "ESPAÑA",
+            "teamB": "ITALIA"
+          }
+        },
+        {
+          "id": "mod_1779733096095_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 8,
+            "colSpan": 7,
+            "rowSpan": 8
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779734811321_1",
+          "type": "media",
+          "label": "Multimedia",
+          "gridPosition": {
+            "col": 1,
+            "row": 1,
+            "colSpan": 7,
+            "rowSpan": 7
+          },
+          "content": {
+            "src": "/update/1779483055859_whats-your-honest-opinion-on-henry-cavill-will-his-v0-4f7bq0ygn1vf1__1_.webp",
+            "mediaType": "image",
+            "alt": "Contenido multimedia",
+            "objectFit": "fill"
+          },
+          "visible": true
+        },
+        {
+          "id": "mod_1779741358205_1",
+          "type": "scoreboard",
+          "label": "Marcador",
+          "gridPosition": {
+            "col": 8,
+            "row": 7,
+            "colSpan": 8,
+            "rowSpan": 9
+          },
+          "content": {
+            "teamA": {
+              "name": "EQUIPO A",
+              "code": "EQA",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "teamB": {
+              "name": "EQUIPO B",
+              "code": "EQB",
+              "score": 0,
+              "flag": "🏳️"
+            },
+            "status": "EN VIVO"
+          },
+          "visible": true
+        }
+      ],
+      "grid": {
+        "cols": 15,
+        "rows": 15
+      },
+      "orientation": "horizontal",
+      "version": 1779741445779,
+      "publishedBy": "Luis1"
+    },
+    "version": 1779891989246,
+    "created_at": "2026-05-27T14:26:29.247Z"
+  }
+]

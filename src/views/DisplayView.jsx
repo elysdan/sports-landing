@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useCMS } from '../context/CMSContext';
 
 /* ─── Render a single module based on its type ─── */
@@ -339,10 +338,6 @@ export default function DisplayView() {
           );
         })}
       </div>
-      <Link to="/admin" className="floating-admin-btn" title="Panel de Administración">
-        <span>⚙️</span>
-        <span className="floating-admin-text">Administrar</span>
-      </Link>
     </div>
   );
 }

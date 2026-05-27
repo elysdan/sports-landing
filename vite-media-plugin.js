@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { getConfig, saveConfig, getVersion, authenticateDbUser, getDbUsers, createDbUser, deleteDbUser, getDbTemplates, createDbTemplate, deleteDbTemplate } from './db.js';
+import { getConfig, saveConfig, getVersion, authenticateDbUser, getDbUsers, createDbUser, deleteDbUser, getDbTemplates, createDbTemplate, deleteDbTemplate, getDbHistory, isUserApprover } from './db.js';
 
 export default function mediaPlugin() {
   return {
@@ -157,9 +157,9 @@ export default function mediaPlugin() {
           });
           req.on('end', async () => {
             try {
-              const data = JSON.parse(body);
+              const { config, approvedBy, modifiedBy } = JSON.parse(body);
               const version = Date.now();
-              await saveConfig('live', data, version);
+              await saveConfig('live', config, version, approvedBy, modifiedBy);
               res.writeHead(200, { 'Content-Type': 'application/json' });
               res.end(JSON.stringify({ success: true, version }));
             } catch (err) {
@@ -167,6 +167,23 @@ export default function mediaPlugin() {
               res.end(JSON.stringify({ error: err.message }));
             }
           });
+        } else if (req.method === 'GET' && req.url.startsWith('/api/cms/history')) {
+          try {
+            const parsedUrl = new URL(req.url, 'http://localhost');
+            const username = parsedUrl.searchParams.get('username');
+            const isApprover = await isUserApprover(username);
+            if (!isApprover) {
+              res.writeHead(403, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: 'Acceso denegado: Solo los usuarios aprobadores pueden ver el histórico.' }));
+              return;
+            }
+            const historyList = await getDbHistory();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(historyList));
+          } catch (err) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: err.message }));
+          }
         } else if (req.method === 'POST' && req.url === '/api/auth/login') {
           let body = '';
           req.on('data', chunk => {

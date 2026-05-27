@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo, Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { useCMS, MODULE_TYPES } from '../context/CMSContext';
 import { RenderModule, getVerticalLayout } from './DisplayView';
@@ -583,20 +583,90 @@ function LivePreview({ modules, grid, screenType }) {
   );
 }
 
+const compareConfigs = (before, after) => {
+  const changes = [];
+  if (!before) {
+    changes.push("✨ Configuración inicial creada.");
+    return changes;
+  }
+
+  if (before.orientation !== after.orientation) {
+    changes.push(`📐 Orientación de pantalla cambiada de "${before.orientation || 'horizontal'}" a "${after.orientation || 'horizontal'}"`);
+  }
+
+  const beforeGrid = before.grid || { cols: 5, rows: 5 };
+  const afterGrid = after.grid || { cols: 5, rows: 5 };
+  if (beforeGrid.cols !== afterGrid.cols || beforeGrid.rows !== afterGrid.rows) {
+    changes.push(`🔲 Dimensiones de cuadrícula cambiadas de ${beforeGrid.cols}x${beforeGrid.rows} a ${afterGrid.cols}x${afterGrid.rows}`);
+  }
+
+  const beforeModules = before.modules || [];
+  const afterModules = after.modules || [];
+
+  const beforeMap = new Map(beforeModules.map(m => [m.id, m]));
+  const afterMap = new Map(afterModules.map(m => [m.id, m]));
+
+  // Modificados y Agregados
+  for (const mod of afterModules) {
+    if (!beforeMap.has(mod.id)) {
+      changes.push(`➕ Agregado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
+    } else {
+      const oldMod = beforeMap.get(mod.id);
+      const modDiffs = [];
+      
+      if (oldMod.label !== mod.label) {
+        modDiffs.push(`nombre cambiado de "${oldMod.label}" a "${mod.label}"`);
+      }
+      if (oldMod.visible !== mod.visible) {
+        modDiffs.push(`visibilidad cambiada a ${mod.visible === false ? 'Oculto' : 'Visible'}`);
+      }
+      
+      const oldGP = oldMod.gridPosition || {};
+      const newGP = mod.gridPosition || {};
+      if (oldGP.col !== newGP.col || oldGP.row !== newGP.row || oldGP.colSpan !== newGP.colSpan || oldGP.rowSpan !== newGP.rowSpan) {
+        modDiffs.push(`posición reajustada`);
+      }
+
+      if (JSON.stringify(oldMod.content) !== JSON.stringify(mod.content)) {
+        modDiffs.push(`contenido editado`);
+      }
+
+      if (modDiffs.length > 0) {
+        changes.push(`✏️ Modificado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type}) - [${modDiffs.join(', ')}]`);
+      }
+    }
+  }
+
+  // Eliminados
+  for (const mod of beforeModules) {
+    if (!afterMap.has(mod.id)) {
+      changes.push(`🗑️ Eliminado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
+    }
+  }
+
+  return changes;
+};
+
 /* ═══════════════════════════════════════════
    LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
 function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule, hasPermission }) {
+  const { liveData, draftData, currentUser, hasPendingChanges } = useCMS();
+  const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
   const [dragState, setDragState] = useState(null);
   const gridRef = useRef(null);
   const [activeTab, setActiveTab] = useState('blueprint'); // 'blueprint' or 'live'
   const [previewType, setPreviewType] = useState('horizontal'); // 'horizontal', 'vertical', '12x6', '9x9'
+  const [liveViewMode, setLiveViewMode] = useState('draft'); // 'live' or 'draft'
+
+  const targetModules = liveViewMode === 'live' ? (liveData?.modules || []) : modules;
+  const targetGrid = liveViewMode === 'live' ? (liveData?.grid || { cols: 5, rows: 5 }) : grid;
 
   // Generar celdas de cuadrícula de fondo estilo blueprint (optimizado con useMemo)
   const bgCells = useMemo(() => {
     const cells = [];
-    for (let r = 1; r <= grid.rows; r++) {
-      for (let c = 1; c <= grid.cols; c++) {
+    for (let r = 1; r <= targetGrid.rows; r++) {
+      for (let c = 1; c <= targetGrid.cols; c++) {
         cells.push(
           <div
             key={`bg-${r}-${c}`}
@@ -610,7 +680,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
       }
     }
     return cells;
-  }, [grid.rows, grid.cols]);
+  }, [targetGrid.rows, targetGrid.cols]);
 
   // Iniciar Arrastre para Mover (Mouse)
   const handleMoveMouseDown = (e, mod) => {
@@ -837,43 +907,18 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
         </div>
       </div>
       <div className="layout-preview-panels">
-        {/* Panel Izquierdo: Vista en Vivo con dropdown */}
-        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
-          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>
-              <span className="panel-icon">👁️</span> Vista en Vivo: {
-                previewType === 'horizontal' ? 'Horizontal (16:9)' :
-                previewType === 'vertical' ? 'Vertical (9:16)' :
-                previewType === '12x6' ? 'Pantalla 12.00 x 6.00 Mts (2:1)' :
-                'Pantalla 9.00 x 9.00 Mts (1:1)'
-              }
-            </span>
-            <span style={{ fontSize: '9px', color: 'var(--color-gold)', letterSpacing: '0.5px' }}>
-              {
-                previewType === 'horizontal' ? '1920x1080' :
-                previewType === 'vertical' ? '1080x1920' :
-                previewType === '12x6' ? '768x384 (Exposición 72m²)' :
-                '576x576 (Exposición 81m²)'
-              }
-            </span>
-          </div>
-          <div className="panel-content">
-            <LivePreview modules={modules} grid={grid} screenType={previewType} />
-          </div>
-        </div>
-
-        {/* Panel Derecho: Recuadros Editor */}
+        {/* Panel Izquierdo: Recuadros Editor */}
         <div className={`layout-preview-panel center-blueprint ${activeTab === 'blueprint' ? 'mobile-active' : 'mobile-hidden'}`}>
           <div className="panel-header">
-            <span className="panel-icon">📐</span> Editor de Recuadros (Grid {grid.cols}x{grid.rows})
+            <span className="panel-icon">📐</span> Editor de Recuadros (Grid {targetGrid.cols}x{targetGrid.rows})
           </div>
           <div className="panel-content">
             <div
               ref={gridRef}
               className="layout-preview-grid"
               style={{
-                gridTemplateColumns: `repeat(${grid.cols}, 1fr)`,
-                gridTemplateRows: `repeat(${grid.rows}, 1fr)`,
+                gridTemplateColumns: `repeat(${targetGrid.cols}, 1fr)`,
+                gridTemplateRows: `repeat(${targetGrid.rows}, 1fr)`,
                 aspectRatio: 
                   previewType === 'horizontal' ? '16/9' :
                   previewType === 'vertical' ? '9/16' :
@@ -884,11 +929,11 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
               {bgCells}
 
               {/* Celdas interactivas de módulos */}
-               {modules.map((mod) => {
+               {targetModules.map((mod) => {
                 const isSelected = selectedId === mod.id;
                 const isHidden = mod.visible === false;
-                const canEdit = !hasPermission || hasPermission(mod.type);
-                const indexInMaster = modules.findIndex((m) => m.id === mod.id);
+                const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
+                const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
 
                 return (
                   <div
@@ -1001,6 +1046,51 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
             </div>
           </div>
         </div>
+
+        {/* Panel Derecho: Vista en Vivo con pestañas de comparación */}
+        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
+          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px' }}>
+            <div style={{ display: 'flex', gap: '4px' }}>
+              <button
+                type="button"
+                className={`admin-btn admin-btn-sm ${liveViewMode === 'live' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+                style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold' }}
+                onClick={() => setLiveViewMode('live')}
+              >
+                🖥️ Pantalla Pública (En Vivo)
+              </button>
+              <button
+                type="button"
+                className={`admin-btn admin-btn-sm ${liveViewMode === 'draft' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+                style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold', position: 'relative' }}
+                onClick={() => setLiveViewMode('draft')}
+              >
+                📝 Borrador con Cambios
+                {hasPendingChanges && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-3px',
+                    right: '-3px',
+                    width: '7px',
+                    height: '7px',
+                    background: '#ef5350',
+                    borderRadius: '50%'
+                  }} />
+                )}
+              </button>
+            </div>
+            
+            <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>
+              PROPORCIÓN: {previewType === 'horizontal' ? '16:9' : previewType === 'vertical' ? '9:16' : previewType === '12x6' ? '2:1' : '1:1'}
+            </span>
+          </div>
+          <div className="panel-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, width: '100%', padding: 0 }}>
+            <div style={{ flex: 1, width: '100%', height: '100%', minHeight: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+              <LivePreview modules={targetModules} grid={targetGrid} screenType={previewType} />
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1010,7 +1100,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
    ADMIN PANEL — Full screen CMS
    ═══════════════════════════════════════════ */
 export default function AdminPanel() {
-  const { draftData, liveData, currentUser, login, logout, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll, templates, createTemplate, applyTemplate, deleteTemplate } = useCMS();
+  const { draftData, liveData, currentUser, login, logout, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll, templates, createTemplate, applyTemplate, deleteTemplate, history, fetchHistory } = useCMS();
   const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
   const [selectedId, setSelectedId] = useState(draftData.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
@@ -1066,7 +1156,10 @@ export default function AdminPanel() {
     if (viewMode === 'editors' && currentUser?.username !== 'admin') {
       setViewMode('modules');
     }
-  }, [viewMode, currentUser]);
+    if (viewMode === 'history' && !canApprove) {
+      setViewMode('modules');
+    }
+  }, [viewMode, currentUser, canApprove]);
 
   if (!currentUser) {
     return (
@@ -1236,6 +1329,15 @@ export default function AdminPanel() {
         </div>
 
         <div className="admin-header-actions" style={{ marginLeft: 'auto' }}>
+          {canApprove && (
+            <button
+              className={`admin-btn admin-btn-sm ${viewMode === 'history' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+              onClick={() => setViewMode(prev => prev === 'history' ? 'modules' : 'history')}
+              style={{ marginRight: '8px', gap: '6px' }}
+            >
+              📜 {viewMode === 'history' ? 'Ver Módulos' : 'Historial de Cambios'}
+            </button>
+          )}
           {currentUser.username === 'admin' && (
             <button
               className={`admin-btn admin-btn-sm ${viewMode === 'editors' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
@@ -1291,6 +1393,10 @@ export default function AdminPanel() {
       ) : viewMode === 'templates' ? (
         <div className="admin-editors-fullpage" style={{ gridColumn: '1 / -1', gridRow: '2', padding: '40px', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
           <TemplatesManagement setViewMode={setViewMode} />
+        </div>
+      ) : viewMode === 'history' ? (
+        <div className="admin-editors-fullpage" style={{ gridColumn: '1 / -1', gridRow: '2', padding: '40px', overflowY: 'auto', background: 'var(--color-bg-primary)' }}>
+          <HistoryManagement setViewMode={setViewMode} />
         </div>
       ) : (
         <>
@@ -1407,76 +1513,79 @@ export default function AdminPanel() {
           {/* ─── Main Content — Editor ─── */}
           <div className="admin-main">
             {/* Barra de Flujo de Trabajo / Aprobación */}
-            <div className="workflow-status-bar" style={{
-              background: hasPendingChanges ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
-              borderBottom: '1px solid var(--color-border)',
-              padding: '12px 24px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '16px',
-              flexShrink: 0
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '20px' }}>{canApprove ? '👑' : '✍️'}</span>
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--color-white)', fontFamily: 'var(--font-display)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
-                    Modo {currentUser?.username === 'admin' ? 'Administrador' : canApprove ? 'Aprobador' : 'Editor'}
-                  </div>
-                  <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-                    {canApprove 
-                      ? (hasPendingChanges 
-                          ? '⚠️ Hay cambios en borrador pendientes de aprobación para la valla pública.' 
-                          : '✅ El borrador de edición coincide con la valla pública en vivo.')
-                      : '📝 Tienes permisos para modificar borradores. Recuerda guardar el borrador para que sea aprobado.'
-                    }
-                  </div>
+            {((!canApprove) || (canApprove && hasPendingChanges)) && (
+              <div className="workflow-status-bar" style={{
+                background: hasPendingChanges ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                borderBottom: '1px solid var(--color-border)',
+                padding: '12px 24px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '16px',
+                flexShrink: 0
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  {hasPendingChanges && (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>✍️</span>
+                        <span>Modificado por: <strong style={{ color: 'var(--color-gold)' }}>{draftData.lastModifiedBy || 'Desconocido'}</strong> (Pendiente de aprobación)</span>
+                      </div>
+                      {/* List of changes */}
+                      <div style={{ maxHeight: '90px', overflowY: 'auto', fontSize: '11px', background: 'rgba(0, 0, 0, 0.25)', padding: '6px 12px', borderRadius: '4px', border: '1px solid var(--color-border)', minWidth: '320px' }}>
+                        <ul style={{ margin: 0, paddingLeft: '16px', listStyleType: 'disc', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {compareConfigs(liveData, draftData).map((diff, i) => (
+                            <li key={i} style={{ lineHeight: '1.3' }}>{diff}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </>
+                  )}
                 </div>
-              </div>
-
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {!canApprove && (
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-primary admin-btn-sm"
-                    style={{ gap: '6px' }}
-                    onClick={() => {
-                      alert('Borrador guardado correctamente. Los cambios están listos para ser aprobados por un Administrador o Aprobador.');
-                    }}
-                  >
-                    💾 Guardar Borrador
-                  </button>
-                )}
-
-                {canApprove && hasPendingChanges && (
-                  <>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  {!canApprove && (
                     <button
                       type="button"
                       className="admin-btn admin-btn-primary admin-btn-sm"
-                      style={{ background: 'var(--color-success)', color: 'var(--color-white)', gap: '6px' }}
-                      onClick={() => {
-                        approveAndPublish();
-                        alert('¡Excelente! Los cambios en borrador han sido aprobados y publicados a la valla en vivo.');
-                      }}
-                    >
-                      ✓ Aprobar y Publicar
-                    </button>
-                    <button
-                      type="button"
-                      className="admin-btn admin-btn-danger admin-btn-sm"
                       style={{ gap: '6px' }}
                       onClick={() => {
-                        if (window.confirm('¿Seguro que deseas descartar todos los cambios pendientes en borrador y volver al último estado público?')) {
-                          discardDraft();
-                        }
+                        alert('Borrador guardado correctamente. Los cambios están listos para ser aprobados por un Administrador o Aprobador.');
                       }}
                     >
-                      ✕ Descartar Cambios
+                      💾 Guardar Borrador
                     </button>
-                  </>
-                )}
+                  )}
+
+                  {canApprove && hasPendingChanges && (
+                    <>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-primary admin-btn-sm"
+                        style={{ background: 'var(--color-success)', color: 'var(--color-white)', gap: '6px' }}
+                        onClick={() => {
+                          approveAndPublish();
+                          alert('¡Excelente! Los cambios en borrador han sido aprobados y publicados a la valla en vivo.');
+                        }}
+                      >
+                        ✓ Aprobar y Publicar
+                      </button>
+                      <button
+                        type="button"
+                        className="admin-btn admin-btn-danger admin-btn-sm"
+                        style={{ gap: '6px' }}
+                        onClick={() => {
+                          if (window.confirm('¿Seguro que deseas descartar todos los cambios pendientes en borrador y volver al último estado público?')) {
+                            discardDraft();
+                          }
+                        }}
+                      >
+                        ✕ Descartar Cambios
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="admin-main-content-wrapper" style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
               {selectedModule ? (
@@ -2465,3 +2574,259 @@ function TemplatesManagement({ setViewMode }) {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════
+   HISTORY AUDIT LOG — Admin Change History Panel
+   ═══════════════════════════════════════════ */
+function HistoryManagement({ setViewMode }) {
+  const { history, fetchHistory, applyTemplate } = useCMS();
+  const [loading, setLoading] = useState(false);
+  const [expandedRows, setExpandedRows] = useState({});
+
+  useEffect(() => {
+    async function loadHistory() {
+      setLoading(true);
+      await fetchHistory();
+      setLoading(false);
+    }
+    loadHistory();
+  }, [fetchHistory]);
+
+  const toggleRow = (version) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [version]: !prev[version]
+    }));
+  };
+
+  const handleRestore = (entry) => {
+    const editorName = entry.modified_by || 'Desconocido';
+    const approverName = entry.approved_by || entry.username || 'Desconocido';
+    if (window.confirm(`¿Deseas cargar la configuración de la versión del ${formatDate(entry.created_at)} (Modificado por: ${editorName}, Aprobado por: ${approverName}) en tu borrador de edición actual?`)) {
+      applyTemplate(entry.config_data);
+      alert('Se ha cargado la versión seleccionada en tu borrador. Puedes revisarla y hacer clic en "Aprobar y Publicar" para activarla.');
+      setViewMode('modules');
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleString('es-ES', { 
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
+  // Función de comparación antes / después
+  const getDifferences = (currentEntry, index) => {
+    const beforeEntry = history[index + 1];
+    const beforeConfig = beforeEntry ? beforeEntry.config_data : null;
+    const afterConfig = currentEntry.config_data;
+    
+    return compareConfigs(beforeConfig, afterConfig);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'var(--font-body)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '28px', color: 'var(--color-white)', textTransform: 'uppercase', margin: 0, letterSpacing: '1px' }}>
+            📜 Historial de Auditoría de Cambios
+          </h1>
+          <p style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '6px' }}>
+            Visualiza el historial completo de cambios publicados, compara los cambios ("Antes" y "Después") y restaura versiones anteriores al borrador de edición.
+          </p>
+        </div>
+        <button className="admin-btn admin-btn-secondary" onClick={() => setViewMode('modules')}>
+          ✕ Cerrar
+        </button>
+      </div>
+
+      <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '24px' }}>
+        {loading ? (
+          <div style={{ padding: '40px', color: 'var(--color-text-secondary)', textAlign: 'center' }}>
+            Cargando historial...
+          </div>
+        ) : history.length === 0 ? (
+          <div style={{ padding: '60px 20px', textAlign: 'center', border: '1px dashed var(--color-border)', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.01)' }}>
+            <span style={{ fontSize: '48px', marginBottom: '16px', display: 'block' }}>📖</span>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: 'var(--color-white)' }}>No hay cambios registrados en el historial</div>
+            <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)', marginTop: '8px' }}>
+              Los cambios aparecerán aquí cada vez que se apruebe y publique una nueva versión de la valla.
+            </div>
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left', color: 'var(--color-text-secondary)' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid var(--color-border)', color: 'var(--color-white)', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px' }}>
+                <th style={{ padding: '12px 16px', width: '40px' }}></th>
+                <th style={{ padding: '12px 16px' }}>Fecha y Hora</th>
+                <th style={{ padding: '12px 16px' }}>Usuario Responsable (Aprobador)</th>
+                <th style={{ padding: '12px 16px' }}>Usuario Modificador (Editor)</th>
+                <th style={{ padding: '12px 16px' }}>Versión ID</th>
+                <th style={{ padding: '12px 16px' }}>Resumen</th>
+                <th style={{ padding: '12px 16px', textAlign: 'right' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {history.map((entry, index) => {
+                const modulesCount = entry.config_data?.modules?.length || 0;
+                const isExpanded = !!expandedRows[entry.version];
+                const beforeEntry = history[index + 1];
+                const diffs = getDifferences(entry, index);
+
+                return (
+                  <Fragment key={entry.version}>
+                    <tr 
+                      style={{ 
+                        borderBottom: isExpanded ? 'none' : '1px solid var(--color-border)', 
+                        transition: 'background-color var(--transition-fast)',
+                        cursor: 'pointer'
+                      }} 
+                      onClick={() => toggleRow(entry.version)}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'} 
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <td style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: 'var(--color-gold)' }}>
+                        {isExpanded ? '▼' : '▶'}
+                      </td>
+                      <td style={{ padding: '16px', fontWeight: '500', color: 'var(--color-white)' }}>
+                        {formatDate(entry.created_at)}
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{ background: 'rgba(56, 161, 105, 0.1)', border: '1px solid rgba(56, 161, 105, 0.2)', color: 'var(--color-success)', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '11px', display: 'inline-block' }}>
+                          {entry.approved_by || entry.username || 'Desconocido'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{ background: 'rgba(212, 168, 67, 0.1)', border: '1px solid var(--color-border-gold)', color: 'var(--color-gold)', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase', fontSize: '11px', display: 'inline-block' }}>
+                          {entry.modified_by || 'Desconocido'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '16px', fontFamily: 'monospace', fontSize: '12px' }}>
+                        {entry.version}
+                      </td>
+                      <td style={{ padding: '16px' }}>
+                        <span style={{ color: 'var(--color-white)' }}>{modulesCount}</span> módulos ({entry.config_data?.orientation || 'horizontal'})
+                      </td>
+                      <td style={{ padding: '16px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                        <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleRestore(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
+                          📥 Restaurar en Borrador
+                        </button>
+                      </td>
+                    </tr>
+                    {isExpanded && (
+                      <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'rgba(255, 255, 255, 0.01)' }}>
+                        <td colSpan="7" style={{ padding: '20px 24px 24px 24px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                              {/* ANTES */}
+                              <div style={{ background: 'rgba(255, 255, 255, 0.01)', border: '1px dashed var(--color-border)', padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', fontWeight: 'bold', letterSpacing: '1px' }}>
+                                    ⏪ Estado Anterior (Antes)
+                                  </div>
+                                  {beforeEntry && (
+                                    <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '500' }}>
+                                      {beforeEntry.config_data?.grid?.cols || 5}x{beforeEntry.config_data?.grid?.rows || 5} | {beforeEntry.config_data?.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
+                                    </div>
+                                  )}
+                                </div>
+                                {beforeEntry ? (
+                                  <div style={{ 
+                                    height: '260px', 
+                                    position: 'relative', 
+                                    overflow: 'hidden', 
+                                    borderRadius: 'var(--radius-sm)', 
+                                    border: '1px solid var(--color-border)',
+                                    background: '#020202'
+                                  }}>
+                                    <LivePreview 
+                                      modules={beforeEntry.config_data?.modules || []} 
+                                      grid={beforeEntry.config_data?.grid || { cols: 5, rows: 5 }} 
+                                      screenType={beforeEntry.config_data?.orientation || 'horizontal'} 
+                                    />
+                                  </div>
+                                ) : (
+                                  <div style={{ 
+                                    color: 'var(--color-text-muted)', 
+                                    fontSize: '13px', 
+                                    fontStyle: 'italic', 
+                                    height: '260px', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center',
+                                    border: '1px dashed var(--color-border)',
+                                    borderRadius: 'var(--radius-sm)'
+                                  }}>
+                                    No hay estado anterior (Configuración de origen / inicial).
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* DESPUÉS */}
+                              <div style={{ background: 'rgba(212, 168, 67, 0.02)', border: '1px dashed var(--color-border-gold)', padding: '16px', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                  <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-gold)', fontWeight: 'bold', letterSpacing: '1px' }}>
+                                    ⏩ Estado Nuevo (Después)
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: '500' }}>
+                                    {entry.config_data?.grid?.cols || 5}x{entry.config_data?.grid?.rows || 5} | {entry.config_data?.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
+                                  </div>
+                                </div>
+                                <div style={{ 
+                                  height: '260px', 
+                                  position: 'relative', 
+                                  overflow: 'hidden', 
+                                  borderRadius: 'var(--radius-sm)', 
+                                  border: '1px solid var(--color-border-gold)',
+                                  background: '#020202'
+                                }}>
+                                  <LivePreview 
+                                    modules={entry.config_data?.modules || []} 
+                                    grid={entry.config_data?.grid || { cols: 5, rows: 5 }} 
+                                    screenType={entry.config_data?.orientation || 'horizontal'} 
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* LOG DE CAMBIOS DETALLADOS */}
+                            <div style={{ background: 'rgba(0, 0, 0, 0.2)', border: '1px solid var(--color-border)', padding: '16px', borderRadius: 'var(--radius-md)' }}>
+                              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-white)', fontWeight: 'bold', letterSpacing: '1px', marginBottom: '10px' }}>
+                                🛠️ Detalle de Modificaciones Realizadas
+                              </div>
+                              {diffs.length === 0 ? (
+                                <div style={{ color: 'var(--color-text-muted)', fontSize: '13px', fontStyle: 'italic' }}>
+                                  No se detectaron diferencias estructurales en esta versión (ej. re-publicación de la misma configuración).
+                                </div>
+                              ) : (
+                                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--color-text-secondary)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                  {diffs.map((diff, i) => (
+                                    <li key={i} style={{ lineHeight: '1.4' }}>
+                                      {diff}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+}
+

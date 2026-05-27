@@ -8,7 +8,7 @@
         "col": 8,
         "row": 1,
         "colSpan": 8,
-        "rowSpan": 6
+        "rowSpan": 4
       },
       "content": {
         "label": "SIGUIENTE PARTIDO",
@@ -42,7 +42,7 @@
       "gridPosition": {
         "col": 1,
         "row": 1,
-        "colSpan": 7,
+        "colSpan": 5,
         "rowSpan": 7
       },
       "content": {
@@ -59,9 +59,9 @@
       "label": "Marcador",
       "gridPosition": {
         "col": 8,
-        "row": 7,
+        "row": 8,
         "colSpan": 8,
-        "rowSpan": 9
+        "rowSpan": 8
       },
       "content": {
         "teamA": {
@@ -86,5 +86,9 @@
     "rows": 15
   },
   "orientation": "horizontal",
-  "version": 1779741445779
+  "version": 1779893313075,
+  "publishedBy": "Luis1",
+  "lastModifiedBy": "Elys1",
+  "modifiedBy": "Elys1",
+  "approvedBy": "Luis1"
 }

@@ -330,8 +330,24 @@ export function CMSProvider({ children }) {
     }
   }, []);
 
+  const [history, setHistory] = useState([]);
+
+  const fetchHistory = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`/api/cms/history?username=${encodeURIComponent(currentUser.username)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setHistory(data);
+      }
+    } catch (e) {
+      console.error("[CMS] Error al cargar el historial:", e);
+    }
+  }, [currentUser]);
+
   const logout = useCallback(() => {
     setCurrentUser(null);
+    setHistory([]);
     localStorage.removeItem(CMS_SESSION_KEY);
   }, []);
 
@@ -376,11 +392,14 @@ export function CMSProvider({ children }) {
 
   const applyTemplate = useCallback((templateConfig) => {
     if (templateConfig && templateConfig.modules) {
-      setDraftData(migrateData(templateConfig));
+      setDraftData({
+        ...migrateData(templateConfig),
+        lastModifiedBy: currentUser?.username || 'Desconocido'
+      });
       return true;
     }
     return false;
-  }, []);
+  }, [currentUser]);
 
   const deleteTemplate = useCallback(async (id) => {
     try {
@@ -409,16 +428,18 @@ export function CMSProvider({ children }) {
     setDraftData((prev) => ({
       ...prev,
       modules: [...prev.modules, newModule],
+      lastModifiedBy: currentUser?.username || 'Desconocido'
     }));
     return newModule.id;
-  }, []);
+  }, [currentUser]);
 
   const removeModule = useCallback((id) => {
     setDraftData((prev) => ({
       ...prev,
       modules: prev.modules.filter((m) => m.id !== id),
+      lastModifiedBy: currentUser?.username || 'Desconocido'
     }));
-  }, []);
+  }, [currentUser]);
 
   const updateModule = useCallback((id, updates) => {
     setDraftData((prev) => ({
@@ -426,8 +447,9 @@ export function CMSProvider({ children }) {
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, ...updates } : m
       ),
+      lastModifiedBy: currentUser?.username || 'Desconocido'
     }));
-  }, []);
+  }, [currentUser]);
 
   const updateModuleContent = useCallback((id, contentUpdates) => {
     setDraftData((prev) => ({
@@ -435,8 +457,9 @@ export function CMSProvider({ children }) {
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, content: { ...m.content, ...contentUpdates } } : m
       ),
+      lastModifiedBy: currentUser?.username || 'Desconocido'
     }));
-  }, []);
+  }, [currentUser]);
 
   const moveModule = useCallback((id, direction) => {
     setDraftData((prev) => {
@@ -446,9 +469,9 @@ export function CMSProvider({ children }) {
       const newIdx = direction === 'up' ? idx - 1 : idx + 1;
       if (newIdx < 0 || newIdx >= modules.length) return prev;
       [modules[idx], modules[newIdx]] = [modules[newIdx], modules[idx]];
-      return { ...prev, modules };
+      return { ...prev, modules, lastModifiedBy: currentUser?.username || 'Desconocido' };
     });
-  }, []);
+  }, [currentUser]);
 
   const updateGrid = useCallback((gridUpdates) => {
     setDraftData((prev) => {
@@ -474,16 +497,18 @@ export function CMSProvider({ children }) {
         ...prev,
         grid: nextGrid,
         modules: nextModules,
+        lastModifiedBy: currentUser?.username || 'Desconocido'
       };
     });
-  }, []);
+  }, [currentUser]);
 
   const updateOrientation = useCallback((orientation) => {
     setDraftData((prev) => ({
       ...prev,
       orientation,
+      lastModifiedBy: currentUser?.username || 'Desconocido'
     }));
-  }, []);
+  }, [currentUser]);
 
   const resetAll = useCallback(() => {
     setDraftData(defaultData);
@@ -502,7 +527,11 @@ export function CMSProvider({ children }) {
       const res = await fetch('/api/cms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nextLive)
+        body: JSON.stringify({
+          config: nextLive,
+          approvedBy: currentUser?.username || 'Desconocido',
+          modifiedBy: draftData.lastModifiedBy || 'Desconocido'
+        })
       });
       if (res.ok) {
         const resData = await res.json();
@@ -513,7 +542,7 @@ export function CMSProvider({ children }) {
     } catch (e) {
       console.error("[CMS] Error al guardar en base de datos:", e);
     }
-  }, [draftData]);
+  }, [draftData, currentUser]);
 
   const discardDraft = useCallback(() => {
     setDraftData(liveData);
@@ -553,7 +582,11 @@ export function CMSProvider({ children }) {
 
   const hasPermission = useCallback((type) => {
     if (!currentUser) return false;
-    if (currentUser.username === 'admin' || currentUser.allowedTypes.includes('*')) return true;
+    if (
+      currentUser.username === 'admin' || 
+      currentUser.allowedTypes.includes('*') || 
+      currentUser.allowedTypes.includes('approve')
+    ) return true;
     return currentUser.allowedTypes.includes(type);
   }, [currentUser]);
 
@@ -586,6 +619,8 @@ export function CMSProvider({ children }) {
         createTemplate,
         applyTemplate,
         deleteTemplate,
+        history,
+        fetchHistory,
       }}
     >
       {children}

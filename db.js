@@ -9,6 +9,7 @@ let pool = null;
 let useFallback = false;
 const fallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-data.json');
 const usersFallbackFilePath = path.resolve(process.cwd(), 'public/update/users-data.json');
+const historyFallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-history.json');
 
 // Initialize DB connection
 async function initDb() {
@@ -81,6 +82,28 @@ async function initDb() {
       )
     `);
     console.log('[DB] Tabla billboard_templates verificada/creada.');
+
+    // Create billboard_history table if not exists
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS billboard_history (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL,
+        approved_by VARCHAR(50) DEFAULT 'Desconocido',
+        modified_by VARCHAR(50) DEFAULT 'Desconocido',
+        config_data LONGTEXT NOT NULL,
+        version BIGINT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[DB] Tabla billboard_history verificada/creada.');
+
+    // Intentar agregar columnas si la tabla ya existía sin ellas
+    try {
+      await pool.query('ALTER TABLE billboard_history ADD COLUMN approved_by VARCHAR(50) DEFAULT "Desconocido"');
+    } catch (e) { /* Columna ya existe */ }
+    try {
+      await pool.query('ALTER TABLE billboard_history ADD COLUMN modified_by VARCHAR(50) DEFAULT "Desconocido"');
+    } catch (e) { /* Columna ya existe */ }
 
     // Seed default admin user if empty
     const [userRows] = await pool.query('SELECT COUNT(*) as count FROM users');
@@ -173,6 +196,35 @@ function saveUsersFallback(usersList) {
   }
 }
 
+function loadHistoryFallback() {
+  try {
+    if (fs.existsSync(historyFallbackFilePath)) {
+      const content = fs.readFileSync(historyFallbackFilePath, 'utf8');
+      return JSON.parse(content);
+    }
+  } catch (e) {
+    console.error('[DB] Error al cargar archivo JSON de historial de respaldo:', e);
+  }
+  return [];
+}
+
+function saveHistoryFallback(entry) {
+  try {
+    const list = loadHistoryFallback();
+    list.unshift(entry);
+    const limitedList = list.slice(0, 10);
+    const dir = path.dirname(historyFallbackFilePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(historyFallbackFilePath, JSON.stringify(limitedList, null, 2), 'utf8');
+    return true;
+  } catch (e) {
+    console.error('[DB] Error al guardar archivo JSON de historial de respaldo:', e);
+    return false;
+  }
+}
+
 // --- Layout configuration functions ---
 
 export async function getConfig(keyName) {
@@ -197,10 +249,23 @@ export async function getConfig(keyName) {
   return null;
 }
 
-export async function saveConfig(keyName, data, version) {
+export async function saveConfig(keyName, data, version, approvedBy = 'Desconocido', modifiedBy = 'Desconocido') {
   await ensureDb();
+  // Inject metadata into the JSON data for frontend convenience
+  data.publishedBy = approvedBy;
+  data.modifiedBy = modifiedBy;
+  data.approvedBy = approvedBy;
+
   // Always write fallback JSON as secondary backup
   saveFallback({ ...data, version });
+  saveHistoryFallback({ 
+    username: approvedBy, 
+    approved_by: approvedBy, 
+    modified_by: modifiedBy, 
+    config_data: data, 
+    version, 
+    created_at: new Date().toISOString() 
+  });
   
   if (useFallback) {
     return true;
@@ -213,6 +278,27 @@ export async function saveConfig(keyName, data, version) {
       ON DUPLICATE KEY UPDATE config_data = VALUES(config_data), version = VALUES(version)
     `, [keyName, jsonStr, version]);
     console.log(`[DB] Configuración '${keyName}' guardada en MySQL. Versión: ${version}`);
+
+    // Save in history table with all metadata
+    await pool.query(`
+      INSERT INTO billboard_history (username, approved_by, modified_by, config_data, version)
+      VALUES (?, ?, ?, ?, ?)
+    `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
+    console.log(`[DB] Historial registrado. Aprobado por: ${approvedBy}, Modificado por: ${modifiedBy}`);
+
+    // Limitar el historial en MySQL a los últimos 10 cambios
+    await pool.query(`
+      DELETE FROM billboard_history
+      WHERE id NOT IN (
+        SELECT id FROM (
+          SELECT id FROM billboard_history
+          ORDER BY id DESC
+          LIMIT 10
+        ) AS temp
+      )
+    `);
+    console.log('[DB] Historial en MySQL limitado a los últimos 10 cambios.');
+
     return true;
   } catch (err) {
     console.error('[DB] Error al guardar en MySQL, guardado únicamente en JSON local:', err.message);
@@ -428,5 +514,69 @@ export async function deleteDbTemplate(id) {
   } catch (err) {
     console.error('[DB] Error al eliminar plantilla de MySQL:', err.message);
     return false;
+  }
+}
+
+export async function isUserApprover(username) {
+  if (!username) return false;
+  await ensureDb();
+  if (username.toLowerCase() === 'admin') return true;
+  if (useFallback) {
+    const list = loadUsersFallback();
+    const found = list.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (found) {
+      return found.allowedTypes.includes('approve') || found.allowedTypes.includes('*');
+    }
+    return false;
+  }
+  try {
+    const [rows] = await pool.query('SELECT allowed_types FROM users WHERE LOWER(username) = LOWER(?)', [username]);
+    if (rows.length > 0) {
+      const allowedTypes = JSON.parse(rows[0].allowed_types);
+      return allowedTypes.includes('approve') || allowedTypes.includes('*');
+    }
+  } catch (err) {
+    console.error('[DB] Error al verificar si el usuario es aprobador en MySQL:', err.message);
+  }
+  return false;
+}
+
+export async function getDbHistory() {
+  await ensureDb();
+  if (useFallback) {
+    const fallbackList = loadHistoryFallback();
+    return fallbackList.map(item => ({
+      username: item.username || item.approved_by || item.config_data?.approvedBy || 'Desconocido',
+      approved_by: item.approved_by || item.username || item.config_data?.approvedBy || 'Desconocido',
+      modified_by: item.modified_by || item.config_data?.modifiedBy || 'Desconocido',
+      config_data: item.config_data,
+      version: item.version,
+      created_at: item.created_at
+    }));
+  }
+  try {
+    const [rows] = await pool.query('SELECT username, approved_by, modified_by, config_data, version, created_at FROM billboard_history ORDER BY created_at DESC');
+    return rows.map(r => {
+      const parsedConfig = JSON.parse(r.config_data);
+      return {
+        username: r.username || r.approved_by || parsedConfig.approvedBy || 'Desconocido',
+        approved_by: r.approved_by || r.username || parsedConfig.approvedBy || 'Desconocido',
+        modified_by: r.modified_by || parsedConfig.modifiedBy || 'Desconocido',
+        config_data: parsedConfig,
+        version: r.version,
+        created_at: r.created_at
+      };
+    });
+  } catch (err) {
+    console.error('[DB] Error al obtener el historial de MySQL, usando fallback:', err.message);
+    const fallbackList = loadHistoryFallback();
+    return fallbackList.map(item => ({
+      username: item.username || item.approved_by || item.config_data?.approvedBy || 'Desconocido',
+      approved_by: item.approved_by || item.username || item.config_data?.approvedBy || 'Desconocido',
+      modified_by: item.modified_by || item.config_data?.modifiedBy || 'Desconocido',
+      config_data: item.config_data,
+      version: item.version,
+      created_at: item.created_at
+    }));
   }
 }
