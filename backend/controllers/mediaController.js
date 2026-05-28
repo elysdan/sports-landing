@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { readJsonBody, sendJson } from '../utils.js';
-import { saveMediaAsset, getMediaAsset, listMediaAssets, deleteMediaAsset, useFallback } from '../../db.js';
+import { saveMediaAsset, getMediaAsset, listMediaAssets, deleteMediaAsset } from '../../db.js';
 
 export async function handlePostUpload(req, res) {
   try {
@@ -18,19 +18,9 @@ export async function handlePostUpload(req, res) {
     const timestamp = Date.now();
     const safeName = `${timestamp}_${filename.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
 
-    if (!useFallback) {
-      const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
-      await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
-      sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
-    } else {
-      const uploadDir = path.resolve(process.cwd(), 'public/update');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      const filePath = path.join(uploadDir, safeName);
-      fs.writeFileSync(filePath, buffer);
-      sendJson(res, 200, { url: `/update/${safeName}` });
-    }
+    const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
+    await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
+    sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
@@ -72,23 +62,21 @@ export async function handleGetMedia(req, res) {
     scanDir(path.resolve(process.cwd(), 'public'), '/');
     scanDir(path.resolve(process.cwd(), 'dist'), '/');
 
-    // Merge database assets if database is active
-    if (!useFallback) {
-      const dbAssets = await listMediaAssets();
-      dbAssets.forEach(asset => {
-        const url = `/api/media/file?name=${asset.filename}`;
-        const ext = path.extname(asset.filename).toLowerCase();
-        const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
-        
-        mediaMap.set(url, {
-          url,
-          filename: asset.filename,
-          type: isVideo ? 'video' : 'image',
-          size: asset.sizeBytes,
-          mtime: new Date(asset.createdAt).getTime()
-        });
+    // Merge database assets
+    const dbAssets = await listMediaAssets();
+    dbAssets.forEach(asset => {
+      const url = `/api/media/file?name=${asset.filename}`;
+      const ext = path.extname(asset.filename).toLowerCase();
+      const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
+      
+      mediaMap.set(url, {
+        url,
+        filename: asset.filename,
+        type: isVideo ? 'video' : 'image',
+        size: asset.sizeBytes,
+        mtime: new Date(asset.createdAt).getTime()
       });
-    }
+    });
 
     const mediaFiles = Array.from(mediaMap.values());
     mediaFiles.sort((a, b) => b.mtime - a.mtime);

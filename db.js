@@ -1,250 +1,225 @@
 import pg from 'pg';
-import fs from 'fs';
-import path from 'path';
 import dotenv from 'dotenv';
+import { defaultBillboardData } from './backend/seedData.js';
 
 dotenv.config();
 
 let pool = null;
-export let useFallback = false;
-let dbErrorMsg = '';
-const fallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-data.json');
-const usersFallbackFilePath = path.resolve(process.cwd(), 'public/update/users-data.json');
-const historyFallbackFilePath = path.resolve(process.cwd(), 'public/update/billboard-history.json');
 
 // Initialize DB connection
 async function initDb() {
-  try {
-    const { Pool } = pg;
-    const poolConfig = {
-      ssl: {
-        rejectUnauthorized: false
-      },
-      max: 2, // Optimize for serverless: limit connections per container
-      idleTimeoutMillis: 2000, // Close idle connections quickly
-      connectionTimeoutMillis: 15000 // 15s timeout to allow cold-started Neon DBs to wake up
+  const { Pool } = pg;
+  const poolConfig = {
+    ssl: {
+      rejectUnauthorized: false
+    },
+    max: 2, // Optimize for serverless: limit connections per container
+    idleTimeoutMillis: 2000, // Close idle connections quickly
+    connectionTimeoutMillis: 15000 // 15s timeout to allow cold-started Neon DBs to wake up
+  };
+
+  let connected = false;
+
+  // 1. Try environment configuration (Netlify / Production)
+  if (process.env.PG_CONNECTION_STRING || process.env.PG_HOST) {
+    try {
+      console.log('[DB] Intentando conectar a la base de datos configurada en el entorno...');
+      if (process.env.PG_CONNECTION_STRING) {
+        try {
+          const dbUrl = new URL(process.env.PG_CONNECTION_STRING);
+          console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING. Host: ${dbUrl.hostname}, DB: ${dbUrl.pathname}`);
+        } catch (e) {
+          console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING (formato no-URL o SSL string)`);
+        }
+        pool = new Pool({
+          connectionString: process.env.PG_CONNECTION_STRING,
+          ...poolConfig
+        });
+      } else {
+        console.log(`[DB] Inicializando Pool con variables individuales. Host: ${process.env.PG_HOST}, DB: ${process.env.PG_DATABASE}`);
+        pool = new Pool({
+          host: process.env.PG_HOST,
+          port: parseInt(process.env.PG_PORT || '5432'),
+          user: process.env.PG_USER || 'postgres',
+          password: process.env.PG_PASSWORD || 'postgres',
+          database: process.env.PG_DATABASE || 'sportlanding',
+          ...poolConfig
+        });
+      }
+
+      // Test connection
+      const client = await pool.connect();
+      console.log(`[DB] Conectado exitosamente a PostgreSQL (Configuración de entorno).`);
+      client.release();
+      connected = true;
+    } catch (err) {
+      console.warn(`[DB] Error al conectar a la base de datos del entorno: ${err.message}`);
+      if (pool) {
+        await pool.end();
+        pool = null;
+      }
+    }
+  }
+
+  // 2. Try local PostgreSQL connection if environment configuration was not successful or was missing
+  if (!connected) {
+    console.log('[DB] Intentando conectar a PostgreSQL local (localhost:5432)...');
+    
+    const localConfig = {
+      host: 'localhost',
+      port: 5432,
+      user: 'postgres',
+      password: 'postgres',
+      database: 'sportlanding',
+      max: 2,
+      idleTimeoutMillis: 2000,
+      connectionTimeoutMillis: 5000
     };
 
-    if (process.env.PG_CONNECTION_STRING) {
-      try {
-        const dbUrl = new URL(process.env.PG_CONNECTION_STRING);
-        console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING. Host: ${dbUrl.hostname}, DB: ${dbUrl.pathname}`);
-      } catch (e) {
-        console.log(`[DB] Inicializando Pool con PG_CONNECTION_STRING (formato no-URL o SSL string)`);
+    try {
+      console.log(`[DB] Probando conexión local - Usuario: ${localConfig.user}, DB: ${localConfig.database}`);
+      
+      pool = new Pool(localConfig);
+      const client = await pool.connect();
+      console.log(`[DB] Conectado exitosamente a PostgreSQL local.`);
+      client.release();
+      connected = true;
+    } catch (err) {
+      if (pool) {
+        await pool.end();
+        pool = null;
       }
-      pool = new Pool({
-        connectionString: process.env.PG_CONNECTION_STRING,
-        ...poolConfig
-      });
-    } else if (process.env.PG_HOST) {
-      console.log(`[DB] Inicializando Pool con variables individuales. Host: ${process.env.PG_HOST}, DB: ${process.env.PG_DATABASE}`);
-      pool = new Pool({
-        host: process.env.PG_HOST,
-        port: parseInt(process.env.PG_PORT || '5432'),
-        user: process.env.PG_USER || 'postgres',
-        password: process.env.PG_PASSWORD || 'postgres',
-        database: process.env.PG_DATABASE || 'sportlanding',
-        ...poolConfig
-      });
-    } else {
-      throw new Error('No se encontró configuración de base de datos. Por favor configure la variable de entorno PG_CONNECTION_STRING en el panel de Netlify.');
+
+      // If database doesn't exist (Postgres error code '3D000'), attempt to create it
+      if (err.code === '3D000') {
+        console.log(`[DB] La base de datos '${localConfig.database}' no existe localmente. Intentando crearla...`);
+        try {
+          const adminPool = new Pool({
+            ...localConfig,
+            database: 'postgres'
+          });
+          const adminClient = await adminPool.connect();
+          await adminClient.query(`CREATE DATABASE ${localConfig.database}`);
+          console.log(`[DB] Base de datos '${localConfig.database}' creada con éxito.`);
+          adminClient.release();
+          await adminPool.end();
+
+          // Retry connecting after creation
+          pool = new Pool(localConfig);
+          const client = await pool.connect();
+          console.log(`[DB] Conectado exitosamente a PostgreSQL local después de crear la base de datos.`);
+          client.release();
+          connected = true;
+        } catch (createErr) {
+          console.warn(`[DB] No se pudo crear la base de datos '${localConfig.database}': ${createErr.message}`);
+          if (pool) {
+            await pool.end();
+            pool = null;
+          }
+        }
+      } else {
+        console.warn(`[DB] Error en conexión local con esta configuración: ${err.message}`);
+      }
     }
+  }
 
-    // Test connection
-    const client = await pool.connect();
-    console.log(`[DB] Conectado exitosamente a PostgreSQL.`);
-    client.release();
+  if (!connected) {
+    throw new Error('No se pudo establecer conexión a ninguna base de datos PostgreSQL (remota o local).');
+  }
 
-    // Create billboard_config table if not exists
+  // Create billboard_config table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS billboard_config (
+      id SERIAL PRIMARY KEY,
+      key_name VARCHAR(50) UNIQUE,
+      config_data TEXT,
+      version BIGINT,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('[DB] Tabla billboard_config verificada/creada.');
+
+  // Create users table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(50) UNIQUE NOT NULL,
+      password VARCHAR(255) NOT NULL,
+      name VARCHAR(100) NOT NULL,
+      allowed_types TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('[DB] Tabla users verificada/creada.');
+
+  // Create billboard_templates table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS billboard_templates (
+      id SERIAL PRIMARY KEY,
+      template_name VARCHAR(100) UNIQUE NOT NULL,
+      config_data TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('[DB] Tabla billboard_templates verificada/creada.');
+
+  // Create media_assets table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS media_assets (
+      id SERIAL PRIMARY KEY,
+      filename VARCHAR(255) UNIQUE NOT NULL,
+      mime_type VARCHAR(100) NOT NULL,
+      file_data TEXT NOT NULL,
+      size_bytes INT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('[DB] Tabla media_assets verificada/creada.');
+
+  // Create billboard_history table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS billboard_history (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(50) NOT NULL,
+      approved_by VARCHAR(50) DEFAULT 'Desconocido',
+      modified_by VARCHAR(50) DEFAULT 'Desconocido',
+      config_data TEXT NOT NULL,
+      version BIGINT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+  console.log('[DB] Tabla billboard_history verificada/creada.');
+
+  // Attempt to add columns or indexes if table existed without them
+  try {
+    await pool.query("ALTER TABLE billboard_history ADD COLUMN approved_by VARCHAR(50) DEFAULT 'Desconocido'");
+  } catch (e) { /* Column already exists */ }
+  try {
+    await pool.query("ALTER TABLE billboard_history ADD COLUMN modified_by VARCHAR(50) DEFAULT 'Desconocido'");
+  } catch (e) { /* Column already exists */ }
+  try {
+    await pool.query("CREATE INDEX IF NOT EXISTS idx_billboard_history_created_at ON billboard_history (created_at DESC)");
+  } catch (e) { /* Index already exists or error */ }
+
+  // Seed default admin user if empty
+  const userRows = await pool.query('SELECT COUNT(*) as count FROM users');
+  if (parseInt(userRows.rows[0].count) === 0) {
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS billboard_config (
-        id SERIAL PRIMARY KEY,
-        key_name VARCHAR(50) UNIQUE,
-        config_data TEXT,
-        version BIGINT,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DB] Tabla billboard_config verificada/creada.');
+      INSERT INTO users (username, password, name, allowed_types)
+      VALUES ($1, $2, $3, $4)
+    `, ['admin', 'admin1234', 'Administrador', JSON.stringify(['*'])]);
+    console.log('[DB] Usuario administrador por defecto (admin / admin1234) creado.');
+  }
 
-    // Create users table if not exists
+  // Seed default billboard config if empty
+  const configRows = await pool.query("SELECT COUNT(*) as count FROM billboard_config WHERE key_name = 'live'");
+  if (parseInt(configRows.rows[0].count) === 0) {
+    const defaultDataStr = JSON.stringify(defaultBillboardData);
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        name VARCHAR(100) NOT NULL,
-        allowed_types TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DB] Tabla users verificada/creada.');
-
-    // Create billboard_templates table if not exists
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS billboard_templates (
-        id SERIAL PRIMARY KEY,
-        template_name VARCHAR(100) UNIQUE NOT NULL,
-        config_data TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DB] Tabla billboard_templates verificada/creada.');
-
-    // Create media_assets table if not exists
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS media_assets (
-        id SERIAL PRIMARY KEY,
-        filename VARCHAR(255) UNIQUE NOT NULL,
-        mime_type VARCHAR(100) NOT NULL,
-        file_data TEXT NOT NULL,
-        size_bytes INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DB] Tabla media_assets verificada/creada.');
-
-    // Create billboard_history table if not exists
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS billboard_history (
-        id SERIAL PRIMARY KEY,
-        username VARCHAR(50) NOT NULL,
-        approved_by VARCHAR(50) DEFAULT 'Desconocido',
-        modified_by VARCHAR(50) DEFAULT 'Desconocido',
-        config_data TEXT NOT NULL,
-        version BIGINT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('[DB] Tabla billboard_history verificada/creada.');
-
-    // Intentar agregar columnas si la tabla ya existía sin ellas
-    try {
-      await pool.query('ALTER TABLE billboard_history ADD COLUMN approved_by VARCHAR(50) DEFAULT \'Desconocido\'');
-    } catch (e) { /* Columna ya existe */ }
-    try {
-      await pool.query('ALTER TABLE billboard_history ADD COLUMN modified_by VARCHAR(50) DEFAULT \'Desconocido\'');
-    } catch (e) { /* Columna ya existe */ }
-
-    // Seed default admin user if empty
-    const userRows = await pool.query('SELECT COUNT(*) as count FROM users');
-    if (parseInt(userRows.rows[0].count) === 0) {
-      await pool.query(`
-        INSERT INTO users (username, password, name, allowed_types)
-        VALUES ($1, $2, $3, $4)
-      `, ['admin', 'admin1234', 'Administrador', JSON.stringify(['*'])]);
-      console.log('[DB] Usuario administrador por defecto (admin / admin1234) creado.');
-    }
-
-    // Seed default billboard config if empty
-    const configRows = await pool.query("SELECT COUNT(*) as count FROM billboard_config WHERE key_name = 'live'");
-    if (parseInt(configRows.rows[0].count) === 0) {
-      const defaultData = {
-        modules: [
-          {
-            id: 'default_brand',
-            type: 'media',
-            label: 'Logo / Marca',
-            gridPosition: { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
-            content: { src: '', mediaType: 'image', alt: 'Logo', objectFit: 'contain', overlayText: 'miCasino', showBrandOverlay: true },
-          },
-          {
-            id: 'default_scoreboard',
-            type: 'scoreboard',
-            label: 'Marcador Principal',
-            gridPosition: { col: 1, row: 2, colSpan: 1, rowSpan: 1 },
-            content: {
-              teamA: { name: 'BRASIL', code: 'BRA', score: 1, flag: '🇧🇷' },
-              teamB: { name: 'FRANCIA', code: 'FRA', score: 2, flag: '🇫🇷' },
-              status: 'FINALIZADO',
-            },
-          },
-          {
-            id: 'default_odds',
-            type: 'results',
-            label: 'Cuotas / Siguiente',
-            gridPosition: { col: 1, row: 3, colSpan: 1, rowSpan: 1 },
-            content: {
-              title: 'SIGUIENTE PARTIDO',
-              matches: [
-                { teamA: 'INGLATERRA', teamB: 'ALEMANIA', scoreA: 3, scoreB: 1.1 },
-              ],
-            },
-          },
-          {
-            id: 'default_hero',
-            type: 'media',
-            label: 'Media Principal',
-            gridPosition: { col: 2, row: 1, colSpan: 4, rowSpan: 2 },
-            content: { src: '/stadium-hero.png', mediaType: 'image', alt: 'Estadio Copa del Mundo', objectFit: 'contain' },
-          },
-          {
-            id: 'default_news',
-            type: 'news',
-            label: 'Noticias',
-            gridPosition: { col: 1, row: 4, colSpan: 1, rowSpan: 1 },
-            content: { title: 'NOTICIAS MUNDIAL', content: 'Las últimas novedades del torneo más importante del mundo.' },
-          },
-          {
-            id: 'default_results',
-            type: 'results',
-            label: 'Resultados',
-            gridPosition: { col: 2, row: 3, colSpan: 2, rowSpan: 2 },
-            content: {
-              title: 'RESULTADOS DEL PARTIDO',
-              matches: [
-                { teamA: 'ESPAÑA', teamB: 'PAISES BAJOS', scoreA: 1, scoreB: 3 },
-              ],
-            },
-          },
-          {
-            id: 'default_featured',
-            type: 'media',
-            label: 'Resultado Destacado',
-            gridPosition: { col: 4, row: 3, colSpan: 1, rowSpan: 2 },
-            content: { src: '', mediaType: 'image', alt: 'Resultado Destacado', objectFit: 'contain', overlayText: "RESULTADOS DEL\nPARTIDO\nESPAÑA 2 — ITALIA 2", showBrandOverlay: false },
-          },
-          {
-            id: 'default_upcoming',
-            type: 'upcoming',
-            label: 'Próximo Partido',
-            gridPosition: { col: 5, row: 3, colSpan: 1, rowSpan: 2 },
-            content: { label: 'SIGUIENTE PARTIDO', time: '4:30PM', teamA: 'ESPAÑA', teamB: 'ITALIA' },
-          },
-          {
-            id: 'default_ticker',
-            type: 'ticker',
-            label: 'Ticker En Vivo',
-            gridPosition: { col: 1, row: 5, colSpan: 5, rowSpan: 1 },
-            content: {
-              isLive: true,
-              messages: [
-                'GOL DE JAMES - COLOMBIA VS. CHILE',
-                'NEYMAR JR. TARJETA AMARILLA',
-                'INFORMACIÓN DE ÚLTIMA HORA',
-                'MESSI: MEJOR JUGADOR DEL PARTIDO',
-              ],
-            },
-          },
-        ],
-        grid: { cols: 5, rows: 5 },
-        orientation: 'horizontal',
-      };
-
-      const defaultDataStr = JSON.stringify(defaultData);
-      await pool.query(`
-        INSERT INTO billboard_config (key_name, config_data, version)
-        VALUES ($1, $2, $3)
-      `, ['live', defaultDataStr, Date.now()]);
-      console.log('[DB] Configuración por defecto de la valla creada en la base de datos.');
-    }
-
-    useFallback = false;
-  } catch (err) {
-    dbErrorMsg = err.message;
-    console.warn(`[DB] No se pudo conectar a PostgreSQL: ${err.message}`);
-    console.warn(`[DB] Usando modo de respaldo: Archivos JSON locales`);
-    useFallback = true;
+      INSERT INTO billboard_config (key_name, config_data, version)
+      VALUES ($1, $2, $3)
+    `, ['live', defaultDataStr, Date.now()]);
+    console.log('[DB] Configuración por defecto de la valla creada en la base de datos.');
   }
 }
 
@@ -257,199 +232,59 @@ export async function ensureDb() {
   return initPromise;
 }
 
-// Fallback JSON loader/saver helpers for layout
-function loadFallback() {
-  try {
-    if (fs.existsSync(fallbackFilePath)) {
-      const content = fs.readFileSync(fallbackFilePath, 'utf8');
-      return JSON.parse(content);
-    }
-  } catch (e) {
-    console.error('[DB] Error al cargar archivo JSON de respaldo:', e);
-  }
-  return null;
-}
-
-function saveFallback(data) {
-  try {
-    const dir = path.dirname(fallbackFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(fallbackFilePath, JSON.stringify(data, null, 2), 'utf8');
-    return true;
-  } catch (e) {
-    console.error('[DB] Error al guardar archivo JSON de respaldo:', e);
-    return false;
-  }
-}
-
-// Fallback JSON loader/saver helpers for users
-function loadUsersFallback() {
-  try {
-    if (fs.existsSync(usersFallbackFilePath)) {
-      const content = fs.readFileSync(usersFallbackFilePath, 'utf8');
-      return JSON.parse(content);
-    }
-  } catch (e) {
-    console.error('[DB] Error al cargar archivo JSON de usuarios de respaldo:', e);
-  }
-  const defaultUsersList = [
-    {
-      id: 'admin',
-      username: 'admin',
-      password: 'admin1234',
-      name: 'Administrador',
-      allowedTypes: ['*']
-    }
-  ];
-  saveUsersFallback(defaultUsersList);
-  return defaultUsersList;
-}
-
-function saveUsersFallback(usersList) {
-  try {
-    const dir = path.dirname(usersFallbackFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(usersFallbackFilePath, JSON.stringify(usersList, null, 2), 'utf8');
-    return true;
-  } catch (e) {
-    console.error('[DB] Error al guardar archivo JSON de usuarios de respaldo:', e);
-    return false;
-  }
-}
-
-function loadHistoryFallback() {
-  try {
-    if (fs.existsSync(historyFallbackFilePath)) {
-      const content = fs.readFileSync(historyFallbackFilePath, 'utf8');
-      return JSON.parse(content);
-    }
-  } catch (e) {
-    console.error('[DB] Error al cargar archivo JSON de historial de respaldo:', e);
-  }
-  return [];
-}
-
-// Save to local fallback file
-function saveHistoryFallback(entry) {
-  try {
-    const list = loadHistoryFallback();
-    list.unshift(entry);
-    const limitedList = list.slice(0, 10);
-    const dir = path.dirname(historyFallbackFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(historyFallbackFilePath, JSON.stringify(limitedList, null, 2), 'utf8');
-    return true;
-  } catch (e) {
-    console.error('[DB] Error al guardar archivo JSON de historial de respaldo:', e);
-    return false;
-  }
-}
-
 // --- Layout configuration functions ---
 
 export async function getConfig(keyName) {
   await ensureDb();
-  if (useFallback) {
-    const local = loadFallback();
-    return local;
-  }
-  try {
-    const res = await pool.query('SELECT config_data, version FROM billboard_config WHERE key_name = $1', [keyName]);
-    if (res.rows.length > 0) {
-      return {
-        ...JSON.parse(res.rows[0].config_data),
-        version: parseInt(res.rows[0].version)
-      };
-    }
-  } catch (err) {
-    console.error('[DB] Error al leer de PostgreSQL, reintentando con respaldo:', err.message);
-    const local = loadFallback();
-    if (local) return local;
+  const res = await pool.query('SELECT config_data, version FROM billboard_config WHERE key_name = $1', [keyName]);
+  if (res.rows.length > 0) {
+    return {
+      ...JSON.parse(res.rows[0].config_data),
+      version: parseInt(res.rows[0].version)
+    };
   }
   return null;
 }
 
 export async function saveConfig(keyName, data, version, approvedBy = 'Desconocido', modifiedBy = 'Desconocido') {
   await ensureDb();
-  // Inject metadata into the JSON data for frontend convenience
   data.publishedBy = approvedBy;
   data.modifiedBy = modifiedBy;
   data.approvedBy = approvedBy;
 
+  const jsonStr = JSON.stringify(data);
+  await pool.query(`
+    INSERT INTO billboard_config (key_name, config_data, version)
+    VALUES ($1, $2, $3)
+    ON CONFLICT (key_name) DO UPDATE 
+    SET config_data = EXCLUDED.config_data, version = EXCLUDED.version
+  `, [keyName, jsonStr, version]);
+  console.log(`[DB] Configuración '${keyName}' guardada en PostgreSQL. Versión: ${version}`);
+
   if (keyName === 'live') {
-    // Always write fallback JSON as secondary backup
-    saveFallback({ ...data, version });
-    saveHistoryFallback({ 
-      username: approvedBy, 
-      approved_by: approvedBy, 
-      modified_by: modifiedBy, 
-      config_data: data, 
-      version, 
-      created_at: new Date().toISOString() 
-    });
-  }
-  
-  if (useFallback) {
-    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento de respaldo local no es persistente. Detalle: ${dbErrorMsg}`);
-  }
-  try {
-    const jsonStr = JSON.stringify(data);
     await pool.query(`
-      INSERT INTO billboard_config (key_name, config_data, version)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (key_name) DO UPDATE 
-      SET config_data = EXCLUDED.config_data, version = EXCLUDED.version
-    `, [keyName, jsonStr, version]);
-    console.log(`[DB] Configuración '${keyName}' guardada en PostgreSQL. Versión: ${version}`);
+      INSERT INTO billboard_history (username, approved_by, modified_by, config_data, version)
+      VALUES ($1, $2, $3, $4, $5)
+    `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
+    console.log(`[DB] Historial registrado en base de datos. Aprobado por: ${approvedBy}`);
 
-    if (keyName === 'live') {
-      // Save in history table with all metadata
-      await pool.query(`
-        INSERT INTO billboard_history (username, approved_by, modified_by, config_data, version)
-        VALUES ($1, $2, $3, $4, $5)
-      `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
-      console.log(`[DB] Historial registrado. Aprobado por: ${approvedBy}, Modificado por: ${modifiedBy}`);
-
-      // Limitar el historial en PostgreSQL a los últimos 10 cambios
-      await pool.query(`
-        DELETE FROM billboard_history
-        WHERE id NOT IN (
-          SELECT id FROM billboard_history
-          ORDER BY id DESC
-          LIMIT 10
-        )
-      `);
-      console.log('[DB] Historial en PostgreSQL limitado a los últimos 10 cambios.');
-    }
-
-    return true;
-  } catch (err) {
-    console.error(`[DB] Error al guardar '${keyName}' en PostgreSQL:`, err.message);
-    throw err;
+    await pool.query(`
+      DELETE FROM billboard_history
+      WHERE id NOT IN (
+        SELECT id FROM billboard_history
+        ORDER BY id DESC
+        LIMIT 10
+      )
+    `);
   }
+  return true;
 }
 
 export async function getVersion(keyName) {
   await ensureDb();
-  if (useFallback) {
-    const local = loadFallback();
-    return local ? local.version : null;
-  }
-  try {
-    const res = await pool.query('SELECT version FROM billboard_config WHERE key_name = $1', [keyName]);
-    if (res.rows.length > 0) {
-      return parseInt(res.rows[0].version);
-    }
-  } catch (err) {
-    console.error('[DB] Error al leer versión de PostgreSQL:', err.message);
-    const local = loadFallback();
-    if (local) return local.version;
+  const res = await pool.query('SELECT version FROM billboard_config WHERE key_name = $1', [keyName]);
+  if (res.rows.length > 0) {
+    return parseInt(res.rows[0].version);
   }
   return null;
 }
@@ -458,107 +293,46 @@ export async function getVersion(keyName) {
 
 export async function authenticateDbUser(username, password) {
   await ensureDb();
-  if (useFallback) {
-    const list = loadUsersFallback();
-    const found = list.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-    if (found) {
-      return { username: found.username, name: found.name, allowedTypes: found.allowedTypes };
-    }
-    return null;
-  }
-  try {
-    const res = await pool.query('SELECT username, name, password, allowed_types FROM users WHERE LOWER(username) = LOWER($1)', [username]);
-    if (res.rows.length > 0 && res.rows[0].password === password) {
-      return {
-        username: res.rows[0].username,
-        name: res.rows[0].name,
-        allowedTypes: JSON.parse(res.rows[0].allowed_types)
-      };
-    }
-  } catch (err) {
-    console.error('[DB] Error al autenticar en PostgreSQL, reintentando con respaldo:', err.message);
-    const list = loadUsersFallback();
-    const found = list.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-    if (found) {
-      return { username: found.username, name: found.name, allowedTypes: found.allowedTypes };
-    }
+  const res = await pool.query('SELECT username, name, password, allowed_types FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+  if (res.rows.length > 0 && res.rows[0].password === password) {
+    return {
+      username: res.rows[0].username,
+      name: res.rows[0].name,
+      allowedTypes: JSON.parse(res.rows[0].allowed_types)
+    };
   }
   return null;
 }
 
 export async function getDbUsers() {
   await ensureDb();
-  if (useFallback) {
-    const list = loadUsersFallback();
-    return list.map(u => ({ username: u.username, name: u.name, allowedTypes: u.allowedTypes }));
-  }
-  try {
-    const res = await pool.query('SELECT username, name, allowed_types FROM users');
-    return res.rows.map(r => ({
-      username: r.username,
-      name: r.name,
-      allowedTypes: JSON.parse(r.allowed_types)
-    }));
-  } catch (err) {
-    console.error('[DB] Error al listar usuarios de PostgreSQL, reintentando con respaldo:', err.message);
-    const list = loadUsersFallback();
-    return list.map(u => ({ username: u.username, name: u.name, allowedTypes: u.allowedTypes }));
-  }
+  const res = await pool.query('SELECT username, name, allowed_types FROM users');
+  return res.rows.map(r => ({
+    username: r.username,
+    name: r.name,
+    allowedTypes: JSON.parse(r.allowed_types)
+  }));
 }
 
 export async function createDbUser(username, password, name, allowedTypes) {
   await ensureDb();
-  
-  // Write to fallback JSON first
-  const list = loadUsersFallback();
-  const idx = list.findIndex(u => u.username.toLowerCase() === username.toLowerCase());
-  
-  if (!password && idx === -1) {
-    console.error('[DB] No se puede crear un usuario nuevo sin contraseña.');
-    return false;
-  }
-
-  const finalPassword = password || (idx > -1 ? list[idx].password : '');
-  
-  const newUser = {
-    id: idx > -1 ? list[idx].id : `user_${Date.now()}`,
-    username,
-    password: finalPassword,
-    name,
-    allowedTypes
-  };
-  if (idx > -1) {
-    list[idx] = newUser;
+  const allowedTypesStr = JSON.stringify(allowedTypes);
+  if (!password) {
+    await pool.query(`
+      UPDATE users 
+      SET name = $1, allowed_types = $2 
+      WHERE LOWER(username) = LOWER($3)
+    `, [name, allowedTypesStr, username]);
   } else {
-    list.push(newUser);
+    await pool.query(`
+      INSERT INTO users (username, password, name, allowed_types)
+      VALUES ($1, $2, $3, $4)
+      ON CONFLICT (username) DO UPDATE 
+      SET password = EXCLUDED.password, name = EXCLUDED.name, allowed_types = EXCLUDED.allowed_types
+    `, [username, password, name, allowedTypesStr]);
   }
-  saveUsersFallback(list);
-
-  if (useFallback) {
-    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
-  }
-  try {
-    const allowedTypesStr = JSON.stringify(allowedTypes);
-    if (!password) {
-      await pool.query(`
-        UPDATE users 
-        SET name = $1, allowed_types = $2 
-        WHERE LOWER(username) = LOWER($3)
-      `, [name, allowedTypesStr, username]);
-    } else {
-      await pool.query(`
-        INSERT INTO users (username, password, name, allowed_types)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (username) DO UPDATE 
-        SET password = EXCLUDED.password, name = EXCLUDED.name, allowed_types = EXCLUDED.allowed_types
-      `, [username, password, name, allowedTypesStr]);
-    }
-    console.log(`[DB] Usuario '${username}' guardado/actualizado en PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error('[DB] Error al guardar usuario en PostgreSQL:', err.message);
-    throw err;
-  }
+  console.log(`[DB] Usuario '${username}' guardado/actualizado en PostgreSQL.`);
+  return true;
 }
 
 export async function deleteDbUser(username) {
@@ -567,221 +341,116 @@ export async function deleteDbUser(username) {
     console.warn('[DB] No se puede eliminar el usuario administrador predeterminado.');
     return false;
   }
-
-  // Delete from fallback JSON
-  const list = loadUsersFallback();
-  const filtered = list.filter(u => u.username.toLowerCase() !== username.toLowerCase());
-  saveUsersFallback(filtered);
-
-  if (useFallback) {
-    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
-  }
-  try {
-    await pool.query('DELETE FROM users WHERE LOWER(username) = LOWER($1)', [username]);
-    console.log(`[DB] Usuario '${username}' eliminado de PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error('[DB] Error al eliminar usuario de PostgreSQL:', err.message);
-    throw err;
-  }
+  await pool.query('DELETE FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+  console.log(`[DB] Usuario '${username}' eliminado de PostgreSQL.`);
+  return true;
 }
 
 // --- Billboard template functions ---
 
 export async function getDbTemplates() {
   await ensureDb();
-  if (useFallback) {
-    return [];
-  }
-  try {
-    const res = await pool.query('SELECT id, template_name, config_data, created_at FROM billboard_templates ORDER BY created_at DESC');
-    return res.rows.map(r => ({
-      id: r.id,
-      template_name: r.template_name,
-      config_data: JSON.parse(r.config_data),
-      created_at: r.created_at
-    }));
-  } catch (err) {
-    console.error('[DB] Error al listar plantillas de PostgreSQL:', err.message);
-    return [];
-  }
+  const res = await pool.query('SELECT id, template_name, config_data, created_at FROM billboard_templates ORDER BY created_at DESC');
+  return res.rows.map(r => ({
+    id: r.id,
+    template_name: r.template_name,
+    config_data: JSON.parse(r.config_data),
+    created_at: r.created_at
+  }));
 }
 
 export async function createDbTemplate(name, configData) {
   await ensureDb();
-  if (useFallback) {
-    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
-  }
-  try {
-    const configDataStr = JSON.stringify(configData);
-    await pool.query(`
-      INSERT INTO billboard_templates (template_name, config_data)
-      VALUES ($1, $2)
-      ON CONFLICT (template_name) DO UPDATE 
-      SET config_data = EXCLUDED.config_data
-    `, [name, configDataStr]);
-    console.log(`[DB] Plantilla '${name}' guardada en PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error('[DB] Error al guardar plantilla en PostgreSQL:', err.message);
-    throw err;
-  }
+  const configDataStr = JSON.stringify(configData);
+  await pool.query(`
+    INSERT INTO billboard_templates (template_name, config_data)
+    VALUES ($1, $2)
+    ON CONFLICT (template_name) DO UPDATE 
+    SET config_data = EXCLUDED.config_data
+  `, [name, configDataStr]);
+  console.log(`[DB] Plantilla '${name}' guardada en PostgreSQL.`);
+  return true;
 }
 
 export async function deleteDbTemplate(id) {
   await ensureDb();
-  if (useFallback) {
-    throw new Error(`La base de datos PostgreSQL no está disponible y el almacenamiento local no es persistente. Detalle: ${dbErrorMsg}`);
+  if (isNaN(id)) {
+    await pool.query('DELETE FROM billboard_templates WHERE template_name = $1', [id]);
+  } else {
+    await pool.query('DELETE FROM billboard_templates WHERE id = $1', [parseInt(id)]);
   }
-  try {
-    if (isNaN(id)) {
-      await pool.query('DELETE FROM billboard_templates WHERE template_name = $1', [id]);
-    } else {
-      await pool.query('DELETE FROM billboard_templates WHERE id = $1', [parseInt(id)]);
-    }
-    console.log(`[DB] Plantilla '${id}' eliminada de PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error('[DB] Error al eliminar plantilla de PostgreSQL:', err.message);
-    throw err;
-  }
+  console.log(`[DB] Plantilla '${id}' eliminada de PostgreSQL.`);
+  return true;
 }
 
 // --- Media Assets Storage Functions ---
 
 export async function saveMediaAsset(filename, mimeType, base64Data, sizeBytes) {
   await ensureDb();
-  if (useFallback) {
-    return true;
-  }
-  try {
-    await pool.query(`
-      INSERT INTO media_assets (filename, mime_type, file_data, size_bytes)
-      VALUES ($1, $2, $3, $4)
-      ON CONFLICT (filename) DO UPDATE 
-      SET mime_type = EXCLUDED.mime_type, file_data = EXCLUDED.file_data, size_bytes = EXCLUDED.size_bytes
-    `, [filename, mimeType, base64Data, sizeBytes]);
-    console.log(`[DB] Archivo multimedia '${filename}' guardado en PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error(`[DB] Error al guardar archivo multimedia en PostgreSQL:`, err.message);
-    throw err;
-  }
+  await pool.query(`
+    INSERT INTO media_assets (filename, mime_type, file_data, size_bytes)
+    VALUES ($1, $2, $3, $4)
+    ON CONFLICT (filename) DO UPDATE 
+    SET mime_type = EXCLUDED.mime_type, file_data = EXCLUDED.file_data, size_bytes = EXCLUDED.size_bytes
+  `, [filename, mimeType, base64Data, sizeBytes]);
+  console.log(`[DB] Archivo multimedia '${filename}' guardado en PostgreSQL.`);
+  return true;
 }
 
 export async function getMediaAsset(filename) {
   await ensureDb();
-  if (useFallback) {
-    return null;
-  }
-  try {
-    const res = await pool.query('SELECT mime_type, file_data FROM media_assets WHERE filename = $1', [filename]);
-    if (res.rows.length > 0) {
-      return {
-        mimeType: res.rows[0].mime_type,
-        fileData: res.rows[0].file_data
-      };
-    }
-  } catch (err) {
-    console.error(`[DB] Error al obtener archivo de PostgreSQL:`, err.message);
+  const res = await pool.query('SELECT mime_type, file_data FROM media_assets WHERE filename = $1', [filename]);
+  if (res.rows.length > 0) {
+    return {
+      mimeType: res.rows[0].mime_type,
+      fileData: res.rows[0].file_data
+    };
   }
   return null;
 }
 
 export async function listMediaAssets() {
   await ensureDb();
-  if (useFallback) {
-    return [];
-  }
-  try {
-    const res = await pool.query('SELECT filename, mime_type, size_bytes, created_at FROM media_assets ORDER BY created_at DESC');
-    return res.rows.map(r => ({
-      filename: r.filename,
-      mimeType: r.mime_type,
-      sizeBytes: r.size_bytes,
-      createdAt: r.created_at
-    }));
-  } catch (err) {
-    console.error(`[DB] Error al listar archivos de PostgreSQL:`, err.message);
-    return [];
-  }
+  const res = await pool.query('SELECT filename, mime_type, size_bytes, created_at FROM media_assets ORDER BY created_at DESC');
+  return res.rows.map(r => ({
+    filename: r.filename,
+    mimeType: r.mime_type,
+    sizeBytes: r.size_bytes,
+    createdAt: r.created_at
+  }));
 }
 
 export async function deleteMediaAsset(filename) {
   await ensureDb();
-  if (useFallback) {
-    return true;
-  }
-  try {
-    await pool.query('DELETE FROM media_assets WHERE filename = $1', [filename]);
-    console.log(`[DB] Archivo '${filename}' eliminado de PostgreSQL.`);
-    return true;
-  } catch (err) {
-    console.error(`[DB] Error al eliminar archivo de PostgreSQL:`, err.message);
-    throw err;
-  }
+  await pool.query('DELETE FROM media_assets WHERE filename = $1', [filename]);
+  console.log(`[DB] Archivo '${filename}' eliminado de PostgreSQL.`);
+  return true;
 }
 
 export async function isUserApprover(username) {
   if (!username) return false;
   await ensureDb();
   if (username.toLowerCase() === 'admin') return true;
-  if (useFallback) {
-    const list = loadUsersFallback();
-    const found = list.find(u => u.username.toLowerCase() === username.toLowerCase());
-    if (found) {
-      return found.allowedTypes.includes('approve') || found.allowedTypes.includes('*');
-    }
-    return false;
-  }
-  try {
-    const res = await pool.query('SELECT allowed_types FROM users WHERE LOWER(username) = LOWER($1)', [username]);
-    if (res.rows.length > 0) {
-      const allowedTypes = JSON.parse(res.rows[0].allowed_types);
-      return allowedTypes.includes('approve') || allowedTypes.includes('*');
-    }
-  } catch (err) {
-    console.error('[DB] Error al verificar si el usuario es aprobador en PostgreSQL:', err.message);
+  const res = await pool.query('SELECT allowed_types FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+  if (res.rows.length > 0) {
+    const allowedTypes = JSON.parse(res.rows[0].allowed_types);
+    return allowedTypes.includes('approve') || allowedTypes.includes('*');
   }
   return false;
 }
 
 export async function getDbHistory() {
   await ensureDb();
-  if (useFallback) {
-    const fallbackList = loadHistoryFallback();
-    return fallbackList.map(item => ({
-      username: item.username || item.approved_by || item.config_data?.approvedBy || 'Desconocido',
-      approved_by: item.approved_by || item.username || item.config_data?.approvedBy || 'Desconocido',
-      modified_by: item.modified_by || item.config_data?.modifiedBy || 'Desconocido',
-      config_data: item.config_data,
-      version: item.version,
-      created_at: item.created_at
-    }));
-  }
-  try {
-    const res = await pool.query('SELECT username, approved_by, modified_by, config_data, version, created_at FROM billboard_history ORDER BY created_at DESC');
-    return res.rows.map(r => {
-      const parsedConfig = JSON.parse(r.config_data);
-      return {
-        username: r.username || r.approved_by || parsedConfig.approvedBy || 'Desconocido',
-        approved_by: r.approved_by || r.username || parsedConfig.approvedBy || 'Desconocido',
-        modified_by: r.modified_by || parsedConfig.modifiedBy || 'Desconocido',
-        config_data: parsedConfig,
-        version: parseInt(r.version),
-        created_at: r.created_at
-      };
-    });
-  } catch (err) {
-    console.error('[DB] Error al obtener el historial de PostgreSQL, usando fallback:', err.message);
-    const fallbackList = loadHistoryFallback();
-    return fallbackList.map(item => ({
-      username: item.username || item.approved_by || item.config_data?.approvedBy || 'Desconocido',
-      approved_by: item.approved_by || item.username || item.config_data?.approvedBy || 'Desconocido',
-      modified_by: item.modified_by || item.config_data?.modifiedBy || 'Desconocido',
-      config_data: item.config_data,
-      version: item.version,
-      created_at: item.created_at
-    }));
-  }
+  const res = await pool.query('SELECT username, approved_by, modified_by, config_data, version, created_at FROM billboard_history ORDER BY created_at DESC');
+  return res.rows.map(r => {
+    const parsedConfig = JSON.parse(r.config_data);
+    return {
+      username: r.username || r.approved_by || parsedConfig.approvedBy || 'Desconocido',
+      approved_by: r.approved_by || r.username || parsedConfig.approvedBy || 'Desconocido',
+      modified_by: r.modified_by || parsedConfig.modifiedBy || 'Desconocido',
+      config_data: parsedConfig,
+      version: parseInt(r.version),
+      created_at: r.created_at
+    };
+  });
 }
