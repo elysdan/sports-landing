@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { defaultBillboardData as defaultData } from '../../backend/seedData.js';
 
 // ─── Generate unique IDs ───
 let _idCounter = 0;
@@ -14,6 +15,8 @@ export const MODULE_TYPES = {
   upcoming: { label: 'Próximo Partido', icon: '📅', description: 'Próximo encuentro con horario' },
   news: { label: 'Noticias', icon: '📰', description: 'Texto informativo / noticias' },
   ticker: { label: 'Ticker En Vivo', icon: '📡', description: 'Barra de noticias en vivo (fila completa)' },
+  apuesta: { label: 'Apuesta', icon: '🪙', description: 'Tarjeta de apuestas (1X2)' },
+  pregunta: { label: 'Apuesta Sí/No', icon: '❓', description: 'Apuesta con respuesta Sí/No' },
 };
 
 // ─── Default content per module type ───
@@ -41,114 +44,83 @@ function defaultContentForType(type) {
         isLive: true,
         messages: ['Noticia en vivo #1', 'Noticia en vivo #2'],
       };
+    case 'apuesta':
+      return {
+        title: '¡MÁXIMA GANANCIA CON MÉXICO!',
+        tag: 'Primer gol',
+        mode: '3-way',
+        teamA: { name: 'México', flag: '🇲🇽', odd: '1,46' },
+        draw: { odd: '4,25' },
+        teamB: { name: 'Sudáfrica', flag: '🇿🇦', odd: '6,66' }
+      };
+    case 'pregunta':
+      return {
+        title: '¿AMBOS EQUIPOS ANOTARÁN?',
+        tag: 'Especiales de fútbol',
+        yesOdd: '1,85',
+        noOdd: '1,95',
+      };
     default:
       return {};
   }
 }
 
-// ─── Default layout matching reference image ───
-const defaultModules = [
-  {
-    id: 'default_brand',
-    type: 'media',
-    label: 'Logo / Marca',
-    gridPosition: { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
-    content: { src: '', mediaType: 'image', alt: 'Logo', objectFit: 'contain', overlayText: 'miCasino', showBrandOverlay: true },
-  },
-  {
-    id: 'default_scoreboard',
-    type: 'scoreboard',
-    label: 'Marcador Principal',
-    gridPosition: { col: 1, row: 2, colSpan: 1, rowSpan: 1 },
-    content: {
-      teamA: { name: 'BRASIL', code: 'BRA', score: 1, flag: '🇧🇷' },
-      teamB: { name: 'FRANCIA', code: 'FRA', score: 2, flag: '🇫🇷' },
-      status: 'FINALIZADO',
-    },
-  },
-  {
-    id: 'default_odds',
-    type: 'results',
-    label: 'Cuotas / Siguiente',
-    gridPosition: { col: 1, row: 3, colSpan: 1, rowSpan: 1 },
-    content: {
-      title: 'SIGUIENTE PARTIDO',
-      matches: [
-        { teamA: 'INGLATERRA', teamB: 'ALEMANIA', scoreA: 3, scoreB: 1.1 },
-      ],
-    },
-  },
-  {
-    id: 'default_hero',
-    type: 'media',
-    label: 'Media Principal',
-    gridPosition: { col: 2, row: 1, colSpan: 4, rowSpan: 2 },
-    content: { src: '/stadium-hero.png', mediaType: 'image', alt: 'Estadio Copa del Mundo', objectFit: 'contain' },
-  },
-  {
-    id: 'default_news',
-    type: 'news',
-    label: 'Noticias',
-    gridPosition: { col: 1, row: 4, colSpan: 1, rowSpan: 1 },
-    content: { title: 'NOTICIAS MUNDIAL', content: 'Las últimas novedades del torneo más importante del mundo.' },
-  },
-  {
-    id: 'default_results',
-    type: 'results',
-    label: 'Resultados',
-    gridPosition: { col: 2, row: 3, colSpan: 2, rowSpan: 2 },
-    content: {
-      title: 'RESULTADOS DEL PARTIDO',
-      matches: [
-        { teamA: 'ESPAÑA', teamB: 'PAISES BAJOS', scoreA: 1, scoreB: 3 },
-      ],
-    },
-  },
-  {
-    id: 'default_featured',
-    type: 'media',
-    label: 'Resultado Destacado',
-    gridPosition: { col: 4, row: 3, colSpan: 1, rowSpan: 2 },
-    content: { src: '', mediaType: 'image', alt: 'Resultado Destacado', objectFit: 'contain', overlayText: 'RESULTADOS DEL\nPARTIDO\nESPAÑA 2 — ITALIA 2', showBrandOverlay: false },
-  },
-  {
-    id: 'default_upcoming',
-    type: 'upcoming',
-    label: 'Próximo Partido',
-    gridPosition: { col: 5, row: 3, colSpan: 1, rowSpan: 2 },
-    content: { label: 'SIGUIENTE PARTIDO', time: '4:30PM', teamA: 'ESPAÑA', teamB: 'ITALIA' },
-  },
-  {
-    id: 'default_ticker',
-    type: 'ticker',
-    label: 'Ticker En Vivo',
-    gridPosition: { col: 1, row: 5, colSpan: 5, rowSpan: 1 },
-    content: {
-      isLive: true,
-      messages: [
-        'GOL DE JAMES - COLOMBIA VS. CHILE',
-        'NEYMAR JR. TARJETA AMARILLA',
-        'INFORMACIÓN DE ÚLTIMA HORA',
-        'MESSI: MEJOR JUGADOR DEL PARTIDO',
-      ],
-    },
-  },
-];
-
-const defaultData = {
-  modules: defaultModules,
-  grid: { cols: 5, rows: 5 },
-  orientation: 'horizontal',
-};
-
-const CMS_DRAFT_KEY = 'sports-billboard-cms-draft-v4';
-const CMS_LIVE_KEY = 'sports-billboard-cms-live-v4';
+const CMS_DRAFT_KEY = 'sports-billboard-cms-draft-v5';
+const CMS_LIVE_KEY = 'sports-billboard-cms-live-v5';
 const CMS_ROLE_KEY = 'sports-billboard-cms-role';
-const CMS_USERS_KEY = 'sports-billboard-cms-users-v4';
+const CMS_USERS_KEY = 'sports-billboard-cms-users-v5';
 
 const defaultUsers = [
   { id: 'user_generic', name: 'Editor General', allowedTypes: ['*'] }
 ];
+
+// Helper to generate safe coordinates for old layouts being migrated
+function createDefaultPositions(modules, targetCols, targetRows, originalGrid, originalPositions) {
+  const positions = {};
+  
+  const defaults_12x6 = {
+    "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+    "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
+    "default_odds": { col: 6, row: 1, colSpan: 3, rowSpan: 2 },
+    "default_hero": { col: 9, row: 1, colSpan: 4, rowSpan: 4 },
+    "default_news": { col: 1, row: 2, colSpan: 2, rowSpan: 4 },
+    "default_results": { col: 3, row: 3, colSpan: 3, rowSpan: 3 },
+    "default_featured": { col: 6, row: 3, colSpan: 3, rowSpan: 3 },
+    "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 },
+    "default_ticker": { col: 1, row: 6, colSpan: 12, rowSpan: 1 }
+  };
+
+  const defaults_9x9 = {
+    "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+    "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
+    "default_odds": { col: 6, row: 1, colSpan: 4, rowSpan: 2 },
+    "default_hero": { col: 1, row: 3, colSpan: 5, rowSpan: 4 },
+    "default_news": { col: 6, row: 3, colSpan: 4, rowSpan: 2 },
+    "default_results": { col: 6, row: 5, colSpan: 4, rowSpan: 2 },
+    "default_featured": { col: 1, row: 7, colSpan: 4, rowSpan: 2 },
+    "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 },
+    "default_ticker": { col: 1, row: 9, colSpan: 9, rowSpan: 1 }
+  };
+
+  const layoutDefaults = (targetCols === 12 && targetRows === 6) ? defaults_12x6 : defaults_9x9;
+
+  modules.forEach(mod => {
+    if (layoutDefaults[mod.id]) {
+      positions[mod.id] = { ...layoutDefaults[mod.id] };
+    } else if (originalPositions[mod.id]) {
+      let { col, row, colSpan, rowSpan } = originalPositions[mod.id];
+      colSpan = Math.max(1, Math.min(targetCols, colSpan));
+      rowSpan = Math.max(1, Math.min(targetRows, rowSpan));
+      col = Math.max(1, Math.min(targetCols - colSpan + 1, col));
+      row = Math.max(1, Math.min(targetRows - rowSpan + 1, row));
+      positions[mod.id] = { col, row, colSpan, rowSpan };
+    } else {
+      positions[mod.id] = { col: 1, row: 1, colSpan: 1, rowSpan: 1 };
+    }
+  });
+
+  return positions;
+}
 
 function migrateData(parsed) {
   if (!parsed || !Array.isArray(parsed.modules)) {
@@ -162,6 +134,28 @@ function migrateData(parsed) {
     }
     return mod;
   });
+
+  // Automated migration: If layouts structure doesn't exist, create it and map old coordinates
+  if (!parsed.layouts) {
+    const originalGrid = parsed.grid || { cols: 5, rows: 5 };
+    const originalPositions = {};
+    parsed.modules.forEach(mod => {
+      originalPositions[mod.id] = mod.gridPosition || { col: 1, row: 1, colSpan: 1, rowSpan: 1 };
+    });
+
+    parsed.layouts = {
+      "12x6": {
+        grid: { cols: 12, rows: 6 },
+        positions: createDefaultPositions(parsed.modules, 12, 6, originalGrid, originalPositions)
+      },
+      "9x9": {
+        grid: { cols: 9, rows: 9 },
+        positions: createDefaultPositions(parsed.modules, 9, 9, originalGrid, originalPositions)
+      }
+    };
+    parsed.activeLayout = "12x6";
+  }
+
   return parsed;
 }
 
@@ -181,9 +175,21 @@ function loadFromStorage(key) {
 const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
-  const [draftData, setDraftData] = useState(() => loadFromStorage(CMS_DRAFT_KEY));
-  const [liveData, setLiveData] = useState(() => loadFromStorage(CMS_LIVE_KEY));
+  const CMS_SESSION_KEY = 'sports-billboard-cms-session';
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem(CMS_SESSION_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const [rawDraftData, setRawDraftData] = useState(() => loadFromStorage(CMS_DRAFT_KEY));
+  const [rawLiveData, setRawLiveData] = useState(() => loadFromStorage(CMS_LIVE_KEY));
   const [currentVersion, setCurrentVersion] = useState(0);
+  const [currentDraftVersion, setCurrentDraftVersion] = useState(0);
   const [hasLoadedFromServer, setHasLoadedFromServer] = useState(false);
 
   // Fetch initial layout data from database on mount
@@ -204,12 +210,19 @@ export function CMSProvider({ children }) {
 
         if (serverLive && serverLive.modules) {
           const migratedLive = migrateData(serverLive);
-          setLiveData(migratedLive);
+          setRawLiveData(migratedLive);
 
           if (serverDraft && serverDraft.modules) {
-            setDraftData(migrateData(serverDraft));
+            const migratedDraft = migrateData(serverDraft);
+            setRawDraftData(migratedDraft);
+            if (migratedDraft.version) {
+              setCurrentDraftVersion(migratedDraft.version);
+            }
           } else {
-            setDraftData(migratedLive);
+            setRawDraftData(migratedLive);
+            if (migratedLive.version) {
+              setCurrentDraftVersion(migratedLive.version);
+            }
           }
 
           if (migratedLive.version) {
@@ -238,7 +251,7 @@ export function CMSProvider({ children }) {
               const data = await dataRes.json();
               if (data && data.modules) {
                 const migrated = migrateData(data);
-                setLiveData(migrated);
+                setRawLiveData(migrated);
                 setCurrentVersion(version);
                 console.log(`[CMS] Vista actualizada a la versión: ${version}`);
               }
@@ -252,18 +265,32 @@ export function CMSProvider({ children }) {
     return () => clearInterval(interval);
   }, [currentVersion]);
 
-  const CMS_SESSION_KEY = 'sports-billboard-cms-session';
+  // Polling to sync draftData in real-time (only for display screens where user is not logged in)
+  useEffect(() => {
+    if (currentUser) return; // Do not overwrite editor state if logged in
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    try {
-      const stored = localStorage.getItem(CMS_SESSION_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch (e) {
-      return null;
-    }
-  });
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/cms/draft');
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.version && data.version > currentDraftVersion) {
+            const migrated = migrateData(data);
+            setRawDraftData(migrated);
+            setCurrentDraftVersion(data.version);
+            console.log(`[CMS] Borrador en pantalla actualizado a la versión: ${data.version}`);
+          }
+        }
+      } catch (e) {
+        // Silently fail
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [currentDraftVersion, currentUser]);
 
-  // Debounced auto-save of draftData to PostgreSQL server
+
+
+  // Debounced auto-save of rawDraftData to PostgreSQL server
   useEffect(() => {
     if (!hasLoadedFromServer || !currentUser) return;
 
@@ -273,7 +300,7 @@ export function CMSProvider({ children }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            config: draftData,
+            config: rawDraftData,
             modifiedBy: currentUser.username
           })
         });
@@ -283,9 +310,26 @@ export function CMSProvider({ children }) {
     }, 1000); // 1 second debounce
 
     return () => clearTimeout(timer);
-  }, [draftData, hasLoadedFromServer, currentUser]);
+  }, [rawDraftData, hasLoadedFromServer, currentUser]);
 
   const [users, setUsers] = useState([]);
+  const [worldCupTeams, setWorldCupTeams] = useState([]);
+
+  const fetchWorldCupTeams = useCallback(async () => {
+    try {
+      const res = await fetch('/api/worldcup-teams');
+      if (res.ok) {
+        const data = await res.json();
+        setWorldCupTeams(data);
+      }
+    } catch (e) {
+      console.error("[CMS] Error al cargar equipos del mundial:", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchWorldCupTeams();
+  }, [fetchWorldCupTeams]);
 
   const role = currentUser ? (currentUser.username === 'admin' ? 'admin' : currentUser.username) : null;
   const setRole = useCallback(() => {}, []);
@@ -310,33 +354,33 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser, fetchUsers]);
 
-  // Guardar draftData en almacenamiento local
+  // Save rawDraftData in local storage
   useEffect(() => {
     try {
-      localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(draftData));
+      localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(rawDraftData));
     } catch (e) {
       console.warn('Failed to save CMS draft data:', e);
     }
-  }, [draftData]);
+  }, [rawDraftData]);
 
-  // Guardar liveData en almacenamiento local
+  // Save rawLiveData in local storage
   useEffect(() => {
     try {
-      localStorage.setItem(CMS_LIVE_KEY, JSON.stringify(liveData));
+      localStorage.setItem(CMS_LIVE_KEY, JSON.stringify(rawLiveData));
     } catch (e) {
       console.warn('Failed to save CMS live data:', e);
     }
-  }, [liveData]);
+  }, [rawLiveData]);
 
-  // Sincronizar pestañas
+  // Sync tabs
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.newValue) {
         try {
           if (e.key === CMS_DRAFT_KEY) {
-            setDraftData(migrateData(JSON.parse(e.newValue)));
+            setRawDraftData(migrateData(JSON.parse(e.newValue)));
           } else if (e.key === CMS_LIVE_KEY) {
-            setLiveData(migrateData(JSON.parse(e.newValue)));
+            setRawLiveData(migrateData(JSON.parse(e.newValue)));
           } else if (e.key === CMS_SESSION_KEY) {
             setCurrentUser(JSON.parse(e.newValue));
           }
@@ -413,12 +457,43 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser, fetchTemplates]);
 
+  // Switch the layout currently being edited
+  const switchLayout = useCallback((layoutName) => {
+    setRawDraftData((prev) => ({
+      ...prev,
+      activeLayout: layoutName
+    }));
+  }, []);
+
+  // Map raw data onto exposed structure based on activeLayout
+  const activeLayoutName = rawDraftData.activeLayout || '12x6';
+  const activeLayoutObj = rawDraftData.layouts?.[activeLayoutName] || { grid: { cols: 12, rows: 6 }, positions: {} };
+
+  const draftData = {
+    ...rawDraftData,
+    grid: activeLayoutObj.grid,
+    modules: rawDraftData.modules.map(mod => ({
+      ...mod,
+      gridPosition: activeLayoutObj.positions?.[mod.id] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
+    }))
+  };
+
+  const liveLayoutObj = rawLiveData.layouts?.[activeLayoutName] || { grid: { cols: 12, rows: 6 }, positions: {} };
+  const liveData = {
+    ...rawLiveData,
+    grid: liveLayoutObj.grid,
+    modules: rawLiveData.modules.map(mod => ({
+      ...mod,
+      gridPosition: liveLayoutObj.positions?.[mod.id] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
+    }))
+  };
+
   const createTemplate = useCallback(async (name) => {
     try {
       const res = await fetch('/api/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, config: draftData })
+        body: JSON.stringify({ name, config: rawDraftData })
       });
       if (res.ok) {
         await fetchTemplates();
@@ -428,11 +503,11 @@ export function CMSProvider({ children }) {
       console.error("[CMS] Error al crear plantilla:", e);
     }
     return false;
-  }, [draftData, fetchTemplates]);
+  }, [rawDraftData, fetchTemplates]);
 
   const applyTemplate = useCallback((templateConfig) => {
     if (templateConfig && templateConfig.modules) {
-      setDraftData({
+      setRawDraftData({
         ...migrateData(templateConfig),
         lastModifiedBy: currentUser?.username || 'Desconocido'
       });
@@ -457,42 +532,95 @@ export function CMSProvider({ children }) {
   }, [fetchTemplates]);
 
   const addModule = useCallback((type) => {
+    const id = uid();
     const newModule = {
-      id: uid(),
+      id,
       type,
       label: MODULE_TYPES[type]?.label || 'Módulo',
-      gridPosition: { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
       content: defaultContentForType(type),
       visible: true,
     };
-    setDraftData((prev) => ({
-      ...prev,
-      modules: [...prev.modules, newModule],
-      lastModifiedBy: currentUser?.username || 'Desconocido'
-    }));
-    return newModule.id;
+    
+    setRawDraftData((prev) => {
+      const updatedLayouts = { ...prev.layouts };
+      Object.keys(updatedLayouts).forEach(layKey => {
+        updatedLayouts[layKey] = {
+          ...updatedLayouts[layKey],
+          positions: {
+            ...updatedLayouts[layKey].positions,
+            [id]: { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
+          }
+        };
+      });
+
+      return {
+        ...prev,
+        modules: [newModule, ...prev.modules],
+        layouts: updatedLayouts,
+        lastModifiedBy: currentUser?.username || 'Desconocido'
+      };
+    });
+    return id;
   }, [currentUser]);
 
   const removeModule = useCallback((id) => {
-    setDraftData((prev) => ({
-      ...prev,
-      modules: prev.modules.filter((m) => m.id !== id),
-      lastModifiedBy: currentUser?.username || 'Desconocido'
-    }));
+    setRawDraftData((prev) => {
+      const updatedLayouts = { ...prev.layouts };
+      Object.keys(updatedLayouts).forEach(layKey => {
+        const nextPositions = { ...updatedLayouts[layKey].positions };
+        delete nextPositions[id];
+        updatedLayouts[layKey] = {
+          ...updatedLayouts[layKey],
+          positions: nextPositions
+        };
+      });
+
+      return {
+        ...prev,
+        modules: prev.modules.filter((m) => m.id !== id),
+        layouts: updatedLayouts,
+        lastModifiedBy: currentUser?.username || 'Desconocido'
+      };
+    });
   }, [currentUser]);
 
   const updateModule = useCallback((id, updates) => {
-    setDraftData((prev) => ({
-      ...prev,
-      modules: prev.modules.map((m) =>
-        m.id === id ? { ...m, ...updates } : m
-      ),
-      lastModifiedBy: currentUser?.username || 'Desconocido'
-    }));
+    setRawDraftData((prev) => {
+      const activeLay = prev.activeLayout || '12x6';
+      
+      if (updates.gridPosition) {
+        const updatedLayouts = { ...prev.layouts };
+        updatedLayouts[activeLay] = {
+          ...updatedLayouts[activeLay],
+          positions: {
+            ...updatedLayouts[activeLay].positions,
+            [id]: { ...updatedLayouts[activeLay].positions[id], ...updates.gridPosition }
+          }
+        };
+
+        const { gridPosition, ...restUpdates } = updates;
+        return {
+          ...prev,
+          layouts: updatedLayouts,
+          modules: prev.modules.map((m) =>
+            m.id === id ? { ...m, ...restUpdates } : m
+          ),
+          lastModifiedBy: currentUser?.username || 'Desconocido'
+        };
+      }
+
+      return {
+        ...prev,
+        modules: prev.modules.map((m) =>
+          m.id === id ? { ...m, ...updates } : m
+        ),
+        lastModifiedBy: currentUser?.username || 'Desconocido'
+      };
+    });
   }, [currentUser]);
 
   const updateModuleContent = useCallback((id, contentUpdates) => {
-    setDraftData((prev) => ({
+    setRawDraftData((prev) => ({
       ...prev,
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, content: { ...m.content, ...contentUpdates } } : m
@@ -502,7 +630,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const moveModule = useCallback((id, direction) => {
-    setDraftData((prev) => {
+    setRawDraftData((prev) => {
       const modules = [...prev.modules];
       const idx = modules.findIndex((m) => m.id === id);
       if (idx === -1) return prev;
@@ -514,36 +642,37 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const updateGrid = useCallback((gridUpdates) => {
-    setDraftData((prev) => {
-      const nextGrid = { ...prev.grid, ...gridUpdates };
-      const nextModules = prev.modules.map((mod) => {
-        let { col, row, colSpan, rowSpan } = mod.gridPosition;
+    setRawDraftData((prev) => {
+      const activeLay = prev.activeLayout || '12x6';
+      const updatedLayouts = { ...prev.layouts };
+      const nextGrid = { ...updatedLayouts[activeLay].grid, ...gridUpdates };
 
-        // Ensure spans do not exceed new grid dimensions
+      const nextPositions = { ...updatedLayouts[activeLay].positions };
+      Object.keys(nextPositions).forEach(modId => {
+        let { col, row, colSpan, rowSpan } = nextPositions[modId] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 };
         colSpan = Math.max(1, Math.min(nextGrid.cols, colSpan));
         rowSpan = Math.max(1, Math.min(nextGrid.rows, rowSpan));
-
-        // Ensure start positions fit inside new grid dimensions with the span
         col = Math.max(1, Math.min(nextGrid.cols - colSpan + 1, col));
         row = Math.max(1, Math.min(nextGrid.rows - rowSpan + 1, row));
-
-        return {
-          ...mod,
-          gridPosition: { col, row, colSpan, rowSpan },
-        };
+        nextPositions[modId] = { col, row, colSpan, rowSpan };
       });
+
+      updatedLayouts[activeLay] = {
+        ...updatedLayouts[activeLay],
+        grid: nextGrid,
+        positions: nextPositions
+      };
 
       return {
         ...prev,
-        grid: nextGrid,
-        modules: nextModules,
+        layouts: updatedLayouts,
         lastModifiedBy: currentUser?.username || 'Desconocido'
       };
     });
   }, [currentUser]);
 
   const updateOrientation = useCallback((orientation) => {
-    setDraftData((prev) => ({
+    setRawDraftData((prev) => ({
       ...prev,
       orientation,
       lastModifiedBy: currentUser?.username || 'Desconocido'
@@ -551,8 +680,8 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const resetAll = useCallback(() => {
-    setDraftData(defaultData);
-    setLiveData(defaultData);
+    setRawDraftData(defaultData);
+    setRawLiveData(defaultData);
     setUsers(defaultUsers);
     setRole('admin');
     localStorage.removeItem(CMS_DRAFT_KEY);
@@ -561,7 +690,7 @@ export function CMSProvider({ children }) {
   }, [setRole]);
 
   const approveAndPublish = useCallback(async () => {
-    const nextLive = { ...draftData };
+    const nextLive = { ...rawDraftData };
     try {
       const res = await fetch('/api/cms', {
         method: 'POST',
@@ -569,12 +698,12 @@ export function CMSProvider({ children }) {
         body: JSON.stringify({
           config: nextLive,
           approvedBy: currentUser?.username || 'Desconocido',
-          modifiedBy: draftData.lastModifiedBy || 'Desconocido'
+          modifiedBy: rawDraftData.lastModifiedBy || 'Desconocido'
         })
       });
       if (res.ok) {
         const resData = await res.json();
-        setLiveData(nextLive);
+        setRawLiveData(nextLive);
         if (resData.version) {
           setCurrentVersion(resData.version);
         }
@@ -587,11 +716,11 @@ export function CMSProvider({ children }) {
       console.error("[CMS] Error al guardar en base de datos:", e);
       alert('Error de red al intentar guardar en base de datos: ' + e.message);
     }
-  }, [draftData, currentUser]);
+  }, [rawDraftData, currentUser]);
 
   const discardDraft = useCallback(() => {
-    setDraftData(liveData);
-  }, [liveData]);
+    setRawDraftData(rawLiveData);
+  }, [rawLiveData]);
 
   const createEditor = useCallback(async (username, password, name, allowedTypes) => {
     try {
@@ -627,6 +756,7 @@ export function CMSProvider({ children }) {
 
   const hasPermission = useCallback((type) => {
     if (!currentUser) return false;
+    if (currentUser.allowedTypes.includes('readonly_media_add')) return false;
     if (
       currentUser.username === 'admin' || 
       currentUser.allowedTypes.includes('*') || 
@@ -640,6 +770,8 @@ export function CMSProvider({ children }) {
       value={{
         draftData,
         liveData,
+        rawLiveData,
+        rawDraftData,
         currentUser,
         login,
         logout,
@@ -649,7 +781,7 @@ export function CMSProvider({ children }) {
         createEditor,
         deleteEditor,
         hasPermission,
-        hasPendingChanges: JSON.stringify(draftData) !== JSON.stringify(liveData),
+        hasPendingChanges: JSON.stringify(rawDraftData) !== JSON.stringify(rawLiveData),
         approveAndPublish,
         discardDraft,
         addModule,
@@ -666,6 +798,9 @@ export function CMSProvider({ children }) {
         deleteTemplate,
         history,
         fetchHistory,
+        activeLayout: rawDraftData.activeLayout || '12x6',
+        switchLayout,
+        worldCupTeams
       }}
     >
       {children}

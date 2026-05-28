@@ -64,7 +64,7 @@ async function initDb() {
   // 2. Try local PostgreSQL connection if environment configuration was not successful or was missing
   if (!connected) {
     console.log('[DB] Intentando conectar a PostgreSQL local (localhost:5432)...');
-    
+
     const localConfig = {
       host: 'localhost',
       port: 5432,
@@ -78,7 +78,7 @@ async function initDb() {
 
     try {
       console.log(`[DB] Probando conexión local - Usuario: ${localConfig.user}, DB: ${localConfig.database}`);
-      
+
       pool = new Pool(localConfig);
       const client = await pool.connect();
       console.log(`[DB] Conectado exitosamente a PostgreSQL local.`);
@@ -201,14 +201,104 @@ async function initDb() {
     await pool.query("CREATE INDEX IF NOT EXISTS idx_billboard_history_created_at ON billboard_history (created_at DESC)");
   } catch (e) { /* Index already exists or error */ }
 
-  // Seed default admin user if empty
-  const userRows = await pool.query('SELECT COUNT(*) as count FROM users');
-  if (parseInt(userRows.rows[0].count) === 0) {
+  // Create world_cup_teams table if not exists
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS world_cup_teams (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) UNIQUE NOT NULL,
+      code VARCHAR(10) NOT NULL,
+      flag VARCHAR(10) NOT NULL
+    )
+  `);
+  console.log('[DB] Tabla world_cup_teams verificada/creada.');
+
+  // Alter flag column type if it is still VARCHAR(10) to support image URLs / base64
+  try {
+    await pool.query('ALTER TABLE world_cup_teams ALTER COLUMN flag TYPE VARCHAR(255)');
+    console.log('[DB] Columna flag en tabla world_cup_teams alterada a VARCHAR(255).');
+  } catch (e) {
+    // Column already altered or error
+  }
+
+  // Seed default World Cup teams - always maintain exactly the 48 selections
+  await pool.query('DELETE FROM world_cup_teams');
+  const defaultTeams = [
+    { name: 'Canadá', code: 'CAN', flag: '🇨🇦' },
+    { name: 'México', code: 'MEX', flag: '🇲🇽' },
+    { name: 'Estados Unidos', code: 'USA', flag: '🇺🇸' },
+    { name: 'Australia', code: 'AUS', flag: '🇦🇺' },
+    { name: 'Irak', code: 'IRQ', flag: '🇮🇶' },
+    { name: 'Irán', code: 'IRN', flag: '🇮🇷' },
+    { name: 'Japón', code: 'JPN', flag: '🇯🇵' },
+    { name: 'Jordania', code: 'JOR', flag: '🇯🇴' },
+    { name: 'Corea del Sur', code: 'KOR', flag: '🇰🇷' },
+    { name: 'Catar', code: 'QAT', flag: '🇶🇦' },
+    { name: 'Arabia Saudita', code: 'KSA', flag: '🇸🇦' },
+    { name: 'Uzbekistán', code: 'UZB', flag: '🇺🇿' },
+    { name: 'Argelia', code: 'ALG', flag: '🇩🇿' },
+    { name: 'Cabo Verde', code: 'CPV', flag: '🇨🇻' },
+    { name: 'Rep. Dem. del Congo', code: 'COD', flag: '🇨🇩' },
+    { name: 'Costa de Marfil', code: 'CIV', flag: '🇨🇮' },
+    { name: 'Egipto', code: 'EGY', flag: '🇪🇬' },
+    { name: 'Ghana', code: 'GHA', flag: '🇬🇭' },
+    { name: 'Marruecos', code: 'MAR', flag: '🇲🇦' },
+    { name: 'Senegal', code: 'SEN', flag: '🇸🇳' },
+    { name: 'Sudáfrica', code: 'RSA', flag: '🇿🇦' },
+    { name: 'Túnez', code: 'TUN', flag: '🇹🇳' },
+    { name: 'Curazao', code: 'CUW', flag: '🇨🇼' },
+    { name: 'Haití', code: 'HAI', flag: '🇭🇹' },
+    { name: 'Panamá', code: 'PAN', flag: '🇵🇦' },
+    { name: 'Argentina', code: 'ARG', flag: '🇦🇷' },
+    { name: 'Brasil', code: 'BRA', flag: '🇧🇷' },
+    { name: 'Colombia', code: 'COL', flag: '🇨🇴' },
+    { name: 'Ecuador', code: 'ECU', flag: '🇪🇨' },
+    { name: 'Paraguay', code: 'PAR', flag: '🇵🇾' },
+    { name: 'Uruguay', code: 'URU', flag: '🇺🇾' },
+    { name: 'Nueva Zelanda', code: 'NZL', flag: '🇳🇿' },
+    { name: 'Austria', code: 'AUT', flag: '🇦🇹' },
+    { name: 'Bélgica', code: 'BEL', flag: '🇧🇪' },
+    { name: 'Bosnia y Herzegovina', code: 'BIH', flag: '🇧🇦' },
+    { name: 'Croacia', code: 'CRO', flag: '🇭🇷' },
+    { name: 'República Checa', code: 'CZE', flag: '🇨🇿' },
+    { name: 'Inglaterra', code: 'ENG', flag: 'ENG' }, // Inglaterra
+    { name: 'Francia', code: 'FRA', flag: '🇫🇷' },
+    { name: 'Alemania', code: 'GER', flag: '🇩🇪' },
+    { name: 'Países Bajos', code: 'NED', flag: '🇳🇱' },
+    { name: 'Noruega', code: 'NOR', flag: '🇳🇴' },
+    { name: 'Portugal', code: 'POR', flag: '🇵🇹' },
+    { name: 'Escocia', code: 'SCO', flag: 'SCO' }, // Escocia
+    { name: 'España', code: 'ESP', flag: '🇪🇸' },
+    { name: 'Suecia', code: 'SWE', flag: '🇸🇪' },
+    { name: 'Suiza', code: 'SUI', flag: '🇨🇭' },
+    { name: 'Turquía', code: 'TUR', flag: '🇹🇷' }
+  ];
+
+  for (const team of defaultTeams) {
     await pool.query(`
-      INSERT INTO users (username, password, name, allowed_types)
-      VALUES ($1, $2, $3, $4)
-    `, ['admin', 'admin1234', 'Administrador', JSON.stringify(['*'])]);
-    console.log('[DB] Usuario administrador por defecto (admin / admin1234) creado.');
+      INSERT INTO world_cup_teams (name, code, flag)
+      VALUES ($1, $2, $3)
+      ON CONFLICT (name) DO NOTHING
+    `, [team.name, team.code, team.flag]);
+  }
+  console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA.');
+
+  // Seed default users if they do not exist
+  const defaultUsers = [
+    { username: 'admin', password: 'admin1234', name: 'Administrador', allowedTypes: ['*'] },
+    { username: 'aprobador', password: 'aprobador1234', name: 'Usuario Aprobador', allowedTypes: ['*', 'approve'] },
+    { username: 'editor', password: 'editor1234', name: 'Usuario Editor', allowedTypes: ['*'] },
+    { username: 'multimedia', password: 'multimedia1234', name: 'Usuario Galería', allowedTypes: ['readonly_media_add'] }
+  ];
+
+  for (const u of defaultUsers) {
+    const userExist = await pool.query('SELECT 1 FROM users WHERE LOWER(username) = LOWER($1)', [u.username]);
+    if (userExist.rows.length === 0) {
+      await pool.query(`
+        INSERT INTO users (username, password, name, allowed_types)
+        VALUES ($1, $2, $3, $4)
+      `, [u.username, u.password, u.name, JSON.stringify(u.allowedTypes)]);
+      console.log(`[DB] Usuario por defecto (${u.username} / ${u.password}) creado.`);
+    }
   }
 
   // Seed default billboard config if empty
@@ -453,4 +543,10 @@ export async function getDbHistory() {
       created_at: r.created_at
     };
   });
+}
+
+export async function getDbWorldCupTeams() {
+  await ensureDb();
+  const res = await pool.query('SELECT name, code, flag FROM world_cup_teams ORDER BY name ASC');
+  return res.rows;
 }

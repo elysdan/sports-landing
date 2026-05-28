@@ -137,6 +137,209 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           </div>
         </div>
 
+        {/* Estilo del Módulo */}
+        <div className="editor-section">
+          <div className="editor-section-title">Estilo del Módulo</div>
+          
+          <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '16px' }}>
+            {/* Fondo del Módulo */}
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Estilo de Fondo del Módulo</label>
+              <select
+                value={module.content.moduleBgTransparent === true ? 'transparent' : 'solid'}
+                onChange={(e) => handleContentChange('moduleBgTransparent', e.target.value === 'transparent')}
+                style={{ marginTop: '6px' }}
+              >
+                <option value="transparent">Fondo Transparente (Elementos con fondo propio)</option>
+                <option value="solid">Fondo con Color Sólido (Módulo completo)</option>
+              </select>
+              {module.content.moduleBgTransparent !== true && (
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Color de Fondo del Módulo Completo</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+                    <input
+                      type="color"
+                      value={module.content.moduleBgColor && /^#[0-9A-F]{6}$/i.test(module.content.moduleBgColor) ? module.content.moduleBgColor : '#0a0a0a'}
+                      onChange={(e) => handleContentChange('moduleBgColor', e.target.value)}
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        padding: '2px',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        flexShrink: 0
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={module.content.moduleBgColor || ''}
+                      onChange={(e) => handleContentChange('moduleBgColor', e.target.value)}
+                      placeholder="Ej: #0a0a0a o rgba(10,10,10,0.5)"
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginTop: '12px' }}>
+                <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Color de Fondo de los Elementos (Tarjetas)</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+                  <input
+                    type="color"
+                    value={module.content.cardBgColor && /^#[0-9A-F]{6}$/i.test(module.content.cardBgColor) ? module.content.cardBgColor : '#161616'}
+                    onChange={(e) => handleContentChange('cardBgColor', e.target.value)}
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      padding: '2px',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      background: 'transparent',
+                      flexShrink: 0
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={module.content.cardBgColor || ''}
+                    onChange={(e) => handleContentChange('cardBgColor', e.target.value)}
+                    placeholder="Ej: #161616 o rgba(255,255,255,0.05)"
+                    style={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contorno / Bordes del Módulo */}
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Estilo del Contorno del Módulo</label>
+              <select
+                value={module.content.moduleBorderTransparent === true ? 'transparent' : 'color'}
+                onChange={(e) => handleContentChange('moduleBorderTransparent', e.target.value === 'transparent')}
+                style={{ marginTop: '6px' }}
+              >
+                <option value="transparent">Sin Contorno (Líneas invisibles)</option>
+                <option value="color">Contorno con Color Personalizado</option>
+              </select>
+
+              {module.content.moduleBorderTransparent !== true && (
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Color del Contorno / Bordes</label>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+                    <input
+                      type="color"
+                      value={module.content.moduleBorderColor && /^#[0-9A-F]{6}$/i.test(module.content.moduleBorderColor) ? module.content.moduleBorderColor : '#2a2a2a'}
+                      onChange={(e) => handleContentChange('moduleBorderColor', e.target.value)}
+                      style={{
+                        width: '42px',
+                        height: '42px',
+                        padding: '2px',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        background: 'transparent',
+                        flexShrink: 0
+                      }}
+                    />
+                    <input
+                      type="text"
+                      value={module.content.moduleBorderColor || ''}
+                      onChange={(e) => handleContentChange('moduleBorderColor', e.target.value)}
+                      placeholder="Ej: #2a2a2a o rgba(255,255,255,0.1)"
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
+            {/* Tamaño del Texto */}
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Tamaño de Letra (Factor de Escala)</label>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="3.0"
+                  step="0.1"
+                  value={module.content.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0}
+                  onChange={(e) => handleContentChange('textSizeFactor', parseFloat(e.target.value))}
+                  style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+                />
+                <span style={{ 
+                  fontSize: '14px', 
+                  fontWeight: '600', 
+                  color: 'var(--color-primary)', 
+                  minWidth: '40px', 
+                  textAlign: 'right',
+                  fontFamily: 'monospace'
+                }}>
+                  {(module.content.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0).toFixed(1)}x
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                Ajusta el tamaño relativo del texto del módulo sin alterar su estructura.
+              </div>
+            </div>
+
+            {/* Color del Texto */}
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Color del Texto / Letras</label>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+                <input
+                  type="color"
+                  value={module.content.textColor && /^#[0-9A-F]{6}$/i.test(module.content.textColor) ? module.content.textColor : '#ffffff'}
+                  onChange={(e) => handleContentChange('textColor', e.target.value)}
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    padding: '2px',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    background: 'transparent',
+                    flexShrink: 0
+                  }}
+                />
+                <input
+                  type="text"
+                  value={module.content.textColor || ''}
+                  onChange={(e) => handleContentChange('textColor', e.target.value)}
+                  placeholder="Ej: #ffffff o var(--color-white)"
+                  style={{ flex: 1 }}
+                />
+                {module.content.textColor && (
+                  <button
+                    type="button"
+                    onClick={() => handleContentChange('textColor', '')}
+                    style={{
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '4px',
+                      color: 'var(--color-text)',
+                      padding: '8px 12px',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      height: '42px'
+                    }}
+                    title="Restablecer color por defecto"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                Deja el campo vacío para usar los colores predeterminados del módulo.
+              </div>
+            </div>
+          </div>
+
+        </div>
+
         {/* Type-specific content editor */}
         <div className="editor-section">
           <div className="editor-section-title">Contenido</div>
@@ -149,7 +352,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
             />
           )}
           {module.type === 'scoreboard' && (
-            <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} />
+            <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} onOpenLibrary={onOpenLibrary} />
           )}
           {module.type === 'results' && (
             <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
@@ -162,6 +365,23 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           )}
           {module.type === 'ticker' && (
             <TickerEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
+          )}
+          {module.type === 'apuesta' && (
+            <ApuestaEditor
+              content={module.content}
+              onChange={handleContentChange}
+              updateModuleContent={updateModuleContent}
+              moduleId={module.id}
+              onOpenLibrary={onOpenLibrary}
+            />
+          )}
+          {module.type === 'pregunta' && (
+            <PreguntaEditor
+              content={module.content}
+              onChange={handleContentChange}
+              updateModuleContent={updateModuleContent}
+              moduleId={module.id}
+            />
           )}
         </div>
       </fieldset>
@@ -244,15 +464,63 @@ function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
 }
 
 /* ─── Scoreboard Editor ─── */
-function ScoreboardEditor({ content, updateModuleContent, moduleId }) {
+function ScoreboardEditor({ content, updateModuleContent, moduleId, onOpenLibrary }) {
+  const { worldCupTeams = [] } = useCMS();
+
   const update = (team, field, value) => {
     updateModuleContent(moduleId, {
       [team]: { ...content[team], [field]: field === 'score' ? (parseInt(value) || 0) : value },
     });
   };
 
+  const handleSelectTeam = (teamKey, teamName) => {
+    if (!teamName) return;
+    const teamObj = worldCupTeams.find(t => t.name === teamName);
+    if (teamObj) {
+      updateModuleContent(moduleId, {
+        [teamKey]: {
+          ...content[teamKey],
+          name: teamObj.name.toUpperCase(),
+          code: teamObj.code.toUpperCase(),
+          flag: teamObj.flag
+        }
+      });
+    }
+  };
+
   return (
     <>
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Selección Rápida de Equipo A</label>
+          <select
+            value=""
+            onChange={(e) => handleSelectTeam('teamA', e.target.value)}
+          >
+            <option value="">-- Seleccionar Equipo A --</option>
+            {worldCupTeams.map((team) => (
+              <option key={`a-${team.name}`} value={team.name}>
+                {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name} ({team.code})
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Selección Rápida de Equipo B</label>
+          <select
+            value=""
+            onChange={(e) => handleSelectTeam('teamB', e.target.value)}
+          >
+            <option value="">-- Seleccionar Equipo B --</option>
+            {worldCupTeams.map((team) => (
+              <option key={`b-${team.name}`} value={team.name}>
+                {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name} ({team.code})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="field-row">
         <div className="field">
           <label>Equipo A — Nombre</label>
@@ -269,8 +537,28 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId }) {
           <input type="number" value={content.teamA.score} onChange={(e) => update('teamA', 'score', e.target.value)} />
         </div>
         <div className="field">
-          <label>Equipo A — Bandera (emoji)</label>
-          <input type="text" value={content.teamA.flag} onChange={(e) => update('teamA', 'flag', e.target.value)} />
+          <label>Equipo A — Bandera (emoji o imagen)</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={content.teamA.flag} 
+              onChange={(e) => update('teamA', 'flag', e.target.value)} 
+              placeholder="Emoji o URL de imagen"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                onOpenLibrary((url) => {
+                  update('teamA', 'flag', url);
+                });
+              }}
+            >
+              🖼️ Elegir
+            </button>
+          </div>
         </div>
       </div>
 
@@ -292,8 +580,28 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId }) {
           <input type="number" value={content.teamB.score} onChange={(e) => update('teamB', 'score', e.target.value)} />
         </div>
         <div className="field">
-          <label>Equipo B — Bandera (emoji)</label>
-          <input type="text" value={content.teamB.flag} onChange={(e) => update('teamB', 'flag', e.target.value)} />
+          <label>Equipo B — Bandera (emoji o imagen)</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={content.teamB.flag} 
+              onChange={(e) => update('teamB', 'flag', e.target.value)} 
+              placeholder="Emoji o URL de imagen"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                onOpenLibrary((url) => {
+                  update('teamB', 'flag', url);
+                });
+              }}
+            >
+              🖼️ Elegir
+            </button>
+          </div>
         </div>
       </div>
 
@@ -305,8 +613,274 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId }) {
   );
 }
 
+/* ─── Apuesta Editor ─── */
+function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpenLibrary }) {
+  const { worldCupTeams = [] } = useCMS();
+
+  const updateTeam = (team, field, value) => {
+    const existing = content[team] || {};
+    updateModuleContent(moduleId, {
+      [team]: { ...existing, [field]: value },
+    });
+  };
+
+  const handleSelectTeam = (teamKey, teamName) => {
+    if (!teamName) return;
+    const teamObj = worldCupTeams.find(t => t.name === teamName);
+    if (teamObj) {
+      const existing = content[teamKey] || {};
+      updateModuleContent(moduleId, {
+        [teamKey]: {
+          ...existing,
+          name: teamObj.name,
+          flag: teamObj.flag
+        }
+      });
+    }
+  };
+
+  return (
+    <>
+      <div className="field-row-3">
+        <div className="field">
+          <label>Estructura de Apuesta</label>
+          <select
+            value={content.mode || '3-way'}
+            onChange={(e) => onChange('mode', e.target.value)}
+          >
+            <option value="3-way">3 Opciones (Local / Empate / Visitante)</option>
+            <option value="2-way">2 Opciones (Local / Visitante)</option>
+            <option value="1-way">1 Opción (Ganador Único / Jugador)</option>
+          </select>
+        </div>
+        <div className="field">
+          <label>Título (ej: ¡MÁXIMA GANANCIA CON MÉXICO!)</label>
+          <input
+            type="text"
+            value={content.title || ''}
+            onChange={(e) => onChange('title', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Etiqueta / Tipo (ej: Primer gol)</label>
+          <input
+            type="text"
+            value={content.tag || ''}
+            onChange={(e) => onChange('tag', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
+      {/* Team A quick select and details */}
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        {content.mode === '1-way' ? 'Opción Única (Jugador / Equipo)' : 'Opción A (Local)'}
+      </h3>
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Selección Rápida</label>
+          <select
+            value=""
+            onChange={(e) => handleSelectTeam('teamA', e.target.value)}
+          >
+            <option value="">-- Seleccionar --</option>
+            {worldCupTeams.map((team) => (
+              <option key={`ap-a-${team.name}`} value={team.name}>
+                {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label>Nombre</label>
+          <input
+            type="text"
+            value={content.teamA?.name || ''}
+            onChange={(e) => updateTeam('teamA', 'name', e.target.value)}
+            placeholder={content.mode === '1-way' ? 'Nombre del jugador o equipo' : 'Nombre del equipo'}
+          />
+        </div>
+      </div>
+
+      <div className="field-row">
+        <div className="field">
+          <label>Cuota (ej: 1,46)</label>
+          <input
+            type="text"
+            value={content.teamA?.odd || ''}
+            onChange={(e) => updateTeam('teamA', 'odd', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Bandera / Foto (emoji o imagen)</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={content.teamA?.flag || ''} 
+              onChange={(e) => updateTeam('teamA', 'flag', e.target.value)} 
+              placeholder="Emoji o URL de imagen"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                onOpenLibrary((url) => {
+                  updateTeam('teamA', 'flag', url);
+                });
+              }}
+            >
+              🖼️ Elegir
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Draw info - only show if mode is 3-way */}
+      {(content.mode === '3-way' || !content.mode) && (
+        <>
+          <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+          <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Opción de Empate
+          </h3>
+          <div className="field-row">
+            <div className="field">
+              <label>Cuota de Empate (ej: 4,25)</label>
+              <input
+                type="text"
+                value={content.draw?.odd || ''}
+                onChange={(e) => updateModuleContent(moduleId, { draw: { ...content.draw, odd: e.target.value } })}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Team B quick select and details - only show if mode is 3-way or 2-way */}
+      {(content.mode === '3-way' || content.mode === '2-way' || !content.mode) && (
+        <>
+          <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+          <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+            Opción B (Visitante)
+          </h3>
+          <div className="field-row" style={{ marginBottom: '16px' }}>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Selección Rápida de Equipo B</label>
+              <select
+                value=""
+                onChange={(e) => handleSelectTeam('teamB', e.target.value)}
+              >
+                <option value="">-- Seleccionar Equipo B --</option>
+                {worldCupTeams.map((team) => (
+                  <option key={`ap-b-${team.name}`} value={team.name}>
+                    {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="field">
+              <label>Equipo B — Nombre</label>
+              <input
+                type="text"
+                value={content.teamB?.name || ''}
+                onChange={(e) => updateTeam('teamB', 'name', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="field-row">
+            <div className="field">
+              <label>Equipo B — Cuota (ej: 6,66)</label>
+              <input
+                type="text"
+                value={content.teamB?.odd || ''}
+                onChange={(e) => updateTeam('teamB', 'odd', e.target.value)}
+              />
+            </div>
+            <div className="field">
+              <label>Equipo B — Bandera (emoji o imagen)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  value={content.teamB?.flag || ''} 
+                  onChange={(e) => updateTeam('teamB', 'flag', e.target.value)} 
+                  placeholder="Emoji o URL de imagen"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+                  onClick={() => {
+                    onOpenLibrary((url) => {
+                      updateTeam('teamB', 'flag', url);
+                    });
+                  }}
+                >
+                  🖼️ Elegir
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </>
+  );
+}
+
+/* ─── Pregunta Editor ─── */
+function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
+  return (
+    <>
+      <div className="field-row">
+        <div className="field">
+          <label>Pregunta / Título (ej: ¿AMBOS EQUIPOS ANOTARÁN?)</label>
+          <input
+            type="text"
+            value={content.title || ''}
+            onChange={(e) => onChange('title', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Etiqueta / Categoría (ej: Especiales de fútbol)</label>
+          <input
+            type="text"
+            value={content.tag || ''}
+            onChange={(e) => onChange('tag', e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
+      <div className="field-row">
+        <div className="field">
+          <label>Cuota para "SÍ" (ej: 1,85)</label>
+          <input
+            type="text"
+            value={content.yesOdd || ''}
+            onChange={(e) => onChange('yesOdd', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Cuota para "NO" (ej: 1,95)</label>
+          <input
+            type="text"
+            value={content.noOdd || ''}
+            onChange={(e) => onChange('noOdd', e.target.value)}
+          />
+        </div>
+      </div>
+    </>
+  );
+}
+
 /* ─── Results Editor ─── */
 function ResultsEditor({ content, updateModuleContent, moduleId }) {
+  const { worldCupTeams = [] } = useCMS();
+
   const updateMatch = (idx, field, value) => {
     const updated = [...(content.matches || [])];
     updated[idx] = { ...updated[idx], [field]: field.startsWith('score') ? (parseInt(value) || 0) : value };
@@ -336,6 +910,22 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
         <div className="match-editor-row" key={i}>
           <div className="field">
             <label>Equipo A</label>
+            <select
+              value=""
+              onChange={(e) => {
+                if (e.target.value) {
+                  updateMatch(i, 'teamA', e.target.value);
+                }
+              }}
+              style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
+            >
+              <option value="">-- Sel. Rápida --</option>
+              {worldCupTeams.map((team) => (
+                <option key={`match-a-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
+                  {team.flag} {team.name}
+                </option>
+              ))}
+            </select>
             <input type="text" value={match.teamA} onChange={(e) => updateMatch(i, 'teamA', e.target.value)} />
           </div>
           <div className="field">
@@ -349,6 +939,22 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
           <div className="field" style={{ display: 'flex', alignItems: 'end', gap: 4 }}>
             <div style={{ flex: 1 }}>
               <label>Equipo B</label>
+              <select
+                value=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    updateMatch(i, 'teamB', e.target.value);
+                  }
+                }}
+                style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px', width: '100%' }}
+              >
+                <option value="">-- Sel. Rápida --</option>
+                {worldCupTeams.map((team) => (
+                  <option key={`match-b-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
+                    {team.flag} {team.name}
+                  </option>
+                ))}
+              </select>
               <input type="text" value={match.teamB} onChange={(e) => updateMatch(i, 'teamB', e.target.value)} />
             </div>
             <button className="admin-btn-icon danger" onClick={() => removeMatch(i)} style={{ marginBottom: 0 }}>✕</button>
@@ -363,6 +969,8 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
 
 /* ─── Upcoming Editor ─── */
 function UpcomingEditor({ content, onChange }) {
+  const { worldCupTeams = [] } = useCMS();
+
   return (
     <>
       <div className="field">
@@ -376,10 +984,42 @@ function UpcomingEditor({ content, onChange }) {
       <div className="field-row">
         <div className="field">
           <label>Equipo A</label>
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                onChange('teamA', e.target.value);
+              }
+            }}
+            style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
+          >
+            <option value="">-- Sel. Rápida --</option>
+            {worldCupTeams.map((team) => (
+              <option key={`upcoming-a-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
+                {team.flag} {team.name}
+              </option>
+            ))}
+          </select>
           <input type="text" value={content.teamA} onChange={(e) => onChange('teamA', e.target.value)} />
         </div>
         <div className="field">
           <label>Equipo B</label>
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) {
+                onChange('teamB', e.target.value);
+              }
+            }}
+            style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
+          >
+            <option value="">-- Sel. Rápida --</option>
+            {worldCupTeams.map((team) => (
+              <option key={`upcoming-b-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
+                {team.flag} {team.name}
+              </option>
+            ))}
+          </select>
           <input type="text" value={content.teamB} onChange={(e) => onChange('teamB', e.target.value)} />
         </div>
       </div>
@@ -520,8 +1160,11 @@ function LivePreview({ modules, grid, screenType }) {
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        background: '#050505',
-        borderRadius: 'var(--radius-sm)'
+        backgroundColor: '#121212',
+        backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px)',
+        backgroundSize: '24px 24px',
+        borderRadius: 'var(--radius-sm)',
+        boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.6)'
       }}
     >
       <div
@@ -559,7 +1202,9 @@ function LivePreview({ modules, grid, screenType }) {
           gap: '2px',
           display: 'grid',
           position: 'absolute',
-          flexShrink: 0
+          flexShrink: 0,
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.08)'
         }}
       >
         {layout.modules.map((mod) => {
@@ -574,7 +1219,13 @@ function LivePreview({ modules, grid, screenType }) {
                 zIndex: modules.length - indexInMaster
               }}
             >
-              <RenderModule module={mod} />
+              <RenderModule 
+                module={mod} 
+                gridPosition={mod.gridPosition} 
+                gridCols={layout.grid.cols} 
+                gridRows={layout.grid.rows} 
+                isLivePreview={true}
+              />
             </div>
           );
         })}
@@ -651,13 +1302,33 @@ const compareConfigs = (before, after) => {
    LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
 function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, removeModule, hasPermission }) {
-  const { liveData, draftData, currentUser, hasPendingChanges } = useCMS();
+  const { liveData, draftData, currentUser, hasPendingChanges, activeLayout } = useCMS();
   const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
   const [dragState, setDragState] = useState(null);
   const gridRef = useRef(null);
   const [activeTab, setActiveTab] = useState('blueprint'); // 'blueprint' or 'live'
-  const [previewType, setPreviewType] = useState('horizontal'); // 'horizontal', 'vertical', '12x6', '9x9'
+  const [previewType, setPreviewType] = useState('12x6'); // Default to 12x6
   const [liveViewMode, setLiveViewMode] = useState('draft'); // 'live' or 'draft'
+  const [isMinimized, setIsMinimized] = useState(() => {
+    return localStorage.getItem('layout_preview_minimized') === 'true';
+  });
+
+  const toggleMinimize = () => {
+    setIsMinimized(prev => {
+      const next = !prev;
+      localStorage.setItem('layout_preview_minimized', String(next));
+      return next;
+    });
+  };
+
+  // Update preview type aspect ratio when active layout shifts
+  useEffect(() => {
+    if (activeLayout === '12x6') {
+      setPreviewType('12x6');
+    } else if (activeLayout === '9x9') {
+      setPreviewType('9x9');
+    }
+  }, [activeLayout]);
 
   const targetModules = liveViewMode === 'live' ? (liveData?.modules || []) : modules;
   const targetGrid = liveViewMode === 'live' ? (liveData?.grid || { cols: 5, rows: 5 }) : grid;
@@ -736,6 +1407,8 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
       moduleId: mod.id,
       startX: e.clientX,
       startY: e.clientY,
+      startCol: mod.gridPosition.col,
+      startRow: mod.gridPosition.row,
       startColSpan: mod.gridPosition.colSpan,
       startRowSpan: mod.gridPosition.rowSpan,
     });
@@ -755,6 +1428,8 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
       moduleId: mod.id,
       startX: touch.clientX,
       startY: touch.clientY,
+      startCol: mod.gridPosition.col,
+      startRow: mod.gridPosition.row,
       startColSpan: mod.gridPosition.colSpan,
       startRowSpan: mod.gridPosition.rowSpan,
     });
@@ -798,26 +1473,56 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
           });
         }
       } else if (dragState.type === 'resize') {
-        const colSpanDiff = Math.round(dx / cellWidth);
-        const rowSpanDiff = Math.round(dy / cellHeight);
+        const colDiff = Math.round(dx / cellWidth);
+        const rowDiff = Math.round(dy / cellHeight);
 
-        let newColSpan = dragState.startColSpan;
-        let newRowSpan = dragState.startRowSpan;
+        let newCol = mod.gridPosition.col;
+        let newRow = mod.gridPosition.row;
+        let newColSpan = mod.gridPosition.colSpan;
+        let newRowSpan = mod.gridPosition.rowSpan;
 
-        if (dragState.direction === 'e' || dragState.direction === 'se') {
-          newColSpan = dragState.startColSpan + colSpanDiff;
-          newColSpan = Math.max(1, Math.min(grid.cols - mod.gridPosition.col + 1, newColSpan));
+        const dir = dragState.direction;
+
+        // Cambios en columnas (E / W / NW / NE / SW / SE)
+        if (dir.includes('w')) {
+          const maxColRight = dragState.startCol + dragState.startColSpan;
+          newCol = dragState.startCol + colDiff;
+          newCol = Math.max(1, Math.min(maxColRight - 1, newCol));
+          newColSpan = maxColRight - newCol;
+        } else if (dir.includes('e')) {
+          newCol = dragState.startCol;
+          newColSpan = dragState.startColSpan + colDiff;
+          newColSpan = Math.max(1, Math.min(grid.cols - dragState.startCol + 1, newColSpan));
+        } else {
+          newCol = dragState.startCol;
+          newColSpan = dragState.startColSpan;
         }
 
-        if (dragState.direction === 's' || dragState.direction === 'se') {
-          newRowSpan = dragState.startRowSpan + rowSpanDiff;
-          newRowSpan = Math.max(1, Math.min(grid.rows - mod.gridPosition.row + 1, newRowSpan));
+        // Cambios en filas (N / S / NW / NE / SW / SE)
+        if (dir.includes('n')) {
+          const maxRowBottom = dragState.startRow + dragState.startRowSpan;
+          newRow = dragState.startRow + rowDiff;
+          newRow = Math.max(1, Math.min(maxRowBottom - 1, newRow));
+          newRowSpan = maxRowBottom - newRow;
+        } else if (dir.includes('s')) {
+          newRow = dragState.startRow;
+          newRowSpan = dragState.startRowSpan + rowDiff;
+          newRowSpan = Math.max(1, Math.min(grid.rows - dragState.startRow + 1, newRowSpan));
+        } else {
+          newRow = dragState.startRow;
+          newRowSpan = dragState.startRowSpan;
         }
 
-        if (newColSpan !== mod.gridPosition.colSpan || newRowSpan !== mod.gridPosition.rowSpan) {
+        if (
+          newCol !== mod.gridPosition.col ||
+          newRow !== mod.gridPosition.row ||
+          newColSpan !== mod.gridPosition.colSpan ||
+          newRowSpan !== mod.gridPosition.rowSpan
+        ) {
           updateModule(dragState.moduleId, {
             gridPosition: {
-              ...mod.gridPosition,
+              col: newCol,
+              row: newRow,
               colSpan: newColSpan,
               rowSpan: newRowSpan,
             },
@@ -857,241 +1562,310 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
   }, [dragState, grid.cols, grid.rows, modules, updateModule]);
 
   return (
-    <div className="layout-preview-container">
-      <div className="layout-preview-header">
-        <div className="layout-preview-label" style={{ marginBottom: 0 }}>
-          Diseño y Vista Previa (Arrastra o redimensiona)
+    <div 
+      className="layout-preview-container"
+      style={{
+        height: isMinimized ? '54px' : '420px',
+        marginBottom: isMinimized ? '12px' : 'var(--gap-md)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        overflow: 'hidden'
+      }}
+    >
+      <div className="layout-preview-header" style={{ borderBottom: isMinimized ? 'none' : '1px solid var(--color-border)', paddingBottom: isMinimized ? 0 : '12px' }}>
+        <div className="layout-preview-label" style={{ marginBottom: 0, display: 'flex', alignItems: 'center', gap: '12px' }}>
+          Diseño y Vista Previa (Blueprint)
+          <button
+            type="button"
+            onClick={toggleMinimize}
+            style={{
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '4px',
+              color: 'var(--color-white)',
+              padding: '4px 10px',
+              fontSize: '11px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 'bold',
+              transition: 'background 0.2s, color 0.2s',
+              userSelect: 'none'
+            }}
+            title={isMinimized ? "Maximizar sección de diseño" : "Minimizar sección de diseño"}
+          >
+            {isMinimized ? '↕️ Mostrar Diseño (Maximizar)' : '↕️ Ocultar Diseño (Minimizar)'}
+          </button>
         </div>
         
         {/* Selector de Pantalla en Vivo para la previsualización */}
-        <div className="layout-preview-screen-select" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto', marginRight: '16px' }}>
-          <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Proporción:</span>
-          <select
-            value={previewType}
-            onChange={(e) => setPreviewType(e.target.value)}
-            style={{
-              padding: '4px 10px',
-              background: 'var(--color-bg-card)',
-              border: '1px solid var(--color-border)',
-              borderRadius: 'var(--radius-sm)',
-              color: 'var(--color-white)',
-              fontSize: '11px',
-              cursor: 'pointer',
-              outline: 'none',
-              fontFamily: 'var(--font-body)'
-            }}
-          >
-            <option value="horizontal">🖥️ Horizontal (16:9)</option>
-            <option value="vertical">📱 Vertical (9:16)</option>
-            <option value="12x6">📐 Pantalla 12x6 Mts (2:1)</option>
-            <option value="9x9">⬛ Pantalla 9x9 Mts (1:1)</option>
-          </select>
-        </div>
-
-        {/* Tab Selector for mobile */}
-        <div className="layout-preview-tabs">
-          <button 
-            type="button"
-            className={`layout-preview-tab-btn ${activeTab === 'blueprint' ? 'active' : ''}`}
-            onClick={() => setActiveTab('blueprint')}
-          >
-            📐 Recuadros
-          </button>
-          <button 
-            type="button"
-            className={`layout-preview-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
-            onClick={() => setActiveTab('live')}
-          >
-            👁️ En Vivo
-          </button>
-        </div>
-      </div>
-      <div className="layout-preview-panels">
-        {/* Panel Izquierdo: Recuadros Editor */}
-        <div className={`layout-preview-panel center-blueprint ${activeTab === 'blueprint' ? 'mobile-active' : 'mobile-hidden'}`}>
-          <div className="panel-header">
-            <span className="panel-icon">📐</span> Editor de Recuadros (Grid {targetGrid.cols}x{targetGrid.rows})
-          </div>
-          <div className="panel-content">
-            <div
-              ref={gridRef}
-              className="layout-preview-grid"
+        {!isMinimized && (
+          <div className="layout-preview-screen-select" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto', marginRight: '16px' }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Proporción:</span>
+            <select
+              value={previewType}
+              onChange={(e) => setPreviewType(e.target.value)}
               style={{
-                gridTemplateColumns: `repeat(${targetGrid.cols}, 1fr)`,
-                gridTemplateRows: `repeat(${targetGrid.rows}, 1fr)`,
-                aspectRatio: 
-                  previewType === 'horizontal' ? '16/9' :
-                  previewType === 'vertical' ? '9/16' :
-                  previewType === '12x6' ? '2/1' : '1/1'
+                padding: '4px 10px',
+                background: 'var(--color-bg-card)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--color-white)',
+                fontSize: '11px',
+                cursor: 'pointer',
+                outline: 'none',
+                fontFamily: 'var(--font-body)'
               }}
             >
-              {/* Cuadrícula de diseño blueprint de fondo */}
-              {bgCells}
-
-              {/* Celdas interactivas de módulos */}
-               {targetModules.map((mod) => {
-                const isSelected = selectedId === mod.id;
-                const isHidden = mod.visible === false;
-                const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
-                const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
-
-                return (
-                  <div
-                    key={mod.id}
-                    className={`layout-preview-cell ${isSelected ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
-                    style={{
-                      gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
-                      gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-                      zIndex: isSelected ? 100 : (modules.length - indexInMaster),
-                      cursor: canEdit ? 'move' : 'not-allowed',
-                      opacity: canEdit ? 1 : 0.75
-                    }}
-                    onMouseDown={(e) => handleMoveMouseDown(e, mod)}
-                    onTouchStart={(e) => handleMoveTouchStart(e, mod)}
-                  >
-                    {mod.type === 'media' && mod.content?.src && (
-                      <div className="layout-preview-cell-media-bg">
-                        {isVideo(mod.content.src, mod.content.mediaType) ? (
-                          <video
-                            src={mod.content.src}
-                            muted
-                            loop
-                            autoPlay
-                            playsInline
-                            className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
-                            style={{ objectFit: mod.content.objectFit || 'contain' }}
-                          />
-                        ) : (
-                          <img
-                            src={mod.content.src}
-                            alt=""
-                            className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
-                            style={{ objectFit: mod.content.objectFit || 'contain' }}
-                          />
-                        )}
-                      </div>
-                    )}
-
-                    <div className="layout-preview-cell-content">
-                      <span className="layout-preview-cell-icon">
-                        {MODULE_TYPES[mod.type]?.icon}
-                      </span>
-                      <span className="layout-preview-cell-label">
-                        {mod.label} {!canEdit && '🔒'}
-                      </span>
-                      {isHidden && <span className="layout-preview-cell-hidden-tag">Oculto</span>}
-                    </div>
-
-                    {/* Acciones rápidas (hover overlay) */}
-                    <div className="layout-preview-cell-actions">
-                      <button
-                        type="button"
-                        className="layout-preview-cell-btn visibility-btn"
-                        title={isHidden ? "Mostrar módulo" : "Ocultar módulo"}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (canEdit) updateModule(mod.id, { visible: isHidden });
-                        }}
-                        disabled={!canEdit}
-                        style={{
-                          opacity: canEdit ? 1 : 0.3,
-                          cursor: canEdit ? 'pointer' : 'not-allowed'
-                        }}
-                      >
-                        {isHidden ? '👁️' : '🕶️'}
-                      </button>
-                      <button
-                        type="button"
-                        className="layout-preview-cell-btn delete-btn"
-                        title="Eliminar módulo"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (canEdit && window.confirm(`¿Eliminar el módulo "${mod.label}"?`)) {
-                            removeModule(mod.id);
-                          }
-                        }}
-                        disabled={!canEdit}
-                        style={{
-                          opacity: canEdit ? 1 : 0.3,
-                          cursor: canEdit ? 'pointer' : 'not-allowed'
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    {/* Manejadores de Redimensionamiento */}
-                    {isSelected && canEdit && (
-                      <>
-                        <div
-                          className="resize-handle handle-e"
-                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 'e')}
-                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 'e')}
-                        />
-                        <div
-                          className="resize-handle handle-s"
-                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 's')}
-                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 's')}
-                        />
-                        <div
-                          className="resize-handle handle-se"
-                          onMouseDown={(e) => handleResizeMouseDown(e, mod, 'se')}
-                          onTouchStart={(e) => handleResizeTouchStart(e, mod, 'se')}
-                        />
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+              <option value="horizontal">🖥️ Horizontal (16:9)</option>
+              <option value="vertical">📱 Vertical (9:16)</option>
+              <option value="12x6">📐 Pantalla 12x6 Mts (2:1)</option>
+              <option value="9x9">⬛ Pantalla 9x9 Mts (1:1)</option>
+            </select>
           </div>
-        </div>
-
-        {/* Panel Derecho: Vista en Vivo con pestañas de comparación */}
-        <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
-          <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px' }}>
-            <div style={{ display: 'flex', gap: '4px' }}>
-              <button
-                type="button"
-                className={`admin-btn admin-btn-sm ${liveViewMode === 'live' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
-                style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold' }}
-                onClick={() => setLiveViewMode('live')}
-              >
-                🖥️ Pantalla Pública (En Vivo)
-              </button>
-              <button
-                type="button"
-                className={`admin-btn admin-btn-sm ${liveViewMode === 'draft' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
-                style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold', position: 'relative' }}
-                onClick={() => setLiveViewMode('draft')}
-              >
-                📝 Borrador con Cambios
-                {hasPendingChanges && (
-                  <span style={{
-                    position: 'absolute',
-                    top: '-3px',
-                    right: '-3px',
-                    width: '7px',
-                    height: '7px',
-                    background: '#ef5350',
-                    borderRadius: '50%'
-                  }} />
-                )}
-              </button>
-            </div>
-            
-            <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>
-              PROPORCIÓN: {previewType === 'horizontal' ? '16:9' : previewType === 'vertical' ? '9:16' : previewType === '12x6' ? '2:1' : '1:1'}
-            </span>
+        )}
+ 
+        {/* Tab Selector for mobile */}
+        {!isMinimized && (
+          <div className="layout-preview-tabs">
+            <button 
+              type="button"
+              className={`layout-preview-tab-btn ${activeTab === 'blueprint' ? 'active' : ''}`}
+              onClick={() => setActiveTab('blueprint')}
+            >
+              📐 Recuadros
+            </button>
+            <button 
+              type="button"
+              className={`layout-preview-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
+              onClick={() => setActiveTab('live')}
+            >
+              👁️ En Vivo
+            </button>
           </div>
-          <div className="panel-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, width: '100%', padding: 0 }}>
-            <div style={{ flex: 1, width: '100%', height: '100%', minHeight: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-              <LivePreview modules={targetModules} grid={targetGrid} screenType={previewType} />
-            </div>
-
-          </div>
-        </div>
+        )}
       </div>
+      
+      {!isMinimized && (
+        <div className="layout-preview-panels">
+          {/* Panel Izquierdo: Recuadros Editor */}
+          <div className={`layout-preview-panel center-blueprint ${activeTab === 'blueprint' ? 'mobile-active' : 'mobile-hidden'}`}>
+            <div className="panel-header">
+              <span className="panel-icon">📐</span> Editor de Recuadros (Grid {targetGrid.cols}x{targetGrid.rows})
+            </div>
+            <div className="panel-content">
+              <div
+                ref={gridRef}
+                className="layout-preview-grid"
+                style={{
+                  gridTemplateColumns: `repeat(${targetGrid.cols}, 1fr)`,
+                  gridTemplateRows: `repeat(${targetGrid.rows}, 1fr)`,
+                  aspectRatio: 
+                    previewType === 'horizontal' ? '16/9' :
+                    previewType === 'vertical' ? '9/16' :
+                    previewType === '12x6' ? '2/1' : '1/1'
+                }}
+              >
+                {/* Cuadrícula de diseño blueprint de fondo */}
+                {bgCells}
+  
+                {/* Celdas interactivas de módulos */}
+                 {targetModules.map((mod) => {
+                  const isSelected = selectedId === mod.id;
+                  const isHidden = mod.visible === false;
+                  const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
+                  const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
+  
+                  const cellBg = mod.content.moduleBgTransparent === true ? 'rgba(22,22,22,0.85)' : (mod.content.moduleBgColor || mod.content.cardBgColor || '#0a0a0a');
+                  const cellBorder = mod.content.moduleBorderTransparent === true ? 'transparent' : (mod.content.moduleBorderColor || 'var(--color-border)');
+  
+                  return (
+                    <div
+                      key={mod.id}
+                      className={`layout-preview-cell ${isSelected ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                      style={{
+                        gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
+                        gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                        zIndex: isSelected ? 100 : (modules.length - indexInMaster),
+                        cursor: canEdit ? 'move' : 'not-allowed',
+                        opacity: canEdit ? 1 : 0.75,
+                        background: cellBg,
+                        borderColor: cellBorder
+                      }}
+                      onMouseDown={(e) => handleMoveMouseDown(e, mod)}
+                      onTouchStart={(e) => handleMoveTouchStart(e, mod)}
+                    >
+                      {mod.type === 'media' && mod.content?.src && (
+                        <div className="layout-preview-cell-media-bg">
+                          {isVideo(mod.content.src, mod.content.mediaType) ? (
+                            <video
+                              src={mod.content.src}
+                              muted
+                              loop
+                              autoPlay
+                              playsInline
+                              className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
+                              style={{ objectFit: mod.content.objectFit || 'contain' }}
+                            />
+                          ) : (
+                            <img
+                              src={mod.content.src}
+                              alt=""
+                              className={`preview-media-content ${mod.content.objectFit || 'contain'}`}
+                              style={{ objectFit: mod.content.objectFit || 'contain' }}
+                            />
+                          )}
+                        </div>
+                      )}
+  
+                      <div className="layout-preview-cell-content">
+                        <span className="layout-preview-cell-icon">
+                          {MODULE_TYPES[mod.type]?.icon}
+                        </span>
+                        <span className="layout-preview-cell-label">
+                          {mod.label} {!canEdit && '🔒'}
+                        </span>
+                        {isHidden && <span className="layout-preview-cell-hidden-tag">Oculto</span>}
+                      </div>
+  
+                      {/* Acciones rápidas (hover overlay) */}
+                      <div className="layout-preview-cell-actions">
+                        <button
+                          type="button"
+                          className="layout-preview-cell-btn visibility-btn"
+                          title={isHidden ? "Mostrar módulo" : "Ocultar módulo"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (canEdit) updateModule(mod.id, { visible: isHidden });
+                          }}
+                          disabled={!canEdit}
+                          style={{
+                            opacity: canEdit ? 1 : 0.3,
+                            cursor: canEdit ? 'pointer' : 'not-allowed'
+                          }}
+                        >
+                          {isHidden ? '👁' : '🕶'}
+                        </button>
+                        <button
+                          type="button"
+                          className="layout-preview-cell-btn delete-btn"
+                          title="Eliminar módulo"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (canEdit && window.confirm(`¿Eliminar el módulo "${mod.label}"?`)) {
+                              removeModule(mod.id);
+                            }
+                          }}
+                          disabled={!canEdit}
+                          style={{
+                            opacity: canEdit ? 1 : 0.3,
+                            cursor: canEdit ? 'pointer' : 'not-allowed'
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+  
+                      {/* Manejadores de Redimensionamiento */}
+                      {isSelected && canEdit && (
+                        <>
+                          {/* Lados */}
+                          <div
+                            className="resize-handle handle-n"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'n')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'n')}
+                          />
+                          <div
+                            className="resize-handle handle-s"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 's')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 's')}
+                          />
+                          <div
+                            className="resize-handle handle-e"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'e')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'e')}
+                          />
+                          <div
+                            className="resize-handle handle-w"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'w')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'w')}
+                          />
+                          {/* Esquinas */}
+                          <div
+                            className="resize-handle handle-nw"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'nw')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'nw')}
+                          />
+                          <div
+                            className="resize-handle handle-ne"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'ne')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'ne')}
+                          />
+                          <div
+                            className="resize-handle handle-sw"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'sw')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'sw')}
+                          />
+                          <div
+                            className="resize-handle handle-se"
+                            onMouseDown={(e) => handleResizeMouseDown(e, mod, 'se')}
+                            onTouchStart={(e) => handleResizeTouchStart(e, mod, 'se')}
+                          />
+                        </>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+  
+          {/* Panel Derecho: Vista en Vivo con pestañas de comparación */}
+          <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
+            <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px' }}>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  type="button"
+                  className={`admin-btn admin-btn-sm ${liveViewMode === 'live' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+                  style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold' }}
+                  onClick={() => setLiveViewMode('live')}
+                >
+                  🖥️ Pantalla Pública (En Vivo)
+                </button>
+                <button
+                  type="button"
+                  className={`admin-btn admin-btn-sm ${liveViewMode === 'draft' ? 'admin-btn-primary' : 'admin-btn-secondary'}`}
+                  style={{ padding: '4px 8px', fontSize: '11px', textTransform: 'uppercase', height: 'auto', fontWeight: 'bold', position: 'relative' }}
+                  onClick={() => setLiveViewMode('draft')}
+                >
+                  📝 Borrador con Cambios
+                  {hasPendingChanges && (
+                    <span style={{
+                      position: 'absolute',
+                      top: '-3px',
+                      right: '-3px',
+                      width: '7px',
+                      height: '7px',
+                      background: '#ef5350',
+                      borderRadius: '50%'
+                    }} />
+                  )}
+                </button>
+              </div>
+              
+              <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>
+                PROPORCIÓN: {previewType === 'horizontal' ? '16:9' : previewType === 'vertical' ? '9:16' : previewType === '12x6' ? '2:1' : '1:1'}
+              </span>
+            </div>
+            <div className="panel-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, width: '100%', padding: 0 }}>
+              <div style={{ flex: 1, width: '100%', height: '100%', minHeight: 0, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+                <LivePreview modules={targetModules} grid={targetGrid} screenType={previewType} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1100,10 +1874,32 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
    ADMIN PANEL — Full screen CMS
    ═══════════════════════════════════════════ */
 export default function AdminPanel() {
-  const { draftData, liveData, currentUser, login, logout, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll, templates, createTemplate, applyTemplate, deleteTemplate, history, fetchHistory } = useCMS();
+  const { draftData, liveData, currentUser, login, logout, role, setRole, users, createEditor, deleteEditor, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, updateOrientation, resetAll, templates, createTemplate, applyTemplate, deleteTemplate, history, fetchHistory, activeLayout, switchLayout } = useCMS();
   const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
+  const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
   const [selectedId, setSelectedId] = useState(draftData.modules[0]?.id || null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+
+  // Estados para los botones desplegables de previsualización
+  const [liveDropdownOpen, setLiveDropdownOpen] = useState(false);
+  const [draftDropdownOpen, setDraftDropdownOpen] = useState(false);
+  const liveDropdownRef = useRef(null);
+  const draftDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (liveDropdownRef.current && !liveDropdownRef.current.contains(event.target)) {
+        setLiveDropdownOpen(false);
+      }
+      if (draftDropdownRef.current && !draftDropdownRef.current.contains(event.target)) {
+        setDraftDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   
   // Estados para la Biblioteca de Medios
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
@@ -1136,16 +1932,18 @@ export default function AdminPanel() {
   const selectedModule = draftData.modules.find((m) => m.id === selectedId);
 
   const handleAddModule = useCallback((type) => {
+    if (isReadOnlyUser) return;
     const newId = addModule(type);
     setSelectedId(newId);
     setShowAddMenu(false);
-  }, [addModule]);
+  }, [addModule, isReadOnlyUser]);
 
   const handleRemove = useCallback((id) => {
+    if (isReadOnlyUser) return;
     if (!window.confirm('¿Eliminar este módulo?')) return;
     removeModule(id);
     setSelectedId(draftData.modules.find((m) => m.id !== id)?.id || null);
-  }, [removeModule, draftData.modules]);
+  }, [removeModule, draftData.modules, isReadOnlyUser]);
 
   const openMediaLibraryForSelection = useCallback((callback) => {
     setMediaSelectCallback(() => callback);
@@ -1311,8 +2109,32 @@ export default function AdminPanel() {
           </div>
         </div>
 
+        {/* Active Layout Switcher */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '24px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)' }}>
+          <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>EDITANDO PANTALLA:</span>
+          <select
+            value={activeLayout}
+            onChange={(e) => switchLayout(e.target.value)}
+            style={{
+              padding: '4px 10px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--color-white)',
+              fontSize: '11px',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              outline: 'none',
+              fontFamily: 'var(--font-body)'
+            }}
+          >
+            <option value="12x6">🖥️ Pantalla 12x6 Mts (2:1)</option>
+            <option value="9x9">⬛ Pantalla 9x9 Mts (1:1)</option>
+          </select>
+        </div>
+
         {/* Logged in User Indicator & Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)', marginLeft: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)', marginLeft: '12px' }}>
           <span style={{ fontSize: '14px' }}>👤</span>
           <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{currentUser.name}</span>
           <span style={{ fontSize: '10px', background: 'rgba(212, 168, 67, 0.15)', color: 'var(--color-gold)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
@@ -1368,21 +2190,71 @@ export default function AdminPanel() {
           
           <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
 
-          <Link to="/" className="admin-btn admin-btn-primary admin-btn-sm" target="_blank">
-            👁️ Ver Valla (16:9)
-          </Link>
-          <Link to="/?screen=12x6" className="admin-btn admin-btn-secondary admin-btn-sm" target="_blank">
-            🖥️ Valla 12x6 (2:1)
-          </Link>
-          <Link to="/?screen=9x9" className="admin-btn admin-btn-secondary admin-btn-sm" target="_blank">
-            ⬛ Valla 9x9 (1:1)
-          </Link>
+          {/* Botón Desplegable: En Vivo */}
+          <div ref={liveDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              type="button"
+              className="admin-btn admin-btn-primary admin-btn-sm"
+              onClick={() => {
+                setLiveDropdownOpen(!liveDropdownOpen);
+                setDraftDropdownOpen(false);
+              }}
+              style={{ gap: '6px' }}
+            >
+              👁️ En Vivo <span style={{ fontSize: '9px', opacity: 0.8 }}>▼</span>
+            </button>
+            {liveDropdownOpen && (
+              <div className="admin-dropdown-menu">
+                <Link to="/" className="admin-dropdown-item" target="_blank" onClick={() => setLiveDropdownOpen(false)}>
+                  👁️ Ver Valla (16:9)
+                </Link>
+                <Link to="/?screen=12x6" className="admin-dropdown-item" target="_blank" onClick={() => setLiveDropdownOpen(false)}>
+                  🖥️ Valla 12x6 (2:1)
+                </Link>
+                <Link to="/?screen=9x9" className="admin-dropdown-item" target="_blank" onClick={() => setLiveDropdownOpen(false)}>
+                  ⬛ Valla 9x9 (1:1)
+                </Link>
+              </div>
+            )}
+          </div>
 
           <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
 
-          <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => { if (window.confirm('¿Restablecer todo a valores por defecto?')) resetAll(); }}>
-            Restablecer
-          </button>
+          {/* Botón Desplegable: Visualizar Borrador */}
+          <div ref={draftDropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
+            <button
+              type="button"
+              className="admin-btn admin-btn-sm admin-btn-draft-trigger"
+              onClick={() => {
+                setDraftDropdownOpen(!draftDropdownOpen);
+                setLiveDropdownOpen(false);
+              }}
+              style={{ gap: '6px' }}
+            >
+              📝 Visualizar Borrador <span style={{ fontSize: '9px', opacity: 0.8 }}>▼</span>
+            </button>
+            {draftDropdownOpen && (
+              <div className="admin-dropdown-menu">
+                <Link to="/?draft=true" className="admin-dropdown-item admin-dropdown-item-draft" target="_blank" onClick={() => setDraftDropdownOpen(false)}>
+                  📝 Ver Borrador (16:9)
+                </Link>
+                <Link to="/?draft=true&screen=12x6" className="admin-dropdown-item admin-dropdown-item-draft" target="_blank" onClick={() => setDraftDropdownOpen(false)}>
+                  📝 Borrador 12x6 (2:1)
+                </Link>
+                <Link to="/?draft=true&screen=9x9" className="admin-dropdown-item admin-dropdown-item-draft" target="_blank" onClick={() => setDraftDropdownOpen(false)}>
+                  📝 Borrador 9x9 (1:1)
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
+
+          {!isReadOnlyUser && (
+            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => { if (window.confirm('¿Restablecer todo a valores por defecto?')) resetAll(); }}>
+              Restablecer
+            </button>
+          )}
         </div>
       </div>
 
@@ -1416,6 +2288,7 @@ export default function AdminPanel() {
                   <select
                     value={draftData.grid.cols}
                     onChange={(e) => updateGrid({ cols: parseInt(e.target.value) || 1 })}
+                    disabled={isReadOnlyUser}
                   >
                     {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>{n}</option>
@@ -1427,6 +2300,7 @@ export default function AdminPanel() {
                   <select
                     value={draftData.grid.rows}
                     onChange={(e) => updateGrid({ rows: parseInt(e.target.value) || 1 })}
+                    disabled={isReadOnlyUser}
                   >
                     {Array.from({ length: 15 }, (_, i) => i + 1).map((n) => (
                       <option key={n} value={n}>{n}</option>
@@ -1503,9 +2377,11 @@ export default function AdminPanel() {
                   </button>
                 </div>
               ) : (
-                <button className="add-module-btn" onClick={() => setShowAddMenu(true)}>
-                  + Agregar Módulo
-                </button>
+                !isReadOnlyUser && (
+                  <button className="add-module-btn" onClick={() => setShowAddMenu(true)}>
+                    + Agregar Módulo
+                  </button>
+                )
               )}
             </div>
           </div>
@@ -1543,7 +2419,7 @@ export default function AdminPanel() {
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  {!canApprove && (
+                  {!canApprove && !isReadOnlyUser && (
                     <button
                       type="button"
                       className="admin-btn admin-btn-primary admin-btn-sm"
@@ -1649,6 +2525,7 @@ function EditorsManagement() {
   const [selectedTypes, setSelectedTypes] = useState([]); // List of module type keys allowed
   const [allSelected, setAllSelected] = useState(false);
   const [canApprovePermission, setCanApprovePermission] = useState(false);
+  const [readonlyMediaAddSelected, setReadonlyMediaAddSelected] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
 
   const [editingUsername, setEditingUsername] = useState(null);
@@ -1662,7 +2539,8 @@ function EditorsManagement() {
     const hasAll = u.allowedTypes.includes('*');
     setAllSelected(hasAll);
     setCanApprovePermission(u.allowedTypes.includes('approve'));
-    setSelectedTypes(u.allowedTypes.filter(t => t !== 'approve' && t !== '*'));
+    setReadonlyMediaAddSelected(u.allowedTypes.includes('readonly_media_add'));
+    setSelectedTypes(u.allowedTypes.filter(t => t !== 'approve' && t !== '*' && t !== 'readonly_media_add'));
   };
 
   const handleCancelEdit = () => {
@@ -1673,10 +2551,12 @@ function EditorsManagement() {
     setSelectedTypes([]);
     setAllSelected(false);
     setCanApprovePermission(false);
+    setReadonlyMediaAddSelected(false);
     setFeedback(null);
   };
 
   const handleToggleType = (typeKey) => {
+    setReadonlyMediaAddSelected(false); // Desactiva solo lectura si selecciona un tipo individual
     if (typeKey === '*') {
       if (allSelected) {
         setSelectedTypes([]);
@@ -1724,12 +2604,17 @@ function EditorsManagement() {
       return;
     }
     const finalTypes = allSelected ? ['*'] : selectedTypes;
-    if (finalTypes.length === 0 && !canApprovePermission) {
-      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso o habilitar la aprobación.' });
+    if (finalTypes.length === 0 && !canApprovePermission && !readonlyMediaAddSelected) {
+      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso, habilitar la aprobación o activar el perfil de solo lectura.' });
       return;
     }
 
-    const typesToSend = canApprovePermission ? [...finalTypes, 'approve'] : finalTypes;
+    let typesToSend = [];
+    if (readonlyMediaAddSelected) {
+      typesToSend = ['readonly_media_add'];
+    } else {
+      typesToSend = canApprovePermission ? [...finalTypes, 'approve'] : finalTypes;
+    }
 
     const success = await createEditor(usernameInput.trim(), passwordInput.trim(), name.trim(), typesToSend);
     if (success) {
@@ -1824,6 +2709,22 @@ function EditorsManagement() {
                   
                   {/* Badges for allowed module types */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {u.allowedTypes.includes('readonly_media_add') && (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'rgba(239, 83, 80, 0.15)',
+                        border: '1px solid rgba(239, 83, 80, 0.3)',
+                        color: '#ef5350',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        🔒 Solo Lectura + Multimedia (Agregar)
+                      </span>
+                    )}
+
                     {u.allowedTypes.includes('approve') && (
                       <span style={{
                         fontSize: '11px',
@@ -2066,24 +2967,30 @@ function EditorsManagement() {
 
             {/* Special toggle for "Approval" */}
             <div
-              onClick={() => setCanApprovePermission(prev => !prev)}
+              onClick={() => {
+                if (!readonlyMediaAddSelected) {
+                  setCanApprovePermission(prev => !prev);
+                }
+              }}
               style={{
                 background: canApprovePermission ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
                 border: canApprovePermission ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-md)',
                 padding: '12px 16px',
-                cursor: 'pointer',
+                cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '12px',
-                transition: 'var(--transition-fast)'
+                transition: 'var(--transition-fast)',
+                opacity: readonlyMediaAddSelected ? 0.6 : 1
               }}
             >
               <input
                 type="checkbox"
                 checked={canApprovePermission}
+                disabled={readonlyMediaAddSelected}
                 onChange={() => {}} // Controlled click on container
-                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer' }}
               />
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 'bold', fontSize: '13px', color: canApprovePermission ? 'var(--color-gold)' : 'var(--color-white)' }}>
@@ -2095,21 +3002,62 @@ function EditorsManagement() {
               </div>
             </div>
 
+            {/* Special toggle for "Solo Lectura + Multimedia" */}
+            <div
+              onClick={() => {
+                if (readonlyMediaAddSelected) {
+                  setReadonlyMediaAddSelected(false);
+                } else {
+                  setSelectedTypes([]);
+                  setAllSelected(false);
+                  setCanApprovePermission(false);
+                  setReadonlyMediaAddSelected(true);
+                }
+              }}
+              style={{
+                background: readonlyMediaAddSelected ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                border: readonlyMediaAddSelected ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 16px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'var(--transition-fast)'
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={readonlyMediaAddSelected}
+                onChange={() => {}} // Controlled click on container
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: readonlyMediaAddSelected ? 'var(--color-gold)' : 'var(--color-white)' }}>
+                  🔒 🖼️ Solo Lectura + Multimedia (Agregar)
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                  Permite ver toda la página pero no modificar nada, solo agregar archivos a multimedia.
+                </div>
+              </div>
+            </div>
+
             <div style={{ borderTop: '1px solid var(--color-border)', margin: '8px 0' }} />
 
             {/* Individual module toggles */}
             {Object.entries(MODULE_TYPES).map(([typeKey, typeInfo]) => {
               const isChecked = selectedTypes.includes(typeKey) || allSelected;
+              const isOptionDisabled = allSelected || readonlyMediaAddSelected;
               return (
                 <div
                   key={typeKey}
-                  onClick={() => !allSelected && handleToggleType(typeKey)}
+                  onClick={() => !isOptionDisabled && handleToggleType(typeKey)}
                   style={{
                     background: isChecked ? 'rgba(212, 168, 67, 0.05)' : 'rgba(255, 255, 255, 0.01)',
                     border: isChecked ? '1px solid rgba(212, 168, 67, 0.4)' : '1px solid var(--color-border)',
                     borderRadius: 'var(--radius-md)',
                     padding: '12px 16px',
-                    cursor: allSelected ? 'not-allowed' : 'pointer',
+                    cursor: isOptionDisabled ? 'not-allowed' : 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
@@ -2171,7 +3119,10 @@ function TemplatesManagement({ setViewMode }) {
   const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
   const [saving, setSaving] = useState(false);
 
-  const isAdmin = currentUser?.username === 'admin';
+  const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
+  const isAdmin = (currentUser?.username === 'admin' || 
+                  currentUser?.allowedTypes?.includes('approve') || 
+                  currentUser?.allowedTypes?.includes('*')) && !isReadOnlyUser;
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -2550,21 +3501,23 @@ function TemplatesManagement({ setViewMode }) {
                     )}
                   </div>
 
-                  <button
-                    type="button"
-                    className="admin-btn admin-btn-primary admin-btn-sm"
-                    onClick={() => handleApply(t)}
-                    style={{
-                      width: '100%',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      padding: '10px',
-                      fontWeight: 'bold',
-                      fontSize: '13px'
-                    }}
-                  >
-                    📥 Cargar Plantilla
-                  </button>
+                  {!isReadOnlyUser && (
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-primary admin-btn-sm"
+                      onClick={() => handleApply(t)}
+                      style={{
+                        width: '100%',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        padding: '10px',
+                        fontWeight: 'bold',
+                        fontSize: '13px'
+                      }}
+                    >
+                      📥 Cargar Plantilla
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -2579,9 +3532,10 @@ function TemplatesManagement({ setViewMode }) {
    HISTORY AUDIT LOG — Admin Change History Panel
    ═══════════════════════════════════════════ */
 function HistoryManagement({ setViewMode }) {
-  const { history, fetchHistory, applyTemplate } = useCMS();
+  const { history, fetchHistory, applyTemplate, currentUser } = useCMS();
   const [loading, setLoading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
+  const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
 
   useEffect(() => {
     async function loadHistory() {
@@ -2715,9 +3669,11 @@ function HistoryManagement({ setViewMode }) {
                         <span style={{ color: 'var(--color-white)' }}>{modulesCount}</span> módulos ({entry.config_data?.orientation || 'horizontal'})
                       </td>
                       <td style={{ padding: '16px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                        <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleRestore(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
-                          📥 Restaurar en Borrador
-                        </button>
+                        {!isReadOnlyUser && (
+                          <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleRestore(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
+                            📥 Restaurar en Borrador
+                          </button>
+                        )}
                       </td>
                     </tr>
                     {isExpanded && (

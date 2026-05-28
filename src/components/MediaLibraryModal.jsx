@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import './MediaLibrary.css';
+import { useCMS } from '../context/CMSContext';
 
 // Convert size in bytes to readable format
 const formatBytes = (bytes) => {
@@ -11,6 +12,8 @@ const formatBytes = (bytes) => {
 };
 
 export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
+  const { currentUser } = useCMS();
+  const isAdmin = currentUser?.username === 'admin';
   const [mediaList, setMediaList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -160,7 +163,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
       return;
     }
 
-    fetch(`/api/media?url=${encodeURIComponent(url)}`, {
+    fetch(`/api/media?url=${encodeURIComponent(url)}&username=${encodeURIComponent(currentUser?.username || '')}`, {
       method: 'DELETE',
     })
       .then((res) => res.json())
@@ -363,7 +366,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
                           >
                             Copiar URL
                           </button>
-                          {isUploaded && (
+                          {isUploaded && isAdmin && (
                             <button 
                               type="button"
                               className="media-library-action-btn media-library-btn-delete"

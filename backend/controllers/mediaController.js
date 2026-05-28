@@ -90,6 +90,12 @@ export async function handleGetMedia(req, res) {
 export async function handleDeleteMedia(req, res, parsedUrl) {
   try {
     const mediaUrl = parsedUrl.searchParams.get('url');
+    const username = parsedUrl.searchParams.get('username');
+
+    if (!username || username.toLowerCase() !== 'admin') {
+      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador puede eliminar archivos multimedia' });
+      return;
+    }
 
     if (!mediaUrl) {
       sendJson(res, 400, { error: 'Falta el parámetro url en la consulta' });

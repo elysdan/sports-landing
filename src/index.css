@@ -315,8 +315,8 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--gap-sm);
+  justify-content: space-between;
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
   background: var(--color-bg-secondary);
   border-bottom: 1px solid var(--color-border);
   box-sizing: border-box;
@@ -326,9 +326,10 @@ html, body, #root {
 .sb-main {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--gap-md);
+  justify-content: space-evenly;
+  gap: calc(16px * var(--scale, 1));
   width: 100%;
+  flex: 1;
 }
 
 .sb-team {
@@ -342,23 +343,30 @@ html, body, #root {
 
 .sb-team-flag {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: clamp(14px, calc(20px * var(--font-scale, 1)), 44px);
   font-weight: 700;
   letter-spacing: 1px;
   background: rgba(212, 168, 67, 0.08);
   border: 1px solid rgba(212, 168, 67, 0.2);
   border-radius: 4px;
-  padding: 2px 8px;
+  padding: calc(2px * var(--scale, 1)) calc(8px * var(--scale, 1));
   display: inline-block;
-  margin-bottom: var(--gap-xs);
+  margin-bottom: calc(4px * var(--scale, 1));
   color: var(--color-gold-light);
   line-height: 1.2;
   text-transform: uppercase;
 }
 
+img.sb-team-flag {
+  padding: 0 !important;
+  background: none !important;
+  width: calc(48px * var(--scale, 1)) !important;
+  height: calc(32px * var(--scale, 1)) !important;
+}
+
 .sb-team-label {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: clamp(14px, calc(22px * var(--font-scale, 1)), 52px);
   font-weight: 500;
   letter-spacing: 2px;
   color: var(--color-gold);
@@ -367,12 +375,12 @@ html, body, #root {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-  margin-bottom: 2px;
+  margin-bottom: calc(2px * var(--scale, 1));
 }
 
 .sb-team-code {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: clamp(18px, calc(32px * var(--font-scale, 1)), 72px);
   font-weight: 800;
   color: var(--color-white);
   letter-spacing: 1px;
@@ -381,7 +389,7 @@ html, body, #root {
 
 .sb-score {
   font-family: var(--font-display);
-  font-size: 48px;
+  font-size: clamp(28px, calc(72px * var(--font-scale, 1)), 160px);
   font-weight: 800;
   color: var(--color-gold);
   line-height: 1;
@@ -390,21 +398,21 @@ html, body, #root {
 
 .sb-divider {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: clamp(20px, calc(48px * var(--font-scale, 1)), 100px);
   color: var(--color-text-muted);
   line-height: 1;
 }
 
 .sb-status {
   font-family: var(--font-display);
-  font-size: 10px;
+  font-size: clamp(11px, calc(16px * var(--font-scale, 1)), 32px);
   letter-spacing: 3px;
   color: var(--color-text-secondary);
-  margin-top: var(--gap-sm);
+  margin-top: calc(5px * var(--scale, 1));
   text-transform: uppercase;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 3px 10px;
+  padding: calc(3px * var(--scale, 1)) calc(10px * var(--scale, 1));
   border-radius: 20px;
   line-height: 1;
 }
@@ -412,11 +420,10 @@ html, body, #root {
 /* ─── MODULE TYPE: RESULTS ─── */
 .module-results-display {
   width: 100%; height: 100%;
-  padding: var(--gap-sm) var(--gap-md);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
   background: var(--color-bg-primary);
   display: flex;
   flex-direction: column;
-  justify-content: center;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
@@ -424,30 +431,49 @@ html, body, #root {
 
 .results-title-display {
   font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 48px);
+  font-weight: 700;
   letter-spacing: 2px;
   color: var(--color-text-secondary);
-  margin-bottom: var(--gap-xs);
+  margin-bottom: calc(8px * var(--scale, 1));
   text-transform: uppercase;
   border-bottom: 2px solid var(--color-gold);
-  padding-bottom: 2px;
-  align-self: flex-start;
+  padding-bottom: calc(3px * var(--scale, 1));
+  align-self: stretch;
+}
+
+.results-list-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-evenly;
+  min-height: 0;
+  width: 100%;
+}
+
+.result-match-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(4px, calc(8px * var(--scale, 1)), 16px) 0;
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+}
+
+.result-match-box:last-child {
+  border-bottom: none;
 }
 
 .result-row-display {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--color-border);
+  padding: clamp(2px, calc(3px * var(--scale, 1)), 6px) 0;
 }
-
-.result-row-display:last-child { border-bottom: none; }
 
 .result-team-display {
   font-family: var(--font-display);
-  font-size: 16px;
+  font-size: clamp(13px, calc(20px * var(--font-scale, 1)), 52px);
   font-weight: 700;
   color: var(--color-white);
   letter-spacing: 1px;
@@ -460,25 +486,26 @@ html, body, #root {
 
 .result-score-display {
   font-family: var(--font-display);
-  font-size: 18px;
-  font-weight: 700;
+  font-size: clamp(15px, calc(22px * var(--font-scale, 1)), 56px);
+  font-weight: 800;
   color: var(--color-gold);
   background: rgba(212, 168, 67, 0.08);
   border: 1px solid rgba(212, 168, 67, 0.2);
   border-radius: 4px;
-  padding: 1px 6px;
-  min-width: 32px;
+  padding: calc(3px * var(--scale, 1)) calc(8px * var(--scale, 1));
+  min-width: calc(48px * var(--scale, 1));
   text-align: center;
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
 }
 
 /* ─── MODULE TYPE: UPCOMING ─── */
 .module-upcoming-display {
   width: 100%; height: 100%;
-  padding: var(--gap-sm) var(--gap-md);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
   background: var(--color-bg-primary);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   border-left: 3px solid var(--color-gold);
   box-sizing: border-box;
   overflow: hidden;
@@ -493,65 +520,112 @@ html, body, #root {
 
 .upcoming-label-display {
   font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: clamp(11px, calc(14px * var(--font-scale, 1)), 32px);
+  font-weight: 700;
   letter-spacing: 2px;
   color: var(--color-gold);
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: calc(2px * var(--scale, 1));
 }
 
 .upcoming-time-display {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: clamp(18px, calc(36px * var(--font-scale, 1)), 80px);
   font-weight: 800;
   color: var(--color-white);
   line-height: 1.1;
+  text-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
 }
 
 .upcoming-vs-card {
   display: flex;
-  flex-direction: column;
-  gap: var(--gap-xs);
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  flex: 1;
+  margin-top: clamp(2px, calc(3px * var(--scale, 1)), 6px);
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: var(--gap-sm) var(--gap-md);
+  padding: clamp(6px, calc(12px * var(--scale, 1)), 28px);
+  width: 100%;
 }
 
 .upcoming-team {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: clamp(14px, calc(26px * var(--font-scale, 1)), 64px);
   font-weight: 700;
   color: var(--color-white);
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  width: 100%;
+}
+
+.upcoming-vs-card .upcoming-team:first-child {
+  text-align: right;
+  padding-right: calc(8px * var(--scale, 1));
+}
+
+.upcoming-vs-card .upcoming-team:last-child {
+  text-align: left;
+  padding-left: calc(8px * var(--scale, 1));
 }
 
 .upcoming-vs-badge {
   font-family: var(--font-display);
-  font-size: 9px;
+  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 48px);
   font-weight: 800;
   color: var(--color-bg-primary);
   background: var(--color-gold);
-  padding: 1px 4px;
-  border-radius: 4px;
-  align-self: flex-start;
-  letter-spacing: 1px;
+  padding: clamp(4px, calc(6px * var(--scale, 1)), 14px) clamp(8px, calc(14px * var(--scale, 1)), 28px);
+  border-radius: 6px;
+  align-self: center;
+  letter-spacing: 1.5px;
   line-height: 1.2;
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.35);
+  flex-shrink: 0;
+}
+
+/* Stack vertically in narrow slots or portrait mode */
+.narrow-col-4 .upcoming-vs-card,
+.narrow-col-3 .upcoming-vs-card,
+.narrow-col-2 .upcoming-vs-card,
+.narrow-col-1 .upcoming-vs-card,
+.span-w-1 .upcoming-vs-card,
+.span-w-2 .upcoming-vs-card,
+.span-w-3 .upcoming-vs-card,
+.span-w-4 .upcoming-vs-card,
+.vertical .upcoming-vs-card {
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  gap: calc(8px * var(--scale, 1)) !important;
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 36px) !important;
+}
+
+.narrow-col-4 .upcoming-vs-card .upcoming-team,
+.narrow-col-3 .upcoming-vs-card .upcoming-team,
+.narrow-col-2 .upcoming-vs-card .upcoming-team,
+.narrow-col-1 .upcoming-vs-card .upcoming-team,
+.span-w-1 .upcoming-vs-card .upcoming-team,
+.span-w-2 .upcoming-vs-card .upcoming-team,
+.span-w-3 .upcoming-vs-card .upcoming-team,
+.span-w-4 .upcoming-vs-card .upcoming-team,
+.vertical .upcoming-vs-card .upcoming-team {
+  text-align: center !important;
+  padding: 0 !important;
 }
 
 /* ─── MODULE TYPE: NEWS ─── */
 .module-news-display {
   width: 100%; height: 100%;
-  padding: var(--gap-sm) var(--gap-md);
+  padding: clamp(8px, calc(14px * var(--scale, 1)), 28px);
   background: var(--color-bg-primary);
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-evenly;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
@@ -559,24 +633,276 @@ html, body, #root {
 
 .news-title-display {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 64px);
   font-weight: 700;
   letter-spacing: 3px;
   color: var(--color-white);
   text-transform: uppercase;
-  margin-bottom: var(--gap-xs);
+  margin-bottom: calc(6px * var(--scale, 1));
+  border-left: 3px solid var(--color-gold);
+  padding-left: calc(6px * var(--scale, 1));
 }
 
 .news-content-display {
   font-family: var(--font-body);
-  font-size: 13px;
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 40px);
   line-height: 1.5;
   color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 6;
   -webkit-box-orient: vertical;
+}
+
+/* ─── MODULE TYPE: APUESTA ─── */
+.module-apuesta-display {
+  width: 100%;
+  height: 100%;
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  background: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.apuesta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: calc(8px * var(--scale, 1));
+  gap: 12px;
+}
+
+.apuesta-title {
+  font-family: var(--font-display);
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 72px);
+  font-weight: 800;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.apuesta-tag {
+  font-family: var(--font-display);
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 48px);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.apuesta-odds-row {
+  display: flex;
+  gap: calc(10px * var(--scale, 1));
+  width: 100%;
+  flex: 1;
+  align-items: center;
+}
+
+.apuesta-odd-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* Stack elements vertically to maximize horizontal space for team name */
+  align-items: center;
+  justify-content: space-evenly;
+  height: 85%;
+  min-height: 0;
+  min-width: 0;
+  gap: calc(8px * var(--scale, 1));
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+.apuesta-odd-box:hover {
+  background: rgba(212, 168, 67, 0.03);
+  border-color: rgba(212, 168, 67, 0.3);
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.1);
+}
+
+.apuesta-odd-box.box-left {
+  /* No horizontal space-between needed as contents are stacked vertically */
+}
+
+.apuesta-odd-box.box-right {
+  /* No horizontal space-between needed as contents are stacked vertically */
+}
+
+.apuesta-team-info {
+  display: flex;
+  flex-direction: column; /* Stack flag and name vertically by default to maximize horizontal name space */
+  align-items: center;
+  justify-content: center;
+  gap: calc(4px * var(--scale, 1));
+  min-width: 0;
+  width: 100%;
+}
+
+.module-apuesta-display .sb-team-flag {
+  margin-bottom: 0 !important; /* Remove bottom margin of team flag inside apuesta */
+  font-size: clamp(14px, calc(18px * var(--font-scale, 1)), 40px) !important;
+  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important;
+  border-color: rgba(212, 168, 67, 0.4) !important;
+}
+
+.apuesta-odd-box.box-right .apuesta-team-info {
+  justify-content: center; /* Center right team info as well */
+}
+
+.apuesta-team-name {
+  font-family: var(--font-display);
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 68px); /* Base font size kept at 15px to look clean when shrunk */
+  font-weight: 700;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center; /* Center text alignment */
+  width: 100%;
+  min-width: 0;
+}
+
+.apuesta-odd-label {
+  font-family: var(--font-display);
+  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 44px); /* Scaled size */
+  font-weight: 700;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  opacity: 0.95;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+.apuesta-odd-value {
+  font-family: var(--font-display);
+  font-size: clamp(12px, calc(46px * var(--font-scale, 1)), 100px); /* Base odd size at 26px */
+  font-weight: 800;
+  color: var(--color-gold);
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
+  line-height: 1.1;
+  white-space: normal;
+  overflow: visible;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* ─── MODULE TYPE: PREGUNTA (SÍ/NO) ─── */
+.module-pregunta-display {
+  width: 100%;
+  height: 100%;
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  background: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pregunta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: calc(8px * var(--scale, 1));
+  gap: 12px;
+}
+
+.pregunta-title {
+  font-family: var(--font-display);
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 72px);
+  font-weight: 800;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  flex: 1;
+  min-width: 0;
+}
+
+.pregunta-tag {
+  font-family: var(--font-display);
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 48px);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.pregunta-options-row {
+  display: flex;
+  gap: calc(12px * var(--scale, 1));
+  width: 100%;
+  flex: 1;
+  align-items: center;
+}
+
+.pregunta-option-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* Stack label and value vertically to maximize vertical space */
+  align-items: center;
+  justify-content: space-evenly;
+  height: 85%;
+  min-height: 0;
+  min-width: 0;
+  gap: calc(8px * var(--scale, 1));
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+.pregunta-option-box:hover {
+  background: rgba(212, 168, 67, 0.03);
+  border-color: rgba(212, 168, 67, 0.3);
+  box-shadow: 0 0 12px rgba(212, 168, 67, 0.1);
+}
+
+.pregunta-option-label {
+  font-family: var(--font-display);
+  font-size: clamp(20px, calc(38px * var(--font-scale, 1)), 80px);
+  font-weight: 800;
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
+}
+
+.pregunta-option-value {
+  font-family: var(--font-display);
+  font-size: clamp(26px, calc(54px * var(--font-scale, 1)), 110px);
+  font-weight: 800;
+  color: var(--color-gold);
+  text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
+  line-height: 1;
 }
 
 /* ─── MODULE TYPE: TICKER ─── */
@@ -1556,12 +1882,12 @@ html, body, #root {
   background: var(--color-gold-light);
 }
 
-.handle-e {
+.handle-n {
   top: 0;
-  right: 0;
-  width: 5px;
-  height: 100%;
-  cursor: ew-resize;
+  left: 0;
+  width: 100%;
+  height: 5px;
+  cursor: ns-resize;
 }
 
 .handle-s {
@@ -1570,6 +1896,52 @@ html, body, #root {
   width: 100%;
   height: 5px;
   cursor: ns-resize;
+}
+
+.handle-e {
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.handle-w {
+  top: 0;
+  left: 0;
+  width: 5px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.handle-nw {
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--color-gold);
+  border-bottom-right-radius: 3px;
+  cursor: nwse-resize;
+}
+
+.handle-ne {
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--color-gold);
+  border-bottom-left-radius: 3px;
+  cursor: nesw-resize;
+}
+
+.handle-sw {
+  left: 0;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--color-gold);
+  border-top-right-radius: 3px;
+  cursor: nesw-resize;
 }
 
 .handle-se {
@@ -2024,5 +2396,728 @@ html, body, #root {
   padding: 0 var(--gap-xl) !important;
 }
 
+.vertical .module-apuesta-display {
+  padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
+}
+
+.vertical .apuesta-title {
+  font-size: clamp(18px, calc(28px * var(--font-scale, 1)), 36px) !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.vertical .apuesta-tag {
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 24px) !important;
+}
+
+.vertical .apuesta-odds-row {
+  flex-direction: column !important;
+  gap: clamp(8px, calc(12px * var(--scale, 1)), 16px) !important;
+}
+
+.vertical .apuesta-odd-box {
+  width: 100% !important;
+  height: auto !important;
+  padding: clamp(8px, calc(12px * var(--scale, 1)), 16px) clamp(16px, calc(24px * var(--scale, 1)), 32px) !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.vertical .apuesta-team-info {
+  justify-content: flex-start !important;
+  width: auto !important;
+}
+
+.vertical .apuesta-odd-box.box-right .apuesta-team-info {
+  justify-content: flex-end !important;
+}
+
+.vertical .apuesta-team-name {
+  font-size: clamp(16px, calc(26px * var(--font-scale, 1)), 36px) !important;
+  text-align: left !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.vertical .apuesta-odd-box.box-right .apuesta-team-name {
+  text-align: right !important;
+}
+
+.vertical .apuesta-odd-value {
+  font-size: clamp(24px, calc(36px * var(--font-scale, 1)), 48px) !important;
+}
+
+.vertical .apuesta-odd-label {
+  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 24px) !important;
+}
+
+.vertical .module-pregunta-display {
+  padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
+}
+
+.vertical .pregunta-title {
+  font-size: clamp(18px, calc(28px * var(--font-scale, 1)), 36px) !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.vertical .pregunta-tag {
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 24px) !important;
+}
+
+.vertical .pregunta-options-row {
+  flex-direction: column !important;
+  gap: clamp(8px, calc(12px * var(--scale, 1)), 16px) !important;
+}
+
+.vertical .pregunta-option-box {
+  width: 100% !important;
+  height: auto !important;
+  padding: clamp(8px, calc(12px * var(--scale, 1)), 16px) clamp(16px, calc(24px * var(--scale, 1)), 32px) !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.vertical .pregunta-option-label {
+  font-size: clamp(24px, calc(38px * var(--font-scale, 1)), 48px) !important;
+}
+
+.vertical .pregunta-option-value {
+  font-size: clamp(32px, calc(52px * var(--font-scale, 1)), 64px) !important;
+}
+
+/* ─── NARROW AND SHORT DISPLAY OVERRIDES ─── */
+.narrow-col-4 .apuesta-odd-box,
+.narrow-col-3 .apuesta-odd-box,
+.narrow-col-2 .apuesta-odd-box,
+.narrow-col-1 .apuesta-odd-box {
+  flex-direction: column !important;
+  justify-content: space-evenly !important; /* Spread elements vertically to fill height */
+  gap: calc(8px * var(--scale, 1)) !important;
+  padding: calc(12px * var(--scale, 1)) !important;
+}
+
+.narrow-col-4 .apuesta-team-info,
+.narrow-col-3 .apuesta-team-info,
+.narrow-col-2 .apuesta-team-info,
+.narrow-col-1 .apuesta-team-info {
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: calc(4px * var(--scale, 1)) !important;
+  width: 100% !important;
+}
+
+.narrow-col-4 .apuesta-team-name,
+.narrow-col-3 .apuesta-team-name,
+.narrow-col-2 .apuesta-team-name,
+.narrow-col-1 .apuesta-team-name {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+  text-align: center !important;
+  max-width: 100% !important;
+}
+
+.narrow-col-4 .apuesta-odd-label,
+.narrow-col-3 .apuesta-odd-label,
+.narrow-col-2 .apuesta-odd-label,
+.narrow-col-1 .apuesta-odd-label {
+  font-size: calc(11px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .apuesta-odd-value,
+.narrow-col-3 .apuesta-odd-value,
+.narrow-col-2 .apuesta-odd-value,
+.narrow-col-1 .apuesta-odd-value {
+  font-size: clamp(10px, calc(16px * var(--font-scale, 1)), 28px) !important;
+  white-space: normal !important;
+  overflow: visible !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  line-height: 1.1 !important;
+}
+
+.narrow-col-4 .apuesta-title,
+.narrow-col-3 .apuesta-title,
+.narrow-col-2 .apuesta-title,
+.narrow-col-1 .apuesta-title {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.narrow-col-4 .apuesta-tag,
+.narrow-col-3 .apuesta-tag,
+.narrow-col-2 .apuesta-tag,
+.narrow-col-1 .apuesta-tag {
+  display: none !important;
+}
+
+.narrow-col-4 .apuesta-header,
+.narrow-col-3 .apuesta-header,
+.narrow-col-2 .apuesta-header,
+.narrow-col-1 .apuesta-header {
+  justify-content: center !important;
+  margin-bottom: 2px !important;
+}
+
+.narrow-col-4 img.sb-team-flag,
+.narrow-col-3 img.sb-team-flag,
+.narrow-col-2 img.sb-team-flag,
+.narrow-col-1 img.sb-team-flag {
+  width: calc(36px * var(--scale, 1)) !important;
+  height: calc(24px * var(--scale, 1)) !important;
+}
+
+.narrow-col-4 .pregunta-option-box,
+.narrow-col-3 .pregunta-option-box,
+.narrow-col-2 .pregunta-option-box,
+.narrow-col-1 .pregunta-option-box {
+  flex-direction: column !important;
+  justify-content: space-evenly !important; /* Spread elements vertically to fill height */
+  gap: calc(8px * var(--scale, 1)) !important;
+  padding: calc(12px * var(--scale, 1)) !important;
+}
+
+.narrow-col-4 .pregunta-option-label,
+.narrow-col-3 .pregunta-option-label,
+.narrow-col-2 .pregunta-option-label,
+.narrow-col-1 .pregunta-option-label {
+  font-size: calc(24px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .pregunta-option-value,
+.narrow-col-3 .pregunta-option-value,
+.narrow-col-2 .pregunta-option-value,
+.narrow-col-1 .pregunta-option-value {
+  font-size: calc(34px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .pregunta-title,
+.narrow-col-3 .pregunta-title,
+.narrow-col-2 .pregunta-title,
+.narrow-col-1 .pregunta-title {
+  font-size: calc(16px * var(--font-scale, 1)) !important;
+  max-width: 100% !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+}
+
+.narrow-col-4 .pregunta-tag,
+.narrow-col-3 .pregunta-tag,
+.narrow-col-2 .pregunta-tag,
+.narrow-col-1 .pregunta-tag {
+  display: none !important;
+}
+
+.narrow-col-4 .pregunta-header,
+.narrow-col-3 .pregunta-header,
+.narrow-col-2 .pregunta-header,
+.narrow-col-1 .pregunta-header {
+  justify-content: center !important;
+  margin-bottom: 2px !important;
+}
+
+/* Short height cell overrides */
+.short-row-1 .module-apuesta-display {
+  padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-pregunta-display {
+  padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-scoreboard-display {
+  padding: calc(6px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-results-display {
+  padding: calc(6px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-upcoming-display {
+  padding: calc(6px * var(--scale, 1)) !important;
+  border-left-width: 2px !important;
+}
+
+.short-row-1 .apuesta-header {
+  margin-bottom: 2px !important;
+}
+
+.short-row-1 .apuesta-odd-box {
+  height: 90% !important;
+}
+
+.short-row-1 .pregunta-header {
+  margin-bottom: 2px !important;
+}
+
+.short-row-1 .pregunta-option-box {
+  height: 90% !important;
+}
+
+.short-row-1 .sb-team-flag {
+  margin-bottom: calc(2px * var(--scale, 1)) !important;
+}
+
+.short-row-1 img.sb-team-flag {
+  width: calc(36px * var(--scale, 1)) !important;
+  height: calc(24px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .sb-team-label {
+  margin-bottom: 1px !important;
+}
+
+.short-row-1 .sb-status {
+  margin-top: calc(3px * var(--scale, 1)) !important;
+  padding: calc(2px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .results-title-display {
+  font-size: calc(14px * var(--font-scale, 1)) !important;
+  margin-bottom: calc(4px * var(--scale, 1)) !important;
+  padding-bottom: 2px !important;
+}
+
+.short-row-1 .result-match-box {
+  padding: calc(2px * var(--scale, 1)) 0 !important;
+}
+
+.short-row-1 .result-team-display {
+  font-size: calc(16px * var(--font-scale, 1)) !important;
+}
+
+.short-row-1 .result-score-display {
+  font-size: calc(18px * var(--font-scale, 1)) !important;
+  min-width: calc(30px * var(--scale, 1)) !important;
+  padding: 2px calc(6px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-upcoming-display {
+  border-left-width: 2px !important;
+}
+
+.short-row-1 .upcoming-header-box {
+  margin-bottom: 1px !important;
+}
+
+.short-row-1 .upcoming-label-display {
+  font-size: calc(12px * var(--font-scale, 1)) !important;
+  margin-bottom: 1px !important;
+}
+
+.short-row-1 .upcoming-time-display {
+  font-size: calc(20px * var(--font-scale, 1)) !important;
+}
+
+.short-row-1 .upcoming-vs-card {
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  padding: calc(4px * var(--scale, 1)) !important;
+  margin-top: calc(2px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .upcoming-team {
+  font-size: calc(16px * var(--font-scale, 1)) !important;
+  width: auto !important;
+  flex: 1;
+}
+
+.short-row-1 .upcoming-vs-badge {
+  margin: 0 calc(8px * var(--scale, 1)) !important;
+  font-size: calc(12px * var(--font-scale, 1)) !important;
+  padding: 1px calc(4px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .module-news-display {
+  padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
+  justify-content: center !important;
+}
+
+.short-row-1 .news-title-display {
+  font-size: calc(16px * var(--font-scale, 1)) !important;
+  margin-bottom: calc(4px * var(--scale, 1)) !important;
+  padding-left: calc(4px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .news-content-display {
+  font-size: calc(14px * var(--font-scale, 1)) !important;
+  line-height: 1.35 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+/* Narrow column cell overrides for other modules */
+.narrow-col-4 .sb-team-label,
+.narrow-col-3 .sb-team-label,
+.narrow-col-2 .sb-team-label,
+.narrow-col-1 .sb-team-label {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .sb-team-code,
+.narrow-col-3 .sb-team-code,
+.narrow-col-2 .sb-team-code,
+.narrow-col-1 .sb-team-code {
+  font-size: calc(22px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 img.sb-team-flag,
+.narrow-col-3 img.sb-team-flag,
+.narrow-col-2 img.sb-team-flag,
+.narrow-col-1 img.sb-team-flag {
+  width: calc(36px * var(--scale, 1)) !important;
+  height: calc(24px * var(--scale, 1)) !important;
+}
+
+.narrow-col-4 .sb-score,
+.narrow-col-3 .sb-score,
+.narrow-col-2 .sb-score,
+.narrow-col-1 .sb-score {
+  font-size: calc(48px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .sb-divider,
+.narrow-col-3 .sb-divider,
+.narrow-col-2 .sb-divider,
+.narrow-col-1 .sb-divider {
+  font-size: calc(32px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .result-team-display,
+.narrow-col-3 .result-team-display,
+.narrow-col-2 .result-team-display,
+.narrow-col-1 .result-team-display {
+  font-size: calc(16px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .upcoming-team,
+.narrow-col-3 .upcoming-team,
+.narrow-col-2 .upcoming-team,
+.narrow-col-1 .upcoming-team {
+  font-size: calc(18px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .upcoming-time-display,
+.narrow-col-3 .upcoming-time-display,
+.narrow-col-2 .upcoming-time-display,
+.narrow-col-1 .upcoming-time-display {
+  font-size: calc(22px * var(--font-scale, 1)) !important;
+}
+
+.narrow-col-4 .news-title-display,
+.narrow-col-3 .news-title-display,
+.narrow-col-2 .news-title-display,
+.narrow-col-1 .news-title-display,
+.narrow-col-4 .results-title-display,
+.narrow-col-3 .results-title-display,
+.narrow-col-2 .results-title-display,
+.narrow-col-1 .results-title-display {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+  text-align: center !important;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow: visible !important;
+}
+
+.narrow-col-4 .news-content-display,
+.narrow-col-3 .news-content-display,
+.narrow-col-2 .news-content-display,
+.narrow-col-1 .news-content-display {
+  font-size: calc(15px * var(--font-scale, 1)) !important;
+  -webkit-line-clamp: 4 !important;
+}
+
+/* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
+.narrow-col-4 .pregunta-options-row,
+.narrow-col-3 .pregunta-options-row,
+.narrow-col-2 .pregunta-options-row,
+.narrow-col-1 .pregunta-options-row,
+.span-w-1 .pregunta-options-row,
+.span-w-2 .pregunta-options-row,
+.span-w-3 .pregunta-options-row,
+.span-w-4 .pregunta-options-row {
+  flex-direction: column !important;
+  gap: calc(8px * var(--scale, 1)) !important;
+  width: 100% !important;
+}
+
+.narrow-col-4 .pregunta-option-box,
+.narrow-col-3 .pregunta-option-box,
+.narrow-col-2 .pregunta-option-box,
+.narrow-col-1 .pregunta-option-box,
+.span-w-1 .pregunta-option-box,
+.span-w-2 .pregunta-option-box,
+.span-w-3 .pregunta-option-box,
+.span-w-4 .pregunta-option-box {
+  width: 100% !important;
+  flex: 1 !important; /* Allow the boxes to grow vertically to fill the height */
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  padding: clamp(10px, calc(16px * var(--scale, 1)), 32px) clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
+}
+
+/* ─── OVERFLOW PREVENTION & BOUNDS ADAPTABILITY ─── */
+.module-cell,
+.module-scoreboard-display,
+.module-results-display,
+.module-upcoming-display,
+.module-news-display,
+.module-apuesta-display,
+.module-pregunta-display,
+.module-ticker-display,
+.module-media,
+.module-wrapper {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+
+  --font-scale: calc(var(--scale, 1) * var(--text-scale-factor, 1));
+}
+
+.module-cell {
+  border-radius: var(--radius-lg) !important;
+}
+
+.module-wrapper {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--module-border-color, var(--color-border)) !important;
+  background: var(--module-bg-color, transparent) !important;
+  background-color: var(--module-bg-color, transparent) !important;
+}
+
+/* Force inner flex items to be able to shrink so they never push contents out */
+.module-wrapper *,
+.module-scoreboard-display *,
+.module-results-display *,
+.module-upcoming-display *,
+.module-news-display *,
+.module-apuesta-display *,
+.module-pregunta-display *,
+.module-ticker-display *,
+.module-media * {
+  min-height: 0;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+/* Safeguard for images/flags to never stretch beyond container dimensions */
+img.sb-team-flag,
+.sb-team-flag-img {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
+/* ─── TRANSPARENT BACKGROUNDS & OUTER LAYOUT CONTAINERS ─── */
+.viewport-container,
+.billboard-grid,
+.module-cell,
+.module-media,
+.media-placeholder {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+}
+
+.module-scoreboard-display,
+.module-results-display,
+.module-upcoming-display,
+.module-news-display,
+.module-apuesta-display,
+.module-pregunta-display {
+  background: var(--module-bg-color, transparent) !important;
+  background-color: var(--module-bg-color, transparent) !important;
+  background-image: none !important;
+}
+
+/* ─── CARD/ELEMENT STYLING WITH CUSTOMIZABLE BACKGROUND COLOR ─── */
+.pregunta-header,
+.apuesta-header,
+.upcoming-header-box,
+.results-title-display,
+.news-title-display,
+.pregunta-option-box,
+.apuesta-odd-box,
+.upcoming-vs-card,
+.result-match-box,
+.sb-main,
+.sb-status,
+.news-content-display,
+.media-text-container,
+.brand-overlay,
+.module-ticker-display {
+  background: var(--card-bg-color, rgba(255, 255, 255, 0.03)) !important;
+  background-color: var(--card-bg-color, rgba(255, 255, 255, 0.03)) !important;
+  background-image: none !important;
+}
+
+/* Styled elements configuration (borders, paddings, margins) */
+.pregunta-header,
+.apuesta-header,
+.upcoming-header-box,
+.results-title-display,
+.news-title-display {
+  border: 1px solid var(--module-border-color, var(--color-border)) !important;
+  border-radius: var(--radius-md) !important;
+  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.pregunta-option-box,
+.apuesta-odd-box,
+.upcoming-vs-card,
+.result-match-box,
+.sb-main,
+.media-text-container,
+.news-content-display {
+  border: 1px solid var(--module-border-color, var(--color-border)) !important;
+  border-radius: var(--radius-md) !important;
+  box-sizing: border-box !important;
+}
+
+/* Custom paddings/margins for specific inner components */
+.result-match-box {
+  padding: clamp(6px, calc(10px * var(--scale, 1)), 18px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
+  margin-bottom: calc(8px * var(--scale, 1)) !important;
+  border-bottom: 1px solid var(--module-border-color, var(--color-border)) !important;
+}
+
+.result-match-box:last-child {
+  margin-bottom: 0 !important;
+}
+
+.sb-main {
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 28px) !important;
+  width: 100% !important;
+}
+
+.news-content-display {
+  padding: clamp(8px, calc(14px * var(--scale, 1)), 28px) !important;
+  width: 100% !important;
+  flex: 1 !important;
+}
+
+.upcoming-vs-card {
+  padding: clamp(6px, calc(12px * var(--scale, 1)), 24px) !important;
+}
 
 
+
+
+/* ─── CUSTOM TEXT COLOR OVERRIDES ─── */
+.module-wrapper[style*="--text-color"] .apuesta-team-name,
+.module-wrapper[style*="--text-color"] .pregunta-option-label,
+.module-wrapper[style*="--text-color"] .pregunta-option-value,
+.module-wrapper[style*="--text-color"] .sb-team-code,
+.module-wrapper[style*="--text-color"] .sb-team-label,
+.module-wrapper[style*="--text-color"] .sb-score,
+.module-wrapper[style*="--text-color"] .news-title-display,
+.module-wrapper[style*="--text-color"] .news-content-display,
+.module-wrapper[style*="--text-color"] .results-title-display,
+.module-wrapper[style*="--text-color"] .result-team-display,
+.module-wrapper[style*="--text-color"] .result-score-display,
+.module-wrapper[style*="--text-color"] .upcoming-team,
+.module-wrapper[style*="--text-color"] .upcoming-time-display,
+.module-wrapper[style*="--text-color"] .upcoming-label-display,
+.module-wrapper[style*="--text-color"] .apuesta-title,
+.module-wrapper[style*="--text-color"] .pregunta-title,
+.module-wrapper[style*="--text-color"] .media-text-content,
+.module-wrapper[style*="--text-color"] .media-overlay-text,
+.module-wrapper[style*="--text-color"] .ticker-text,
+.module-wrapper[style*="--text-color"] .apuesta-odd-value,
+.module-wrapper[style*="--text-color"] .apuesta-odd-label,
+.module-wrapper[style*="--text-color"] .apuesta-tag,
+.module-wrapper[style*="--text-color"] .pregunta-tag,
+.module-wrapper[style*="--text-color"] .sb-divider,
+.module-wrapper[style*="--text-color"] .sb-status,
+.module-wrapper[style*="--text-color"] .upcoming-vs-badge {
+  color: var(--text-color) !important;
+}
+
+/* ─── DROPDOWN MENUS FOR PREVIEW BUTTONS ─── */
+.admin-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #141414 !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7) !important;
+  z-index: 9999;
+  min-width: 210px;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0 !important;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.admin-dropdown-item {
+  padding: 10px 16px !important;
+  color: var(--color-white) !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-family: var(--font-body) !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  transition: all var(--transition-fast) !important;
+  text-align: left !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer !important;
+}
+
+.admin-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: var(--color-gold) !important;
+}
+
+/* Specific draft dropdown trigger & item styles */
+.admin-btn-draft-trigger {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  color: #a78bfa !important;
+}
+.admin-btn-draft-trigger:hover {
+  background: rgba(139, 92, 246, 0.2) !important;
+  border-color: #a78bfa !important;
+}
+.admin-dropdown-item-draft:hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+  color: #a78bfa !important;
+}

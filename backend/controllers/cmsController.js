@@ -1,4 +1,4 @@
-import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover } from '../../db.js';
+import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover, getDbWorldCupTeams } from '../../db.js';
 import { readJsonBody, sendJson } from '../utils.js';
 
 export async function handleGetCms(req, res) {
@@ -64,6 +64,15 @@ export async function handlePostCmsDraft(req, res) {
     const version = Date.now();
     await saveConfig('draft', config, version, 'Sistema', modifiedBy || 'Desconocido');
     sendJson(res, 200, { success: true, version });
+  } catch (err) {
+    sendJson(res, 500, { error: err.message });
+  }
+}
+
+export async function handleGetWorldCupTeams(req, res) {
+  try {
+    const teams = await getDbWorldCupTeams();
+    sendJson(res, 200, teams);
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
