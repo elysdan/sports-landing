@@ -548,11 +548,6 @@ export default function DisplayView() {
           );
         })}
       </div>
-
-      <Link to="/admin" className="floating-admin-btn" title="Panel de Administración">
-        <span>⚙️</span>
-        <span className="floating-admin-text">Administrador</span>
-      </Link>
     </div>
   );
 }

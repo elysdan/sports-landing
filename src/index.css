@@ -603,14 +603,10 @@ img.sb-team-flag {
 }
 
 /* Stack vertically in narrow slots or portrait mode */
-.narrow-col-4 .upcoming-vs-card,
-.narrow-col-3 .upcoming-vs-card,
 .narrow-col-2 .upcoming-vs-card,
 .narrow-col-1 .upcoming-vs-card,
 .span-w-1 .upcoming-vs-card,
 .span-w-2 .upcoming-vs-card,
-.span-w-3 .upcoming-vs-card,
-.span-w-4 .upcoming-vs-card,
 .vertical .upcoming-vs-card {
   flex-direction: column !important;
   justify-content: space-evenly !important;
@@ -618,14 +614,10 @@ img.sb-team-flag {
   padding: clamp(8px, calc(16px * var(--scale, 1)), 36px) !important;
 }
 
-.narrow-col-4 .upcoming-vs-card .upcoming-team,
-.narrow-col-3 .upcoming-vs-card .upcoming-team,
 .narrow-col-2 .upcoming-vs-card .upcoming-team,
 .narrow-col-1 .upcoming-vs-card .upcoming-team,
 .span-w-1 .upcoming-vs-card .upcoming-team,
 .span-w-2 .upcoming-vs-card .upcoming-team,
-.span-w-3 .upcoming-vs-card .upcoming-team,
-.span-w-4 .upcoming-vs-card .upcoming-team,
 .vertical .upcoming-vs-card .upcoming-team {
   text-align: center !important;
   padding: 0 !important;
@@ -2769,40 +2761,49 @@ img.sb-team-flag {
 }
 
 .short-row-1 .module-upcoming-display {
+  padding: calc(6px * var(--scale, 1)) !important;
   border-left-width: 2px !important;
+  justify-content: center !important;
+  gap: calc(4px * var(--scale, 1)) !important;
 }
 
 .short-row-1 .upcoming-header-box {
-  margin-bottom: 1px !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 0 !important;
+  width: 100% !important;
 }
 
 .short-row-1 .upcoming-label-display {
-  font-size: calc(12px * var(--font-scale, 1)) !important;
-  margin-bottom: 1px !important;
+  font-size: clamp(10px, calc(11px * var(--font-scale, 1)), 13px) !important;
+  margin-bottom: 0 !important;
 }
 
 .short-row-1 .upcoming-time-display {
-  font-size: calc(20px * var(--font-scale, 1)) !important;
+  font-size: clamp(12px, calc(15px * var(--font-scale, 1)), 18px) !important;
+  line-height: 1 !important;
 }
 
 .short-row-1 .upcoming-vs-card {
   flex-direction: row !important;
   justify-content: space-evenly !important;
   align-items: center !important;
-  padding: calc(4px * var(--scale, 1)) !important;
-  margin-top: calc(2px * var(--scale, 1)) !important;
+  padding: calc(6px * var(--scale, 1)) !important;
+  margin-top: 0 !important;
+  flex: 0 0 auto !important;
 }
 
 .short-row-1 .upcoming-team {
-  font-size: calc(16px * var(--font-scale, 1)) !important;
+  font-size: clamp(12px, calc(15px * var(--font-scale, 1)), 22px) !important;
   width: auto !important;
   flex: 1;
 }
 
 .short-row-1 .upcoming-vs-badge {
   margin: 0 calc(8px * var(--scale, 1)) !important;
-  font-size: calc(12px * var(--font-scale, 1)) !important;
-  padding: 1px calc(4px * var(--scale, 1)) !important;
+  font-size: clamp(10px, calc(12px * var(--font-scale, 1)), 16px) !important;
+  padding: 2px calc(6px * var(--scale, 1)) !important;
 }
 
 .short-row-1 .module-news-display {
