@@ -671,6 +671,18 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
         </div>
       </div>
 
+      <div className="field" style={{ marginTop: '12px', marginBottom: '8px' }}>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
+          <input
+            type="checkbox"
+            checked={content.showFlags !== false}
+            onChange={(e) => onChange('showFlags', e.target.checked)}
+            style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
+          />
+          Mostrar bandera / foto / emoji de los equipos
+        </label>
+      </div>
+
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
 
       {/* Team A quick select and details */}
@@ -834,23 +846,13 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
 function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
   return (
     <>
-      <div className="field-row">
-        <div className="field">
-          <label>Pregunta / Título (ej: ¿AMBOS EQUIPOS ANOTARÁN?)</label>
-          <input
-            type="text"
-            value={content.title || ''}
-            onChange={(e) => onChange('title', e.target.value)}
-          />
-        </div>
-        <div className="field">
-          <label>Etiqueta / Categoría (ej: Especiales de fútbol)</label>
-          <input
-            type="text"
-            value={content.tag || ''}
-            onChange={(e) => onChange('tag', e.target.value)}
-          />
-        </div>
+      <div className="field">
+        <label>Pregunta / Título (ej: ¿AMBOS EQUIPOS ANOTARÁN?)</label>
+        <input
+          type="text"
+          value={content.title || ''}
+          onChange={(e) => onChange('title', e.target.value)}
+        />
       </div>
 
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
@@ -883,7 +885,7 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
 
   const updateMatch = (idx, field, value) => {
     const updated = [...(content.matches || [])];
-    updated[idx] = { ...updated[idx], [field]: field.startsWith('score') ? (parseInt(value) || 0) : value };
+    updated[idx] = { ...updated[idx], [field]: value };
     updateModuleContent(moduleId, { matches: updated });
   };
 
@@ -930,11 +932,11 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
           </div>
           <div className="field">
             <label>G-A</label>
-            <input type="number" value={match.scoreA} onChange={(e) => updateMatch(i, 'scoreA', e.target.value)} />
+            <input type="text" value={match.scoreA} onChange={(e) => updateMatch(i, 'scoreA', e.target.value)} />
           </div>
           <div className="field">
             <label>G-B</label>
-            <input type="number" value={match.scoreB} onChange={(e) => updateMatch(i, 'scoreB', e.target.value)} />
+            <input type="text" value={match.scoreB} onChange={(e) => updateMatch(i, 'scoreB', e.target.value)} />
           </div>
           <div className="field" style={{ display: 'flex', alignItems: 'end', gap: 4 }}>
             <div style={{ flex: 1 }}>
@@ -1363,13 +1365,24 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     e.preventDefault();
     onSelect(mod.id);
 
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    const rect = gridEl.getBoundingClientRect();
+    const cellWidth = rect.width / grid.cols;
+    const cellHeight = rect.height / grid.rows;
+
+    const cellLeft = rect.left + (mod.gridPosition.col - 1) * cellWidth;
+    const cellTop = rect.top + (mod.gridPosition.row - 1) * cellHeight;
+
     setDragState({
       type: 'move',
       moduleId: mod.id,
-      startX: e.clientX,
-      startY: e.clientY,
-      startCol: mod.gridPosition.col,
-      startRow: mod.gridPosition.row,
+      offsetX: e.clientX - cellLeft,
+      offsetY: e.clientY - cellTop,
+      startColSpan: mod.gridPosition.colSpan,
+      startRowSpan: mod.gridPosition.rowSpan,
+      startGridLeft: rect.left,
+      startGridTop: rect.top,
     });
   };
 
@@ -1383,14 +1396,25 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     if (e.cancelable) e.preventDefault();
     onSelect(mod.id);
 
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    const rect = gridEl.getBoundingClientRect();
+    const cellWidth = rect.width / grid.cols;
+    const cellHeight = rect.height / grid.rows;
+
+    const cellLeft = rect.left + (mod.gridPosition.col - 1) * cellWidth;
+    const cellTop = rect.top + (mod.gridPosition.row - 1) * cellHeight;
+
     const touch = e.touches[0];
     setDragState({
       type: 'move',
       moduleId: mod.id,
-      startX: touch.clientX,
-      startY: touch.clientY,
-      startCol: mod.gridPosition.col,
-      startRow: mod.gridPosition.row,
+      offsetX: touch.clientX - cellLeft,
+      offsetY: touch.clientY - cellTop,
+      startColSpan: mod.gridPosition.colSpan,
+      startRowSpan: mod.gridPosition.rowSpan,
+      startGridLeft: rect.left,
+      startGridTop: rect.top,
     });
   };
 
@@ -1401,16 +1425,20 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     e.preventDefault();
     onSelect(mod.id);
 
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    const rect = gridEl.getBoundingClientRect();
+
     setDragState({
       type: 'resize',
       direction,
       moduleId: mod.id,
-      startX: e.clientX,
-      startY: e.clientY,
       startCol: mod.gridPosition.col,
       startRow: mod.gridPosition.row,
       startColSpan: mod.gridPosition.colSpan,
       startRowSpan: mod.gridPosition.rowSpan,
+      startGridLeft: rect.left,
+      startGridTop: rect.top,
     });
   };
 
@@ -1421,17 +1449,21 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     if (e.cancelable) e.preventDefault();
     onSelect(mod.id);
 
+    const gridEl = gridRef.current;
+    if (!gridEl) return;
+    const rect = gridEl.getBoundingClientRect();
+
     const touch = e.touches[0];
     setDragState({
       type: 'resize',
       direction,
       moduleId: mod.id,
-      startX: touch.clientX,
-      startY: touch.clientY,
       startCol: mod.gridPosition.col,
       startRow: mod.gridPosition.row,
       startColSpan: mod.gridPosition.colSpan,
       startRowSpan: mod.gridPosition.rowSpan,
+      startGridLeft: rect.left,
+      startGridTop: rect.top,
     });
   };
 
@@ -1440,9 +1472,6 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
     if (!dragState) return;
 
     const handleDragMove = (clientX, clientY) => {
-      const dx = clientX - dragState.startX;
-      const dy = clientY - dragState.startY;
-
       const gridEl = gridRef.current;
       if (!gridEl) return;
       const rect = gridEl.getBoundingClientRect();
@@ -1453,15 +1482,21 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
       if (!mod) return;
 
       if (dragState.type === 'move') {
-        const colDiff = Math.round(dx / cellWidth);
-        const rowDiff = Math.round(dy / cellHeight);
+        const gridShiftX = rect.left - dragState.startGridLeft;
+        const gridShiftY = rect.top - dragState.startGridTop;
 
-        let newCol = dragState.startCol + colDiff;
-        let newRow = dragState.startRow + rowDiff;
+        const mouseXInGrid = clientX - rect.left;
+        const mouseYInGrid = clientY - rect.top;
+
+        const xInGrid = mouseXInGrid - dragState.offsetX + gridShiftX;
+        const yInGrid = mouseYInGrid - dragState.offsetY + gridShiftY;
+
+        let newCol = Math.round(xInGrid / cellWidth) + 1;
+        let newRow = Math.round(yInGrid / cellHeight) + 1;
 
         // Limitar dentro del grid
-        newCol = Math.max(1, Math.min(grid.cols - mod.gridPosition.colSpan + 1, newCol));
-        newRow = Math.max(1, Math.min(grid.rows - mod.gridPosition.rowSpan + 1, newRow));
+        newCol = Math.max(1, Math.min(grid.cols - dragState.startColSpan + 1, newCol));
+        newRow = Math.max(1, Math.min(grid.rows - dragState.startRowSpan + 1, newRow));
 
         if (newCol !== mod.gridPosition.col || newRow !== mod.gridPosition.row) {
           updateModule(dragState.moduleId, {
@@ -1473,8 +1508,8 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
           });
         }
       } else if (dragState.type === 'resize') {
-        const colDiff = Math.round(dx / cellWidth);
-        const rowDiff = Math.round(dy / cellHeight);
+        const cursorLineX = Math.round((clientX - dragState.startGridLeft) / cellWidth) + 1;
+        const cursorLineY = Math.round((clientY - dragState.startGridTop) / cellHeight) + 1;
 
         let newCol = mod.gridPosition.col;
         let newRow = mod.gridPosition.row;
@@ -1486,31 +1521,23 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
         // Cambios en columnas (E / W / NW / NE / SW / SE)
         if (dir.includes('w')) {
           const maxColRight = dragState.startCol + dragState.startColSpan;
-          newCol = dragState.startCol + colDiff;
-          newCol = Math.max(1, Math.min(maxColRight - 1, newCol));
+          newCol = Math.max(1, Math.min(maxColRight - 1, cursorLineX));
           newColSpan = maxColRight - newCol;
         } else if (dir.includes('e')) {
           newCol = dragState.startCol;
-          newColSpan = dragState.startColSpan + colDiff;
+          newColSpan = cursorLineX - dragState.startCol;
           newColSpan = Math.max(1, Math.min(grid.cols - dragState.startCol + 1, newColSpan));
-        } else {
-          newCol = dragState.startCol;
-          newColSpan = dragState.startColSpan;
         }
 
         // Cambios en filas (N / S / NW / NE / SW / SE)
         if (dir.includes('n')) {
           const maxRowBottom = dragState.startRow + dragState.startRowSpan;
-          newRow = dragState.startRow + rowDiff;
-          newRow = Math.max(1, Math.min(maxRowBottom - 1, newRow));
+          newRow = Math.max(1, Math.min(maxRowBottom - 1, cursorLineY));
           newRowSpan = maxRowBottom - newRow;
         } else if (dir.includes('s')) {
           newRow = dragState.startRow;
-          newRowSpan = dragState.startRowSpan + rowDiff;
+          newRowSpan = cursorLineY - dragState.startRow;
           newRowSpan = Math.max(1, Math.min(grid.rows - dragState.startRow + 1, newRowSpan));
-        } else {
-          newRow = dragState.startRow;
-          newRowSpan = dragState.startRowSpan;
         }
 
         if (
@@ -1677,8 +1704,13 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                   const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
                   const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
   
-                  const cellBg = mod.content.moduleBgTransparent === true ? 'rgba(22,22,22,0.85)' : (mod.content.moduleBgColor || mod.content.cardBgColor || '#0a0a0a');
-                  const cellBorder = mod.content.moduleBorderTransparent === true ? 'transparent' : (mod.content.moduleBorderColor || 'var(--color-border)');
+                  const cellBg = isSelected 
+                    ? 'rgba(212, 168, 67, 0.12)' 
+                    : (mod.content?.moduleBgTransparent === true ? 'rgba(22,22,22,0.85)' : (mod.content?.moduleBgColor || mod.content?.cardBgColor || '#0a0a0a'));
+
+                  const cellBorder = isSelected 
+                    ? 'var(--color-gold)' 
+                    : (mod.content?.moduleBorderTransparent === true ? 'transparent' : (mod.content?.moduleBorderColor || 'var(--color-border)'));
   
                   return (
                     <div
@@ -1687,7 +1719,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                       style={{
                         gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
                         gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
-                        zIndex: isSelected ? 100 : (modules.length - indexInMaster),
+                        zIndex: isSelected ? 100 : (targetModules.length - indexInMaster),
                         cursor: canEdit ? 'move' : 'not-allowed',
                         opacity: canEdit ? 1 : 0.75,
                         background: cellBg,
@@ -2525,6 +2557,7 @@ function EditorsManagement() {
   const [selectedTypes, setSelectedTypes] = useState([]); // List of module type keys allowed
   const [allSelected, setAllSelected] = useState(false);
   const [canApprovePermission, setCanApprovePermission] = useState(false);
+  const [canDeleteMediaPermission, setCanDeleteMediaPermission] = useState(false);
   const [readonlyMediaAddSelected, setReadonlyMediaAddSelected] = useState(false);
   const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: '' }
 
@@ -2539,8 +2572,9 @@ function EditorsManagement() {
     const hasAll = u.allowedTypes.includes('*');
     setAllSelected(hasAll);
     setCanApprovePermission(u.allowedTypes.includes('approve'));
+    setCanDeleteMediaPermission(u.allowedTypes.includes('delete_media'));
     setReadonlyMediaAddSelected(u.allowedTypes.includes('readonly_media_add'));
-    setSelectedTypes(u.allowedTypes.filter(t => t !== 'approve' && t !== '*' && t !== 'readonly_media_add'));
+    setSelectedTypes(u.allowedTypes.filter(t => t !== 'approve' && t !== 'delete_media' && t !== '*' && t !== 'readonly_media_add'));
   };
 
   const handleCancelEdit = () => {
@@ -2551,6 +2585,7 @@ function EditorsManagement() {
     setSelectedTypes([]);
     setAllSelected(false);
     setCanApprovePermission(false);
+    setCanDeleteMediaPermission(false);
     setReadonlyMediaAddSelected(false);
     setFeedback(null);
   };
@@ -2604,8 +2639,8 @@ function EditorsManagement() {
       return;
     }
     const finalTypes = allSelected ? ['*'] : selectedTypes;
-    if (finalTypes.length === 0 && !canApprovePermission && !readonlyMediaAddSelected) {
-      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso, habilitar la aprobación o activar el perfil de solo lectura.' });
+    if (finalTypes.length === 0 && !canApprovePermission && !canDeleteMediaPermission && !readonlyMediaAddSelected) {
+      setFeedback({ type: 'error', message: 'Debes seleccionar al menos un permiso, habilitar la aprobación/eliminación o activar el perfil de solo lectura.' });
       return;
     }
 
@@ -2613,7 +2648,9 @@ function EditorsManagement() {
     if (readonlyMediaAddSelected) {
       typesToSend = ['readonly_media_add'];
     } else {
-      typesToSend = canApprovePermission ? [...finalTypes, 'approve'] : finalTypes;
+      typesToSend = [...finalTypes];
+      if (canApprovePermission) typesToSend.push('approve');
+      if (canDeleteMediaPermission) typesToSend.push('delete_media');
     }
 
     const success = await createEditor(usernameInput.trim(), passwordInput.trim(), name.trim(), typesToSend);
@@ -2738,6 +2775,22 @@ function EditorsManagement() {
                         gap: '4px'
                       }}>
                         ✅ Permiso de Aprobación
+                      </span>
+                    )}
+
+                    {u.allowedTypes.includes('delete_media') && (
+                      <span style={{
+                        fontSize: '11px',
+                        background: 'rgba(239, 83, 80, 0.15)',
+                        border: '1px solid rgba(239, 83, 80, 0.3)',
+                        color: '#ef5350',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        🗑️ Eliminar de la Biblioteca
                       </span>
                     )}
 
@@ -3002,6 +3055,43 @@ function EditorsManagement() {
               </div>
             </div>
 
+            {/* Special toggle for "Delete Media" */}
+            <div
+              onClick={() => {
+                if (!readonlyMediaAddSelected) {
+                  setCanDeleteMediaPermission(prev => !prev);
+                }
+              }}
+              style={{
+                background: canDeleteMediaPermission ? 'rgba(212, 168, 67, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+                border: canDeleteMediaPermission ? '1px solid var(--color-gold)' : '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '12px 16px',
+                cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                transition: 'var(--transition-fast)',
+                opacity: readonlyMediaAddSelected ? 0.6 : 1
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={canDeleteMediaPermission}
+                disabled={readonlyMediaAddSelected}
+                onChange={() => {}} // Controlled click on container
+                style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer' }}
+              />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 'bold', fontSize: '13px', color: canDeleteMediaPermission ? 'var(--color-gold)' : 'var(--color-white)' }}>
+                  🗑️ Habilitar Eliminación de Biblioteca
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                  Permite eliminar permanentemente archivos de la biblioteca de medios
+                </div>
+              </div>
+            </div>
+
             {/* Special toggle for "Solo Lectura + Multimedia" */}
             <div
               onClick={() => {
@@ -3011,6 +3101,7 @@ function EditorsManagement() {
                   setSelectedTypes([]);
                   setAllSelected(false);
                   setCanApprovePermission(false);
+                  setCanDeleteMediaPermission(false);
                   setReadonlyMediaAddSelected(true);
                 }
               }}

@@ -220,69 +220,74 @@ async function initDb() {
     // Column already altered or error
   }
 
-  // Seed default World Cup teams - always maintain exactly the 48 selections
-  await pool.query('DELETE FROM world_cup_teams');
-  const defaultTeams = [
-    { name: 'Canadá', code: 'CAN', flag: '🇨🇦' },
-    { name: 'México', code: 'MEX', flag: '🇲🇽' },
-    { name: 'Estados Unidos', code: 'USA', flag: '🇺🇸' },
-    { name: 'Australia', code: 'AUS', flag: '🇦🇺' },
-    { name: 'Irak', code: 'IRQ', flag: '🇮🇶' },
-    { name: 'Irán', code: 'IRN', flag: '🇮🇷' },
-    { name: 'Japón', code: 'JPN', flag: '🇯🇵' },
-    { name: 'Jordania', code: 'JOR', flag: '🇯🇴' },
-    { name: 'Corea del Sur', code: 'KOR', flag: '🇰🇷' },
-    { name: 'Catar', code: 'QAT', flag: '🇶🇦' },
-    { name: 'Arabia Saudita', code: 'KSA', flag: '🇸🇦' },
-    { name: 'Uzbekistán', code: 'UZB', flag: '🇺🇿' },
-    { name: 'Argelia', code: 'ALG', flag: '🇩🇿' },
-    { name: 'Cabo Verde', code: 'CPV', flag: '🇨🇻' },
-    { name: 'Rep. Dem. del Congo', code: 'COD', flag: '🇨🇩' },
-    { name: 'Costa de Marfil', code: 'CIV', flag: '🇨🇮' },
-    { name: 'Egipto', code: 'EGY', flag: '🇪🇬' },
-    { name: 'Ghana', code: 'GHA', flag: '🇬🇭' },
-    { name: 'Marruecos', code: 'MAR', flag: '🇲🇦' },
-    { name: 'Senegal', code: 'SEN', flag: '🇸🇳' },
-    { name: 'Sudáfrica', code: 'RSA', flag: '🇿🇦' },
-    { name: 'Túnez', code: 'TUN', flag: '🇹🇳' },
-    { name: 'Curazao', code: 'CUW', flag: '🇨🇼' },
-    { name: 'Haití', code: 'HAI', flag: '🇭🇹' },
-    { name: 'Panamá', code: 'PAN', flag: '🇵🇦' },
-    { name: 'Argentina', code: 'ARG', flag: '🇦🇷' },
-    { name: 'Brasil', code: 'BRA', flag: '🇧🇷' },
-    { name: 'Colombia', code: 'COL', flag: '🇨🇴' },
-    { name: 'Ecuador', code: 'ECU', flag: '🇪🇨' },
-    { name: 'Paraguay', code: 'PAR', flag: '🇵🇾' },
-    { name: 'Uruguay', code: 'URU', flag: '🇺🇾' },
-    { name: 'Nueva Zelanda', code: 'NZL', flag: '🇳🇿' },
-    { name: 'Austria', code: 'AUT', flag: '🇦🇹' },
-    { name: 'Bélgica', code: 'BEL', flag: '🇧🇪' },
-    { name: 'Bosnia y Herzegovina', code: 'BIH', flag: '🇧🇦' },
-    { name: 'Croacia', code: 'CRO', flag: '🇭🇷' },
-    { name: 'República Checa', code: 'CZE', flag: '🇨🇿' },
-    { name: 'Inglaterra', code: 'ENG', flag: 'ENG' }, // Inglaterra
-    { name: 'Francia', code: 'FRA', flag: '🇫🇷' },
-    { name: 'Alemania', code: 'GER', flag: '🇩🇪' },
-    { name: 'Países Bajos', code: 'NED', flag: '🇳🇱' },
-    { name: 'Noruega', code: 'NOR', flag: '🇳🇴' },
-    { name: 'Portugal', code: 'POR', flag: '🇵🇹' },
-    { name: 'Escocia', code: 'SCO', flag: 'SCO' }, // Escocia
-    { name: 'España', code: 'ESP', flag: '🇪🇸' },
-    { name: 'Suecia', code: 'SWE', flag: '🇸🇪' },
-    { name: 'Suiza', code: 'SUI', flag: '🇨🇭' },
-    { name: 'Turquía', code: 'TUR', flag: '🇹🇷' }
-  ];
+  // Seed default World Cup teams - only seed if table has fewer than 48 teams (reduces 49 queries per server startup)
+  const teamsCountRes = await pool.query('SELECT COUNT(*) as count FROM world_cup_teams');
+  const teamsCount = parseInt(teamsCountRes.rows[0].count) || 0;
+  if (teamsCount < 48) {
+    console.log(`[DB] Sembrando selecciones oficiales del mundial (Equipos actuales: ${teamsCount}/48)...`);
+    await pool.query('DELETE FROM world_cup_teams');
+    const defaultTeams = [
+      { name: 'Canadá', code: 'CAN', flag: '🇨🇦' },
+      { name: 'México', code: 'MEX', flag: '🇲🇽' },
+      { name: 'Estados Unidos', code: 'USA', flag: '🇺🇸' },
+      { name: 'Australia', code: 'AUS', flag: '🇦🇺' },
+      { name: 'Irak', code: 'IRQ', flag: '🇮🇶' },
+      { name: 'Irán', code: 'IRN', flag: '🇮🇷' },
+      { name: 'Japón', code: 'JPN', flag: '🇯🇵' },
+      { name: 'Jordania', code: 'JOR', flag: '🇯🇴' },
+      { name: 'Corea del Sur', code: 'KOR', flag: '🇰🇷' },
+      { name: 'Catar', code: 'QAT', flag: '🇶🇦' },
+      { name: 'Arabia Saudita', code: 'KSA', flag: '🇸🇦' },
+      { name: 'Uzbekistán', code: 'UZB', flag: '🇺🇿' },
+      { name: 'Argelia', code: 'ALG', flag: '🇩🇿' },
+      { name: 'Cabo Verde', code: 'CPV', flag: '🇨🇻' },
+      { name: 'Rep. Dem. del Congo', code: 'COD', flag: '🇨🇩' },
+      { name: 'Costa de Marfil', code: 'CIV', flag: '🇨🇮' },
+      { name: 'Egipto', code: 'EGY', flag: '🇪🇬' },
+      { name: 'Ghana', code: 'GHA', flag: '🇬🇭' },
+      { name: 'Marruecos', code: 'MAR', flag: '🇲🇦' },
+      { name: 'Senegal', code: 'SEN', flag: '🇸🇳' },
+      { name: 'Sudáfrica', code: 'RSA', flag: '🇿🇦' },
+      { name: 'Túnez', code: 'TUN', flag: '🇹🇳' },
+      { name: 'Curazao', code: 'CUW', flag: '🇨🇼' },
+      { name: 'Haití', code: 'HAI', flag: '🇭🇹' },
+      { name: 'Panamá', code: 'PAN', flag: '🇵🇦' },
+      { name: 'Argentina', code: 'ARG', flag: '🇦🇷' },
+      { name: 'Brasil', code: 'BRA', flag: '🇧🇷' },
+      { name: 'Colombia', code: 'COL', flag: '🇨🇴' },
+      { name: 'Ecuador', code: 'ECU', flag: '🇪🇨' },
+      { name: 'Paraguay', code: 'PAR', flag: '🇵🇾' },
+      { name: 'Uruguay', code: 'URU', flag: '🇺🇾' },
+      { name: 'Nueva Zelanda', code: 'NZL', flag: '🇳🇿' },
+      { name: 'Austria', code: 'AUT', flag: '🇦🇹' },
+      { name: 'Bélgica', code: 'BEL', flag: '🇧🇪' },
+      { name: 'Bosnia y Herzegovina', code: 'BIH', flag: '🇧🇦' },
+      { name: 'Croacia', code: 'CRO', flag: '🇭🇷' },
+      { name: 'República Checa', code: 'CZE', flag: '🇨🇿' },
+      { name: 'Inglaterra', code: 'ENG', flag: 'ENG' }, // Inglaterra
+      { name: 'Francia', code: 'FRA', flag: '🇫🇷' },
+      { name: 'Alemania', code: 'GER', flag: '🇩🇪' },
+      { name: 'Países Bajos', code: 'NED', flag: '🇳🇱' },
+      { name: 'Noruega', code: 'NOR', flag: '🇳🇴' },
+      { name: 'Portugal', code: 'POR', flag: '🇵🇹' },
+      { name: 'Escocia', code: 'SCO', flag: 'SCO' }, // Escocia
+      { name: 'España', code: 'ESP', flag: '🇪🇸' },
+      { name: 'Suecia', code: 'SWE', flag: '🇸🇪' },
+      { name: 'Suiza', code: 'SUI', flag: '🇨🇭' },
+      { name: 'Turquía', code: 'TUR', flag: '🇹🇷' }
+    ];
 
-  for (const team of defaultTeams) {
-    await pool.query(`
-      INSERT INTO world_cup_teams (name, code, flag)
-      VALUES ($1, $2, $3)
-      ON CONFLICT (name) DO NOTHING
-    `, [team.name, team.code, team.flag]);
+    for (const team of defaultTeams) {
+      await pool.query(`
+        INSERT INTO world_cup_teams (name, code, flag)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (name) DO NOTHING
+      `, [team.name, team.code, team.flag]);
+    }
+    console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA.');
   }
-  console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA.');
 
-  // Seed default users if they do not exist
+  // Seed default users if they do not exist (reduces 4 SELECT queries to 1)
   const defaultUsers = [
     { username: 'admin', password: 'admin1234', name: 'Administrador', allowedTypes: ['*'] },
     { username: 'aprobador', password: 'aprobador1234', name: 'Usuario Aprobador', allowedTypes: ['*', 'approve'] },
@@ -290,9 +295,11 @@ async function initDb() {
     { username: 'multimedia', password: 'multimedia1234', name: 'Usuario Galería', allowedTypes: ['readonly_media_add'] }
   ];
 
+  const existingUsersRes = await pool.query('SELECT username FROM users');
+  const existingUsernames = existingUsersRes.rows.map(r => r.username.toLowerCase());
+
   for (const u of defaultUsers) {
-    const userExist = await pool.query('SELECT 1 FROM users WHERE LOWER(username) = LOWER($1)', [u.username]);
-    if (userExist.rows.length === 0) {
+    if (!existingUsernames.includes(u.username.toLowerCase())) {
       await pool.query(`
         INSERT INTO users (username, password, name, allowed_types)
         VALUES ($1, $2, $3, $4)
@@ -525,6 +532,18 @@ export async function isUserApprover(username) {
   if (res.rows.length > 0) {
     const allowedTypes = JSON.parse(res.rows[0].allowed_types);
     return allowedTypes.includes('approve') || allowedTypes.includes('*');
+  }
+  return false;
+}
+
+export async function canUserDeleteMedia(username) {
+  if (!username) return false;
+  await ensureDb();
+  if (username.toLowerCase() === 'admin') return true;
+  const res = await pool.query('SELECT allowed_types FROM users WHERE LOWER(username) = LOWER($1)', [username]);
+  if (res.rows.length > 0) {
+    const allowedTypes = JSON.parse(res.rows[0].allowed_types);
+    return allowedTypes.includes('approve') || allowedTypes.includes('delete_media');
   }
   return false;
 }

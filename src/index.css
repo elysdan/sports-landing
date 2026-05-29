@@ -156,7 +156,7 @@ html, body, #root {
   bottom: var(--gap-lg);
   left: var(--gap-xl); right: var(--gap-xl);
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: max(16px, calc(26px * var(--font-scale, 1)));
   font-weight: 700;
   color: var(--color-white);
   text-shadow: 0 2px 10px rgba(0,0,0,0.9);
@@ -170,7 +170,7 @@ html, body, #root {
 .media-text-only {
   background: linear-gradient(135deg, #111111 0%, #221b10 50%, #111111 100%) !important;
   border: 1px solid rgba(212, 168, 67, 0.15);
-  padding: var(--gap-lg);
+  padding: clamp(6px, calc(16px * var(--scale, 1)), 32px);
   overflow: hidden;
 }
 
@@ -192,19 +192,19 @@ html, body, #root {
   text-align: center;
   border: 1px dashed rgba(212, 168, 67, 0.15);
   border-radius: var(--radius-md);
-  padding: var(--gap-md);
+  padding: clamp(4px, calc(10px * var(--scale, 1)), 24px);
   position: relative;
   z-index: 2;
 }
 
 .media-text-title {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: clamp(8px, calc(11px * var(--font-scale, 1)), 24px);
   font-weight: 600;
   color: var(--color-gold);
   letter-spacing: 3px;
   text-transform: uppercase;
-  margin-bottom: var(--gap-sm);
+  margin-bottom: calc(6px * var(--scale, 1));
   background: rgba(212, 168, 67, 0.06);
   border: 1px solid rgba(212, 168, 67, 0.15);
   padding: 3px 12px;
@@ -214,14 +214,17 @@ html, body, #root {
 
 .media-text-content {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: clamp(11px, calc(20px * var(--font-scale, 1)), 52px);
   font-weight: 700;
   color: var(--color-white);
-  line-height: 1.35;
+  line-height: 1.2;
   letter-spacing: 1px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
   white-space: pre-line;
   text-transform: uppercase;
+  word-wrap: break-word;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .module-media .media-placeholder {
@@ -301,7 +304,7 @@ html, body, #root {
 
 .brand-name-display {
   font-family: var(--font-display);
-  font-size: 36px;
+  font-size: max(16px, calc(36px * var(--font-scale, 1)));
   font-weight: 700;
   color: var(--color-gold);
   letter-spacing: 2px;
@@ -366,21 +369,23 @@ img.sb-team-flag {
 
 .sb-team-label {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(22px * var(--font-scale, 1)), 52px);
+  font-size: max(14px, calc(22px * var(--font-scale, 1)));
   font-weight: 500;
   letter-spacing: 2px;
   color: var(--color-gold);
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: nowrap !important;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
+  word-wrap: normal;
+  word-break: normal;
   max-width: 100%;
   margin-bottom: calc(2px * var(--scale, 1));
 }
 
 .sb-team-code {
   font-family: var(--font-display);
-  font-size: clamp(18px, calc(32px * var(--font-scale, 1)), 72px);
+  font-size: max(18px, calc(32px * var(--font-scale, 1)));
   font-weight: 800;
   color: var(--color-white);
   letter-spacing: 1px;
@@ -389,7 +394,7 @@ img.sb-team-flag {
 
 .sb-score {
   font-family: var(--font-display);
-  font-size: clamp(28px, calc(72px * var(--font-scale, 1)), 160px);
+  font-size: max(28px, calc(72px * var(--font-scale, 1)));
   font-weight: 800;
   color: var(--color-gold);
   line-height: 1;
@@ -473,20 +478,22 @@ img.sb-team-flag {
 
 .result-team-display {
   font-family: var(--font-display);
-  font-size: clamp(13px, calc(20px * var(--font-scale, 1)), 52px);
+  font-size: max(13px, calc(20px * var(--font-scale, 1)));
   font-weight: 700;
   color: var(--color-white);
   letter-spacing: 1px;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: nowrap !important;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
+  word-wrap: normal;
+  word-break: normal;
   max-width: 80%;
 }
 
 .result-score-display {
   font-family: var(--font-display);
-  font-size: clamp(15px, calc(22px * var(--font-scale, 1)), 56px);
+  font-size: max(15px, calc(22px * var(--font-scale, 1)));
   font-weight: 800;
   color: var(--color-gold);
   background: rgba(212, 168, 67, 0.08);
@@ -520,7 +527,7 @@ img.sb-team-flag {
 
 .upcoming-label-display {
   font-family: var(--font-display);
-  font-size: clamp(11px, calc(14px * var(--font-scale, 1)), 32px);
+  font-size: max(11px, calc(14px * var(--font-scale, 1)));
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--color-gold);
@@ -530,7 +537,7 @@ img.sb-team-flag {
 
 .upcoming-time-display {
   font-family: var(--font-display);
-  font-size: clamp(18px, calc(36px * var(--font-scale, 1)), 80px);
+  font-size: max(18px, calc(36px * var(--font-scale, 1)));
   font-weight: 800;
   color: var(--color-white);
   line-height: 1.1;
@@ -553,15 +560,18 @@ img.sb-team-flag {
 
 .upcoming-team {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(26px * var(--font-scale, 1)), 64px);
+  font-size: max(14px, calc(26px * var(--font-scale, 1)));
   font-weight: 700;
   color: var(--color-white);
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  white-space: nowrap;
+  white-space: nowrap !important;
   overflow: hidden;
-  text-overflow: ellipsis;
+  text-overflow: clip;
+  word-wrap: normal;
+  word-break: normal;
   width: 100%;
+  line-height: 1.1;
 }
 
 .upcoming-vs-card .upcoming-team:first-child {
@@ -575,6 +585,9 @@ img.sb-team-flag {
 }
 
 .upcoming-vs-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-family: var(--font-display);
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 48px);
   font-weight: 800;
@@ -584,7 +597,7 @@ img.sb-team-flag {
   border-radius: 6px;
   align-self: center;
   letter-spacing: 1.5px;
-  line-height: 1.2;
+  line-height: 1;
   box-shadow: 0 0 12px rgba(212, 168, 67, 0.35);
   flex-shrink: 0;
 }
@@ -633,7 +646,7 @@ img.sb-team-flag {
 
 .news-title-display {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 64px);
+  font-size: max(14px, calc(24px * var(--font-scale, 1)));
   font-weight: 700;
   letter-spacing: 3px;
   color: var(--color-white);
@@ -645,7 +658,7 @@ img.sb-team-flag {
 
 .news-content-display {
   font-family: var(--font-body);
-  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 40px);
+  font-size: max(12px, calc(16px * var(--font-scale, 1)));
   line-height: 1.5;
   color: var(--color-text-secondary);
   overflow: hidden;
@@ -686,9 +699,10 @@ img.sb-team-flag {
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
+  overflow: visible;
+  word-wrap: break-word;
+  word-break: break-word;
   flex: 1;
   min-width: 0;
 }
@@ -707,25 +721,26 @@ img.sb-team-flag {
   gap: calc(10px * var(--scale, 1));
   width: 100%;
   flex: 1;
-  align-items: center;
+  align-items: stretch;
 }
 
 .apuesta-odd-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  padding: clamp(8px, calc(20px * var(--scale, 1)), 64px);
   flex: 1;
   display: flex;
   flex-direction: column; /* Stack elements vertically to maximize horizontal space for team name */
   align-items: center;
   justify-content: space-evenly;
-  height: 85%;
+  height: 100%;
   min-height: 0;
   min-width: 0;
-  gap: calc(8px * var(--scale, 1));
+  gap: clamp(8px, calc(14px * var(--scale, 1)), 48px);
   box-sizing: border-box;
   transition: all 0.25s ease;
+  container-type: inline-size;
 }
 
 .apuesta-odd-box:hover {
@@ -752,10 +767,18 @@ img.sb-team-flag {
   width: 100%;
 }
 
+.module-apuesta-display img.sb-team-flag {
+  max-width: 25cqi !important;
+  max-height: 20cqh !important;
+  width: auto !important;
+  height: auto !important;
+  aspect-ratio: 3/2;
+}
+
 .module-apuesta-display .sb-team-flag {
   margin-bottom: 0 !important; /* Remove bottom margin of team flag inside apuesta */
-  font-size: clamp(14px, calc(18px * var(--font-scale, 1)), 40px) !important;
-  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important;
+  font-size: clamp(10px, calc(18px * var(--font-scale, 1)), min(30px, 20cqh, 25cqi)) !important;
+  padding: clamp(2px, calc(4px * var(--scale, 1)), 6px) clamp(4px, calc(12px * var(--scale, 1)), 16px) !important;
   border-color: rgba(212, 168, 67, 0.4) !important;
 }
 
@@ -765,14 +788,16 @@ img.sb-team-flag {
 
 .apuesta-team-name {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 68px); /* Base font size kept at 15px to look clean when shrunk */
+  font-size: clamp(8px, calc(100cqi / var(--char-count, 10) * 0.9 * var(--text-scale-factor, 1)), min(16cqi, calc(100cqi / var(--char-count, 10) * 0.95))) !important;
   font-weight: 700;
   color: var(--color-white);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap !important;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-overflow: clip;
+  word-wrap: normal;
+  word-break: normal;
   text-align: center; /* Center text alignment */
   width: 100%;
   min-width: 0;
@@ -780,7 +805,7 @@ img.sb-team-flag {
 
 .apuesta-odd-label {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 44px); /* Scaled size */
+  font-size: clamp(7px, calc(8cqi * var(--text-scale-factor, 1)), 14cqi) !important;
   font-weight: 700;
   color: var(--color-white);
   text-transform: uppercase;
@@ -791,15 +816,15 @@ img.sb-team-flag {
 
 .apuesta-odd-value {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(46px * var(--font-scale, 1)), 100px); /* Base odd size at 26px */
+  font-size: clamp(10px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(32cqi, calc(100cqi / var(--char-count, 4) * 0.9))) !important;
   font-weight: 800;
   color: var(--color-gold);
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
   line-height: 1.1;
-  white-space: normal;
+  white-space: nowrap !important;
   overflow: visible;
-  word-wrap: break-word;
-  word-break: break-word;
+  word-wrap: normal;
+  word-break: normal;
   max-width: 100%;
   text-align: center;
   box-sizing: border-box;
@@ -859,25 +884,26 @@ img.sb-team-flag {
   gap: calc(12px * var(--scale, 1));
   width: 100%;
   flex: 1;
-  align-items: center;
+  align-items: stretch;
 }
 
 .pregunta-option-box {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
+  padding: clamp(8px, calc(20px * var(--scale, 1)), 64px);
   flex: 1;
   display: flex;
   flex-direction: column; /* Stack label and value vertically to maximize vertical space */
   align-items: center;
   justify-content: space-evenly;
-  height: 85%;
+  height: 100%;
   min-height: 0;
   min-width: 0;
-  gap: calc(8px * var(--scale, 1));
+  gap: clamp(8px, calc(14px * var(--scale, 1)), 48px);
   box-sizing: border-box;
   transition: all 0.25s ease;
+  container-type: inline-size;
 }
 
 .pregunta-option-box:hover {
@@ -888,7 +914,7 @@ img.sb-team-flag {
 
 .pregunta-option-label {
   font-family: var(--font-display);
-  font-size: clamp(20px, calc(38px * var(--font-scale, 1)), 80px);
+  font-size: clamp(9px, calc(14cqi * var(--text-scale-factor, 1)), 24cqi) !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
@@ -898,11 +924,12 @@ img.sb-team-flag {
 
 .pregunta-option-value {
   font-family: var(--font-display);
-  font-size: clamp(26px, calc(54px * var(--font-scale, 1)), 110px);
+  font-size: clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) !important;
   font-weight: 800;
   color: var(--color-gold);
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
   line-height: 1;
+  white-space: nowrap !important;
 }
 
 /* ─── MODULE TYPE: TICKER ─── */
@@ -957,6 +984,12 @@ img.sb-team-flag {
   align-items: center;
   animation: ticker-scroll 25s linear infinite;
   white-space: nowrap;
+}
+
+.ticker-scroll > span {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .ticker-text {
@@ -2438,11 +2471,13 @@ img.sb-team-flag {
 }
 
 .vertical .apuesta-team-name {
-  font-size: clamp(16px, calc(26px * var(--font-scale, 1)), 36px) !important;
+  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 32px) !important;
   text-align: left !important;
   white-space: nowrap !important;
   overflow: hidden !important;
-  text-overflow: ellipsis !important;
+  text-overflow: clip !important;
+  word-wrap: normal !important;
+  word-break: normal !important;
 }
 
 .vertical .apuesta-odd-box.box-right .apuesta-team-name {
@@ -2450,7 +2485,8 @@ img.sb-team-flag {
 }
 
 .vertical .apuesta-odd-value {
-  font-size: clamp(24px, calc(36px * var(--font-scale, 1)), 48px) !important;
+  font-size: clamp(16px, calc(28px * var(--font-scale, 1)), 44px) !important;
+  white-space: nowrap !important;
 }
 
 .vertical .apuesta-odd-label {
@@ -2490,11 +2526,12 @@ img.sb-team-flag {
 }
 
 .vertical .pregunta-option-label {
-  font-size: clamp(24px, calc(38px * var(--font-scale, 1)), 48px) !important;
+  font-size: clamp(14px, calc(26px * var(--font-scale, 1)), 38px) !important;
 }
 
 .vertical .pregunta-option-value {
-  font-size: clamp(32px, calc(52px * var(--font-scale, 1)), 64px) !important;
+  font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 48px) !important;
+  white-space: nowrap !important;
 }
 
 /* ─── NARROW AND SHORT DISPLAY OVERRIDES ─── */
@@ -2523,27 +2560,18 @@ img.sb-team-flag {
 .narrow-col-3 .apuesta-team-name,
 .narrow-col-2 .apuesta-team-name,
 .narrow-col-1 .apuesta-team-name {
-  font-size: calc(13px * var(--font-scale, 1)) !important;
   text-align: center !important;
   max-width: 100% !important;
-}
-
-.narrow-col-4 .apuesta-odd-label,
-.narrow-col-3 .apuesta-odd-label,
-.narrow-col-2 .apuesta-odd-label,
-.narrow-col-1 .apuesta-odd-label {
-  font-size: calc(11px * var(--font-scale, 1)) !important;
+  word-break: normal !important;
 }
 
 .narrow-col-4 .apuesta-odd-value,
 .narrow-col-3 .apuesta-odd-value,
 .narrow-col-2 .apuesta-odd-value,
 .narrow-col-1 .apuesta-odd-value {
-  font-size: clamp(10px, calc(16px * var(--font-scale, 1)), 28px) !important;
-  white-space: normal !important;
-  overflow: visible !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: clip !important;
   max-width: 100% !important;
   line-height: 1.1 !important;
 }
@@ -2552,11 +2580,11 @@ img.sb-team-flag {
 .narrow-col-3 .apuesta-title,
 .narrow-col-2 .apuesta-title,
 .narrow-col-1 .apuesta-title {
-  font-size: calc(13px * var(--font-scale, 1)) !important;
+  font-size: clamp(10px, calc(14px * var(--font-scale, 1)), 24px) !important;
   max-width: 100% !important;
   white-space: normal !important;
   word-wrap: break-word !important;
-  word-break: break-word !important;
+  word-break: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
 }
@@ -2594,29 +2622,22 @@ img.sb-team-flag {
   padding: calc(12px * var(--scale, 1)) !important;
 }
 
-.narrow-col-4 .pregunta-option-label,
-.narrow-col-3 .pregunta-option-label,
-.narrow-col-2 .pregunta-option-label,
-.narrow-col-1 .pregunta-option-label {
-  font-size: calc(24px * var(--font-scale, 1)) !important;
-}
-
 .narrow-col-4 .pregunta-option-value,
 .narrow-col-3 .pregunta-option-value,
 .narrow-col-2 .pregunta-option-value,
 .narrow-col-1 .pregunta-option-value {
-  font-size: calc(34px * var(--font-scale, 1)) !important;
+  white-space: nowrap !important;
 }
 
 .narrow-col-4 .pregunta-title,
 .narrow-col-3 .pregunta-title,
 .narrow-col-2 .pregunta-title,
 .narrow-col-1 .pregunta-title {
-  font-size: calc(16px * var(--font-scale, 1)) !important;
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 28px) !important;
   max-width: 100% !important;
   white-space: normal !important;
   word-wrap: break-word !important;
-  word-break: break-word !important;
+  word-break: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
 }
@@ -2658,12 +2679,39 @@ img.sb-team-flag {
   border-left-width: 2px !important;
 }
 
+.short-row-1 .module-apuesta-display {
+  padding: calc(6px * var(--scale, 1)) !important;
+}
+
 .short-row-1 .apuesta-header {
   margin-bottom: 2px !important;
 }
 
+.short-row-1 .apuesta-title {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+}
+
+.short-row-1 .apuesta-tag {
+  font-size: calc(10px * var(--font-scale, 1)) !important;
+}
+
 .short-row-1 .apuesta-odd-box {
-  height: 90% !important;
+  height: 100% !important;
+  padding: calc(4px * var(--scale, 1)) !important;
+  gap: calc(2px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .apuesta-team-name {
+  font-size: clamp(9px, calc(11px * var(--font-scale, 1)), 14px) !important;
+}
+
+.short-row-1 .apuesta-odd-label {
+  font-size: clamp(8px, calc(9px * var(--font-scale, 1)), 12px) !important;
+}
+
+.short-row-1 .apuesta-odd-value {
+  font-size: clamp(10px, calc(15px * var(--font-scale, 1)), 20px) !important;
+  white-space: nowrap !important;
 }
 
 .short-row-1 .pregunta-header {
@@ -2671,7 +2719,15 @@ img.sb-team-flag {
 }
 
 .short-row-1 .pregunta-option-box {
-  height: 90% !important;
+  height: 100% !important;
+}
+
+.short-row-1 .pregunta-option-label {
+  font-size: clamp(9px, calc(10px * var(--font-scale, 1)), 14px) !important;
+}
+
+.short-row-1 .pregunta-option-value {
+  font-size: clamp(11px, calc(14px * var(--font-scale, 1)), 18px) !important;
 }
 
 .short-row-1 .sb-team-flag {

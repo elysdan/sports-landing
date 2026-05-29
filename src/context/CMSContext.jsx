@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { defaultBillboardData as defaultData } from '../../backend/seedData.js';
 
 // ─── Generate unique IDs ───
@@ -176,6 +176,7 @@ const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
   const CMS_SESSION_KEY = 'sports-billboard-cms-session';
+  const isEditor = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -191,6 +192,12 @@ export function CMSProvider({ children }) {
   const [currentVersion, setCurrentVersion] = useState(0);
   const [currentDraftVersion, setCurrentDraftVersion] = useState(0);
   const [hasLoadedFromServer, setHasLoadedFromServer] = useState(false);
+
+  const isLocalChange = useRef(false);
+  const setLocalDraftData = useCallback((val) => {
+    isLocalChange.current = true;
+    setRawDraftData(val);
+  }, []);
 
   // Fetch initial layout data from database on mount
   useEffect(() => {
@@ -245,14 +252,14 @@ export function CMSProvider({ children }) {
         const res = await fetch('/api/cms/version');
         if (res.ok) {
           const { version } = await res.json();
-          if (version && version > currentVersion) {
+          if (version && Number(version) > Number(currentVersion)) {
             const dataRes = await fetch('/api/cms');
             if (dataRes.ok) {
               const data = await dataRes.json();
               if (data && data.modules) {
                 const migrated = migrateData(data);
                 setRawLiveData(migrated);
-                setCurrentVersion(version);
+                setCurrentVersion(Number(version));
                 console.log(`[CMS] Vista actualizada a la versión: ${version}`);
               }
             }
@@ -267,17 +274,17 @@ export function CMSProvider({ children }) {
 
   // Polling to sync draftData in real-time (only for display screens where user is not logged in)
   useEffect(() => {
-    if (currentUser) return; // Do not overwrite editor state if logged in
+    if (isEditor) return; // Do not poll draft if we are the editor tab
 
     const interval = setInterval(async () => {
       try {
         const res = await fetch('/api/cms/draft');
         if (res.ok) {
           const data = await res.json();
-          if (data && data.version && data.version > currentDraftVersion) {
+          if (data && data.version && Number(data.version) > Number(currentDraftVersion)) {
             const migrated = migrateData(data);
             setRawDraftData(migrated);
-            setCurrentDraftVersion(data.version);
+            setCurrentDraftVersion(Number(data.version));
             console.log(`[CMS] Borrador en pantalla actualizado a la versión: ${data.version}`);
           }
         }
@@ -290,13 +297,22 @@ export function CMSProvider({ children }) {
 
 
 
-  // Debounced auto-save of rawDraftData to PostgreSQL server
+  // Save rawDraftData in local storage immediately and debounced auto-save to database
   useEffect(() => {
-    if (!hasLoadedFromServer || !currentUser) return;
+    if (!isEditor || !isLocalChange.current) return;
 
+    // 1. Immediate local storage save
+    try {
+      localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(rawDraftData));
+    } catch (e) {
+      console.warn('Failed to save CMS draft data:', e);
+    }
+
+    // 2. Debounce database save
+    if (!hasLoadedFromServer || !currentUser) return;
     const timer = setTimeout(async () => {
       try {
-        await fetch('/api/cms/draft', {
+        const res = await fetch('/api/cms/draft', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -304,13 +320,20 @@ export function CMSProvider({ children }) {
             modifiedBy: currentUser.username
           })
         });
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.version) {
+            setCurrentDraftVersion(Number(resData.version));
+          }
+        }
       } catch (e) {
         console.error("[CMS] Error auto-saving draft to database:", e);
       }
+      isLocalChange.current = false;
     }, 1000); // 1 second debounce
 
     return () => clearTimeout(timer);
-  }, [rawDraftData, hasLoadedFromServer, currentUser]);
+  }, [rawDraftData, hasLoadedFromServer, currentUser, isEditor]);
 
   const [users, setUsers] = useState([]);
   const [worldCupTeams, setWorldCupTeams] = useState([]);
@@ -354,23 +377,15 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser, fetchUsers]);
 
-  // Save rawDraftData in local storage
-  useEffect(() => {
-    try {
-      localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(rawDraftData));
-    } catch (e) {
-      console.warn('Failed to save CMS draft data:', e);
-    }
-  }, [rawDraftData]);
-
   // Save rawLiveData in local storage
   useEffect(() => {
+    if (!isEditor) return; // Only write if editor is active
     try {
       localStorage.setItem(CMS_LIVE_KEY, JSON.stringify(rawLiveData));
     } catch (e) {
       console.warn('Failed to save CMS live data:', e);
     }
-  }, [rawLiveData]);
+  }, [rawLiveData, isEditor]);
 
   // Sync tabs
   useEffect(() => {
@@ -459,7 +474,7 @@ export function CMSProvider({ children }) {
 
   // Switch the layout currently being edited
   const switchLayout = useCallback((layoutName) => {
-    setRawDraftData((prev) => ({
+    setLocalDraftData((prev) => ({
       ...prev,
       activeLayout: layoutName
     }));
@@ -507,7 +522,7 @@ export function CMSProvider({ children }) {
 
   const applyTemplate = useCallback((templateConfig) => {
     if (templateConfig && templateConfig.modules) {
-      setRawDraftData({
+      setLocalDraftData({
         ...migrateData(templateConfig),
         lastModifiedBy: currentUser?.username || 'Desconocido'
       });
@@ -541,7 +556,7 @@ export function CMSProvider({ children }) {
       visible: true,
     };
     
-    setRawDraftData((prev) => {
+    setLocalDraftData((prev) => {
       const updatedLayouts = { ...prev.layouts };
       Object.keys(updatedLayouts).forEach(layKey => {
         updatedLayouts[layKey] = {
@@ -564,7 +579,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const removeModule = useCallback((id) => {
-    setRawDraftData((prev) => {
+    setLocalDraftData((prev) => {
       const updatedLayouts = { ...prev.layouts };
       Object.keys(updatedLayouts).forEach(layKey => {
         const nextPositions = { ...updatedLayouts[layKey].positions };
@@ -585,7 +600,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const updateModule = useCallback((id, updates) => {
-    setRawDraftData((prev) => {
+    setLocalDraftData((prev) => {
       const activeLay = prev.activeLayout || '12x6';
       
       if (updates.gridPosition) {
@@ -620,7 +635,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const updateModuleContent = useCallback((id, contentUpdates) => {
-    setRawDraftData((prev) => ({
+    setLocalDraftData((prev) => ({
       ...prev,
       modules: prev.modules.map((m) =>
         m.id === id ? { ...m, content: { ...m.content, ...contentUpdates } } : m
@@ -630,7 +645,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const moveModule = useCallback((id, direction) => {
-    setRawDraftData((prev) => {
+    setLocalDraftData((prev) => {
       const modules = [...prev.modules];
       const idx = modules.findIndex((m) => m.id === id);
       if (idx === -1) return prev;
@@ -642,7 +657,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const updateGrid = useCallback((gridUpdates) => {
-    setRawDraftData((prev) => {
+    setLocalDraftData((prev) => {
       const activeLay = prev.activeLayout || '12x6';
       const updatedLayouts = { ...prev.layouts };
       const nextGrid = { ...updatedLayouts[activeLay].grid, ...gridUpdates };
@@ -672,7 +687,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const updateOrientation = useCallback((orientation) => {
-    setRawDraftData((prev) => ({
+    setLocalDraftData((prev) => ({
       ...prev,
       orientation,
       lastModifiedBy: currentUser?.username || 'Desconocido'
@@ -680,7 +695,7 @@ export function CMSProvider({ children }) {
   }, [currentUser]);
 
   const resetAll = useCallback(() => {
-    setRawDraftData(defaultData);
+    setLocalDraftData(defaultData);
     setRawLiveData(defaultData);
     setUsers(defaultUsers);
     setRole('admin');
@@ -705,7 +720,7 @@ export function CMSProvider({ children }) {
         const resData = await res.json();
         setRawLiveData(nextLive);
         if (resData.version) {
-          setCurrentVersion(resData.version);
+          setCurrentVersion(Number(resData.version));
         }
         alert('¡Configuración publicada exitosamente!');
       } else {
@@ -719,7 +734,7 @@ export function CMSProvider({ children }) {
   }, [rawDraftData, currentUser]);
 
   const discardDraft = useCallback(() => {
-    setRawDraftData(rawLiveData);
+    setLocalDraftData(rawLiveData);
   }, [rawLiveData]);
 
   const createEditor = useCallback(async (username, password, name, allowedTypes) => {
@@ -782,6 +797,7 @@ export function CMSProvider({ children }) {
         deleteEditor,
         hasPermission,
         hasPendingChanges: JSON.stringify(rawDraftData) !== JSON.stringify(rawLiveData),
+        hasLoadedFromServer,
         approveAndPublish,
         discardDraft,
         addModule,

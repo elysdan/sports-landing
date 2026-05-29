@@ -13,7 +13,7 @@ const formatBytes = (bytes) => {
 
 export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
   const { currentUser } = useCMS();
-  const isAdmin = currentUser?.username === 'admin';
+  const canDelete = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve') || currentUser?.allowedTypes?.includes('delete_media');
   const [mediaList, setMediaList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -366,7 +366,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
                           >
                             Copiar URL
                           </button>
-                          {isUploaded && isAdmin && (
+                          {isUploaded && canDelete && (
                             <button 
                               type="button"
                               className="media-library-action-btn media-library-btn-delete"

@@ -51,7 +51,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     'module-wrapper',
     `span-w-${colSpan}`,
     `span-h-${rowSpan}`,
-    colSpan <= 4 ? `narrow-col-${colSpan}` : '',
+    (colSpan <= 6) ? `narrow-col-${Math.min(4, colSpan)}` : '',
     rowSpan === 1 ? 'short-row-1' : ''
   ].filter(Boolean).join(' ');
 
@@ -263,10 +263,10 @@ function ApuestaModule({ content }) {
           <div className="apuesta-odd-box box-left">
             <span className="apuesta-odd-label">{mode === '1-way' ? 'OPCIÓN ÚNICA' : 'LOCAL'}</span>
             <div className="apuesta-team-info">
-              <TeamFlag flag={content.teamA?.flag} />
-              <span className="apuesta-team-name">{content.teamA?.name || 'Local'}</span>
+              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
+              <span className="apuesta-team-name" style={{ '--char-count': (content.teamA?.name || 'Local').length }}>{content.teamA?.name || 'Local'}</span>
             </div>
-            <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
+            <span className="apuesta-odd-value" style={{ '--char-count': (content.teamA?.odd || '—').length }}>{content.teamA?.odd || '—'}</span>
           </div>
         )}
         
@@ -276,9 +276,9 @@ function ApuestaModule({ content }) {
             <span className="apuesta-odd-label">EMPATE</span>
             <div className="apuesta-team-info" style={{ opacity: 0, pointerEvents: 'none' }}>
               <span style={{ display: 'inline-block', width: 'calc(28px * var(--scale, 1))', height: 'calc(18px * var(--scale, 1))' }} />
-              <span className="apuesta-team-name">Empate</span>
+              <span className="apuesta-team-name" style={{ '--char-count': 6 }}>Empate</span>
             </div>
-            <span className="apuesta-odd-value">{content.draw?.odd || '—'}</span>
+            <span className="apuesta-odd-value" style={{ '--char-count': (content.draw?.odd || '—').length }}>{content.draw?.odd || '—'}</span>
           </div>
         )}
         
@@ -287,10 +287,10 @@ function ApuestaModule({ content }) {
           <div className="apuesta-odd-box box-right">
             <span className="apuesta-odd-label">VISITANTE</span>
             <div className="apuesta-team-info">
-              <TeamFlag flag={content.teamB?.flag} />
-              <span className="apuesta-team-name">{content.teamB?.name || 'Visitante'}</span>
+              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
+              <span className="apuesta-team-name" style={{ '--char-count': (content.teamB?.name || 'Visitante').length }}>{content.teamB?.name || 'Visitante'}</span>
             </div>
-            <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
+            <span className="apuesta-odd-value" style={{ '--char-count': (content.teamB?.odd || '—').length }}>{content.teamB?.odd || '—'}</span>
           </div>
         )}
       </div>
@@ -304,16 +304,15 @@ function PreguntaModule({ content }) {
     <div className="module-pregunta-display">
       <div className="pregunta-header">
         <div className="pregunta-title">{content.title}</div>
-        {content.tag && <div className="pregunta-tag">{content.tag}</div>}
       </div>
       <div className="pregunta-options-row">
         <div className="pregunta-option-box box-yes">
           <span className="pregunta-option-label">SÍ</span>
-          <span className="pregunta-option-value">{content.yesOdd || '—'}</span>
+          <span className="pregunta-option-value" style={{ '--char-count': (content.yesOdd || '—').length }}>{content.yesOdd || '—'}</span>
         </div>
         <div className="pregunta-option-box box-no">
           <span className="pregunta-option-label">NO</span>
-          <span className="pregunta-option-value">{content.noOdd || '—'}</span>
+          <span className="pregunta-option-value" style={{ '--char-count': (content.noOdd || '—').length }}>{content.noOdd || '—'}</span>
         </div>
       </div>
     </div>
@@ -419,7 +418,7 @@ export function getVerticalLayout(modules) {
 }
 
 export default function DisplayView() {
-  const { rawLiveData, rawDraftData } = useCMS();
+  const { rawLiveData, rawDraftData, hasLoadedFromServer } = useCMS();
   const [searchParams] = useSearchParams();
   const [viewportRatio, setViewportRatio] = useState(window.innerWidth / window.innerHeight);
   const [isVertical, setIsVertical] = useState(window.innerWidth < window.innerHeight);
@@ -458,6 +457,21 @@ export default function DisplayView() {
 
   const visibleModules = mappedModules.filter(m => m.visible !== false);
   const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid: activeLayoutObj.grid };
+
+  if (!hasLoadedFromServer) {
+    return (
+      <div
+        style={{
+          width: '100vw',
+          height: '100vh',
+          background: '#0a0a0a',
+          position: 'fixed',
+          top: 0,
+          left: 0
+        }}
+      />
+    );
+  }
 
   return (
     <div

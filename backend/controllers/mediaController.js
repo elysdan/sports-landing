@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { readJsonBody, sendJson } from '../utils.js';
-import { saveMediaAsset, getMediaAsset, listMediaAssets, deleteMediaAsset } from '../../db.js';
+import { saveMediaAsset, getMediaAsset, listMediaAssets, deleteMediaAsset, canUserDeleteMedia } from '../../db.js';
 
 export async function handlePostUpload(req, res) {
   try {
@@ -92,8 +92,9 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
     const mediaUrl = parsedUrl.searchParams.get('url');
     const username = parsedUrl.searchParams.get('username');
 
-    if (!username || username.toLowerCase() !== 'admin') {
-      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador puede eliminar archivos multimedia' });
+    const isAllowed = await canUserDeleteMedia(username);
+    if (!isAllowed) {
+      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador y aprobadores pueden eliminar archivos multimedia' });
       return;
     }
 

@@ -417,13 +417,13 @@ export default function CMSPanel() {
             <div style={{ display: 'flex', gap: '4px', alignItems: 'end' }}>
               <Field
                 label="G-A"
-                type="number"
+                type="text"
                 value={match.scoreA}
                 onChange={(e) => {
                   const updated = [...data.matchResults.matches];
                   updated[i] = {
                     ...match,
-                    scoreA: parseInt(e.target.value) || 0,
+                    scoreA: e.target.value,
                   };
                   updateSection('matchResults', {
                     ...data.matchResults,
@@ -433,13 +433,13 @@ export default function CMSPanel() {
               />
               <Field
                 label="G-B"
-                type="number"
+                type="text"
                 value={match.scoreB}
                 onChange={(e) => {
                   const updated = [...data.matchResults.matches];
                   updated[i] = {
                     ...match,
-                    scoreB: parseInt(e.target.value) || 0,
+                    scoreB: e.target.value,
                   };
                   updateSection('matchResults', {
                     ...data.matchResults,
@@ -511,28 +511,28 @@ export default function CMSPanel() {
       <div className="cms-field-row">
         <Field
           label="Goles A"
-          type="number"
+          type="text"
           value={data.matchResults.featured.scoreA}
           onChange={(e) =>
             updateSection('matchResults', {
               ...data.matchResults,
               featured: {
                 ...data.matchResults.featured,
-                scoreA: parseInt(e.target.value) || 0,
+                scoreA: e.target.value,
               },
             })
           }
         />
         <Field
           label="Goles B"
-          type="number"
+          type="text"
           value={data.matchResults.featured.scoreB}
           onChange={(e) =>
             updateSection('matchResults', {
               ...data.matchResults,
               featured: {
                 ...data.matchResults.featured,
-                scoreB: parseInt(e.target.value) || 0,
+                scoreB: e.target.value,
               },
             })
           }
