@@ -307,7 +307,7 @@ function PreguntaModule({ content }) {
       </div>
       <div className="pregunta-options-row">
         <div className="pregunta-option-box box-yes">
-          <span className="pregunta-option-label">SÍ</span>
+          <span className="pregunta-option-label">SI</span>
           <span className="pregunta-option-value" style={{ '--char-count': (content.yesOdd || '—').length }}>{content.yesOdd || '—'}</span>
         </div>
         <div className="pregunta-option-box box-no">
