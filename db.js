@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { defaultBillboardData } from './backend/seedData.js';
 
 dotenv.config();
+//esta es la bd postgres
 
 let pool = null;
 
