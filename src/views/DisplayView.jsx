@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useCMS } from '../context/CMSContext';
 
 /* ─── Render a single module based on its type ─── */
-export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6, isLivePreview = false, overrideWidth }) {
+export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6, isLivePreview = false, overrideWidth, screenType }) {
   const gp = gridPosition || module.gridPosition || { colSpan: 1, rowSpan: 1 };
   const colSpan = gp.colSpan || 1;
   const rowSpan = gp.rowSpan || 1;
@@ -17,7 +17,19 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   const isVerticalLayout = gridCols === 1 || (window.innerWidth < window.innerHeight);
   
   // Normalize colFraction by actual grid aspect ratio to match physical proportions
-  const gridAspect = isVerticalLayout ? 0.5625 : (gridCols / gridRows);
+  let gridAspect = 2.0; // Default to 12x6 physical aspect ratio (2:1)
+  if (isVerticalLayout) {
+    gridAspect = 0.5625; // 9:16 vertical
+  } else {
+    const activeScreenType = screenType || (gridCols === gridRows ? '9x9' : '12x6');
+    if (activeScreenType === '9x9') {
+      gridAspect = 1.0;
+    } else if (activeScreenType === '12x6') {
+      gridAspect = 2.0;
+    } else {
+      gridAspect = gridCols / gridRows;
+    }
+  }
   const sizeFactor = Math.min(colFraction * gridAspect, rowFraction);
   
   // Calculate viewport scaling multiplier (base design resolution is 1920x1080 horizontal or 1080x1920 vertical)
@@ -187,44 +199,91 @@ export function TeamFlag({ flag }) {
 function ScoreboardModule({ content }) {
   return (
     <div className="module-scoreboard-display">
-      <div className="sb-main">
-        <div className="sb-team">
-          <TeamFlag flag={content.teamA.flag} />
-          <div className="sb-team-label">{content.teamA.name}</div>
-          <div className="sb-team-code">{content.teamA.code}</div>
+      <div className="sb-cards-container">
+        {/* Team A Card */}
+        <div className="sb-team-card">
+          <div className="sb-card-score">{content.teamA.score}</div>
+          <div className="sb-card-info">
+            <TeamFlag flag={content.teamA.flag} />
+            <span className="sb-card-code">{content.teamA.code || content.teamA.name?.slice(0, 3)}</span>
+          </div>
         </div>
-        <div className="sb-score">{content.teamA.score}</div>
-        <div className="sb-divider">-</div>
-        <div className="sb-score">{content.teamB.score}</div>
-        <div className="sb-team">
-          <TeamFlag flag={content.teamB.flag} />
-          <div className="sb-team-label">{content.teamB.name}</div>
-          <div className="sb-team-code">{content.teamB.code}</div>
+
+        {/* Divider */}
+        <div className="sb-card-divider">-</div>
+
+        {/* Team B Card */}
+        <div className="sb-team-card">
+          <div className="sb-card-score">{content.teamB.score}</div>
+          <div className="sb-card-info">
+            <TeamFlag flag={content.teamB.flag} />
+            <span className="sb-card-code">{content.teamB.code || content.teamB.name?.slice(0, 3)}</span>
+          </div>
         </div>
       </div>
-      {content.status && <div className="sb-status">{content.status}</div>}
+      {content.status && <div className="sb-status-badge">{content.status}</div>}
     </div>
   );
 }
 
+export function parseTeamString(teamStr) {
+  if (!teamStr) return { flag: null, name: '' };
+  const trimmed = teamStr.trim();
+  // Match emoji flag at the beginning
+  const emojiRegex = /^([\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]|\p{Emoji_Presentation}|\p{Emoji})/u;
+  const match = trimmed.match(emojiRegex);
+  if (match) {
+    const flag = match[0];
+    const name = trimmed.slice(flag.length).trim();
+    return { flag, name };
+  }
+  return { flag: null, name: trimmed };
+}
+
+export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = []) {
+  if (explicitFlag) return explicitFlag;
+  if (parsedFlag) return parsedFlag;
+  if (!teamName) return null;
+  const found = worldCupTeams.find(t => t.name.toUpperCase() === teamName.trim().toUpperCase());
+  return found ? found.flag : null;
+}
+
 /* ─── RESULTS MODULE ─── */
 function ResultsModule({ content }) {
+  const { worldCupTeams = [] } = useCMS();
   return (
     <div className="module-results-display">
-      <div className="results-title-display">{content.title}</div>
       <div className="results-list-container">
-        {(content.matches || []).map((match, i) => (
-          <div key={i} className="result-match-box">
-            <div className="result-row-display">
-              <span className="result-team-display">{match.teamA}</span>
-              <span className="result-score-display">{match.scoreA}</span>
+        {(content.matches || []).map((match, i) => {
+          const teamAInfo = parseTeamString(match.teamA);
+          const teamBInfo = parseTeamString(match.teamB);
+          const flagA = getTeamFlag(teamAInfo.name, match.flagA, teamAInfo.flag, worldCupTeams);
+          const flagB = getTeamFlag(teamBInfo.name, match.flagB, teamBInfo.flag, worldCupTeams);
+          return (
+            <div key={i} className="result-match-card-row">
+              {/* Team A Card */}
+              <div className="sb-team-card">
+                <div className="sb-card-score">{match.scoreA}</div>
+                <div className="sb-card-info">
+                  <TeamFlag flag={flagA} />
+                  <span className="sb-card-code">{teamAInfo.name.slice(0, 3).toUpperCase()}</span>
+                </div>
+              </div>
+              
+              {/* Divider */}
+              <div className="sb-card-divider">-</div>
+              
+              {/* Team B Card */}
+              <div className="sb-team-card">
+                <div className="sb-card-score">{match.scoreB}</div>
+                <div className="sb-card-info">
+                  <TeamFlag flag={flagB} />
+                  <span className="sb-card-code">{teamBInfo.name.slice(0, 3).toUpperCase()}</span>
+                </div>
+              </div>
             </div>
-            <div className="result-row-display">
-              <span className="result-team-display">{match.teamB}</span>
-              <span className="result-score-display">{match.scoreB}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -232,6 +291,13 @@ function ResultsModule({ content }) {
 
 /* ─── UPCOMING MODULE ─── */
 function UpcomingModule({ content }) {
+  const { worldCupTeams = [] } = useCMS();
+  const teamAInfo = parseTeamString(content.teamA);
+  const teamBInfo = parseTeamString(content.teamB);
+  
+  const flagA = getTeamFlag(teamAInfo.name, content.flagA, teamAInfo.flag, worldCupTeams);
+  const flagB = getTeamFlag(teamBInfo.name, content.flagB, teamBInfo.flag, worldCupTeams);
+
   return (
     <div className="module-upcoming-display">
       <div className="upcoming-header-box">
@@ -239,9 +305,9 @@ function UpcomingModule({ content }) {
         <div className="upcoming-time-display">{content.time}</div>
       </div>
       <div className="upcoming-vs-card">
-        <div className="upcoming-team">{content.teamA}</div>
+        {flagA ? <TeamFlag flag={flagA} /> : <span className="upcoming-team">{teamAInfo.name || 'EQUIPO A'}</span>}
         <div className="upcoming-vs-badge">VS</div>
-        <div className="upcoming-team">{content.teamB}</div>
+        {flagB ? <TeamFlag flag={flagB} /> : <span className="upcoming-team">{teamBInfo.name || 'EQUIPO B'}</span>}
       </div>
     </div>
   );
@@ -270,36 +336,25 @@ function ApuestaModule({ content }) {
         {/* Box Left: Team A / Selection A (always rendered) */}
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div className="apuesta-odd-box box-left">
-            <span className="apuesta-odd-label">{mode === '1-way' ? 'OPCIÓN ÚNICA' : 'LOCAL'}</span>
-            <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
-              <span className="apuesta-team-name" style={{ '--char-count': (content.teamA?.name || 'Local').length }}>{content.teamA?.name || 'Local'}</span>
-            </div>
-            <span className="apuesta-odd-value" style={{ '--char-count': (content.teamA?.odd || '—').length }}>{content.teamA?.odd || '—'}</span>
+            {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
+            <span className="apuesta-team-name">{content.teamA?.name || 'Local'}</span>
+            <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
           </div>
         )}
         
         {/* Box Center: Draw (only in 3-way mode) */}
         {mode === '3-way' && (
           <div className="apuesta-odd-box box-center">
-            <span className="apuesta-odd-label">EMPATE</span>
-            <div className="apuesta-team-info" style={{ opacity: 0, pointerEvents: 'none' }}>
-              <span style={{ display: 'inline-block', width: 'calc(28px * var(--scale, 1))', height: 'calc(18px * var(--scale, 1))' }} />
-              <span className="apuesta-team-name" style={{ '--char-count': 6 }}>Empate</span>
-            </div>
-            <span className="apuesta-odd-value" style={{ '--char-count': (content.draw?.odd || '—').length }}>{content.draw?.odd || '—'}</span>
+            <span className="apuesta-odd-value">{content.draw?.odd || '—'}</span>
           </div>
         )}
         
         {/* Box Right: Team B (in 3-way and 2-way modes) */}
         {(mode === '3-way' || mode === '2-way') && (
           <div className="apuesta-odd-box box-right">
-            <span className="apuesta-odd-label">VISITANTE</span>
-            <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
-              <span className="apuesta-team-name" style={{ '--char-count': (content.teamB?.name || 'Visitante').length }}>{content.teamB?.name || 'Visitante'}</span>
-            </div>
-            <span className="apuesta-odd-value" style={{ '--char-count': (content.teamB?.odd || '—').length }}>{content.teamB?.odd || '—'}</span>
+            <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
+            <span className="apuesta-team-name">{content.teamB?.name || 'Visitante'}</span>
+            {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
           </div>
         )}
       </div>
@@ -469,7 +524,7 @@ export default function DisplayView() {
 
   let actualGridWidth = window.innerWidth;
   if (!isVertical && layout?.grid) {
-    const aspect = layout.grid.cols / layout.grid.rows;
+    const aspect = screenType === '9x9' ? 1.0 : 2.0;
     actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
   }
 
@@ -509,9 +564,9 @@ export default function DisplayView() {
         style={{
           width: '100%',
           height: '100%',
-          maxWidth: isVertical ? 'none' : (screenType === '9x9' ? '100vh' : '200vh'),
-          maxHeight: isVertical ? 'none' : (screenType === '9x9' ? '100vw' : '50vw'),
-          aspectRatio: isVertical ? 'auto' : (screenType === '9x9' ? '1 / 1' : '2 / 1'),
+          maxWidth: isVertical ? '56.25vh' : (screenType === '9x9' ? '100vh' : '200vh'),
+          maxHeight: isVertical ? '177.78vw' : (screenType === '9x9' ? '100vw' : '50vw'),
+          aspectRatio: isVertical ? '9 / 16' : (screenType === '9x9' ? '1 / 1' : '2 / 1'),
           gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
           gridTemplateRows: isVertical
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
@@ -530,6 +585,8 @@ export default function DisplayView() {
                 else if (mod.type === 'upcoming') baseWeight = 1.5;
                 else if (mod.type === 'results') baseWeight = 1.8;
                 else if (mod.type === 'news') baseWeight = 1.8;
+                else if (mod.type === 'pregunta') baseWeight = 1.8;
+                else if (mod.type === 'apuesta') baseWeight = 1.8;
                 
                 return `${baseWeight / mod.gridPosition.rowSpan}fr`;
               }).join(' ')
@@ -559,6 +616,7 @@ export default function DisplayView() {
                 gridCols={layout.grid.cols} 
                 gridRows={layout.grid.rows} 
                 overrideWidth={actualGridWidth}
+                screenType={screenType}
               />
             </div>
           );

@@ -366,10 +366,16 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
             <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} onOpenLibrary={onOpenLibrary} />
           )}
           {module.type === 'results' && (
-            <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
+            <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} onOpenLibrary={onOpenLibrary} />
           )}
           {module.type === 'upcoming' && (
-            <UpcomingEditor content={module.content} onChange={handleContentChange} />
+            <UpcomingEditor 
+              content={module.content} 
+              onChange={handleContentChange} 
+              updateModuleContent={updateModuleContent}
+              moduleId={module.id}
+              onOpenLibrary={onOpenLibrary}
+            />
           )}
           {module.type === 'news' && (
             <NewsEditor content={module.content} onChange={handleContentChange} />
@@ -896,7 +902,7 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
 }
 
 /* ─── Results Editor ─── */
-function ResultsEditor({ content, updateModuleContent, moduleId }) {
+function ResultsEditor({ content, updateModuleContent, moduleId, onOpenLibrary }) {
   const { worldCupTeams = [] } = useCMS();
 
   const updateMatch = (idx, field, value) => {
@@ -907,7 +913,7 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
 
   const addMatch = () => {
     updateModuleContent(moduleId, {
-      matches: [...(content.matches || []), { teamA: 'EQUIPO A', teamB: 'EQUIPO B', scoreA: 0, scoreB: 0 }],
+      matches: [...(content.matches || []), { teamA: 'EQUIPO A', teamB: 'EQUIPO B', scoreA: 0, scoreB: 0, flagA: '', flagB: '' }],
     });
   };
 
@@ -917,128 +923,248 @@ function ResultsEditor({ content, updateModuleContent, moduleId }) {
     });
   };
 
+  const handleSelectTeam = (idx, teamKey, teamName) => {
+    if (!teamName) return;
+    const teamObj = worldCupTeams.find(t => t.name === teamName);
+    if (teamObj) {
+      const updated = [...(content.matches || [])];
+      updated[idx] = {
+        ...updated[idx],
+        [teamKey]: teamObj.name.toUpperCase(),
+        [teamKey === 'teamA' ? 'flagA' : 'flagB']: teamObj.flag
+      };
+      updateModuleContent(moduleId, { matches: updated });
+    }
+  };
+
   return (
     <>
-      <div className="field">
-        <label>Título</label>
-        <input type="text" value={content.title} onChange={(e) => updateModuleContent(moduleId, { title: e.target.value })} />
-      </div>
-
       {(content.matches || []).map((match, i) => (
-        <div className="match-editor-row" key={i}>
-          <div className="field">
-            <label>Equipo A</label>
-            <select
-              value=""
-              onChange={(e) => {
-                if (e.target.value) {
-                  updateMatch(i, 'teamA', e.target.value);
-                }
-              }}
-              style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
-            >
-              <option value="">-- Sel. Rápida --</option>
-              {worldCupTeams.map((team) => (
-                <option key={`match-a-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
-                  {team.flag} {team.name}
-                </option>
-              ))}
-            </select>
-            <input type="text" value={match.teamA} onChange={(e) => updateMatch(i, 'teamA', e.target.value)} />
+        <div className="match-editor-box" key={i} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '16px', marginBottom: '16px', background: 'rgba(255, 255, 255, 0.02)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <span style={{ fontWeight: 'bold', color: 'var(--color-gold)', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '1px' }}>Partido #{i + 1}</span>
+            <button type="button" className="admin-btn-icon danger" onClick={() => removeMatch(i)} style={{ height: '24px', width: '24px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
           </div>
-          <div className="field">
-            <label>G-A</label>
-            <input type="text" value={match.scoreA} onChange={(e) => updateMatch(i, 'scoreA', e.target.value)} />
-          </div>
-          <div className="field">
-            <label>G-B</label>
-            <input type="text" value={match.scoreB} onChange={(e) => updateMatch(i, 'scoreB', e.target.value)} />
-          </div>
-          <div className="field" style={{ display: 'flex', alignItems: 'end', gap: 4 }}>
-            <div style={{ flex: 1 }}>
-              <label>Equipo B</label>
+          
+          <div className="field-row" style={{ marginBottom: '8px' }}>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Sel. Rápida Equipo A</label>
               <select
                 value=""
-                onChange={(e) => {
-                  if (e.target.value) {
-                    updateMatch(i, 'teamB', e.target.value);
-                  }
-                }}
-                style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px', width: '100%' }}
+                onChange={(e) => handleSelectTeam(i, 'teamA', e.target.value)}
+                style={{ padding: '6px 10px', fontSize: '12px' }}
               >
-                <option value="">-- Sel. Rápida --</option>
+                <option value="">-- Seleccionar Equipo A --</option>
                 {worldCupTeams.map((team) => (
-                  <option key={`match-b-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
-                    {team.flag} {team.name}
+                  <option key={`match-sel-a-${team.name}`} value={team.name}>
+                    {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Sel. Rápida Equipo B</label>
+              <select
+                value=""
+                onChange={(e) => handleSelectTeam(i, 'teamB', e.target.value)}
+                style={{ padding: '6px 10px', fontSize: '12px' }}
+              >
+                <option value="">-- Seleccionar Equipo B --</option>
+                {worldCupTeams.map((team) => (
+                  <option key={`match-sel-b-${team.name}`} value={team.name}>
+                    {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="field-row">
+            <div className="field">
+              <label>Equipo A — Nombre</label>
+              <input type="text" value={match.teamA} onChange={(e) => updateMatch(i, 'teamA', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Equipo B — Nombre</label>
               <input type="text" value={match.teamB} onChange={(e) => updateMatch(i, 'teamB', e.target.value)} />
             </div>
-            <button className="admin-btn-icon danger" onClick={() => removeMatch(i)} style={{ marginBottom: 0 }}>✕</button>
+          </div>
+
+          <div className="field-row">
+            <div className="field">
+              <label>Equipo A — Goles</label>
+              <input type="text" value={match.scoreA} onChange={(e) => updateMatch(i, 'scoreA', e.target.value)} />
+            </div>
+            <div className="field">
+              <label>Equipo B — Goles</label>
+              <input type="text" value={match.scoreB} onChange={(e) => updateMatch(i, 'scoreB', e.target.value)} />
+            </div>
+          </div>
+
+          <div className="field-row" style={{ marginBottom: 0 }}>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Equipo A — Bandera (emoji o imagen)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  value={match.flagA || ''} 
+                  onChange={(e) => updateMatch(i, 'flagA', e.target.value)} 
+                  placeholder="Emoji o URL de imagen"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+                  onClick={() => {
+                    onOpenLibrary((url) => {
+                      updateMatch(i, 'flagA', url);
+                    });
+                  }}
+                >
+                  🖼️
+                </button>
+              </div>
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Equipo B — Bandera (emoji o imagen)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input 
+                  type="text" 
+                  value={match.flagB || ''} 
+                  onChange={(e) => updateMatch(i, 'flagB', e.target.value)} 
+                  placeholder="Emoji o URL de imagen"
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+                  onClick={() => {
+                    onOpenLibrary((url) => {
+                      updateMatch(i, 'flagB', url);
+                    });
+                  }}
+                >
+                  🖼️
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       ))}
 
-      <button className="add-module-btn" onClick={addMatch}>+ Agregar partido</button>
+      <button type="button" className="add-module-btn" onClick={addMatch}>+ Agregar partido</button>
     </>
   );
 }
 
 /* ─── Upcoming Editor ─── */
-function UpcomingEditor({ content, onChange }) {
+function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOpenLibrary }) {
   const { worldCupTeams = [] } = useCMS();
+
+  const handleSelectTeam = (teamKey, teamName) => {
+    if (!teamName) return;
+    const teamObj = worldCupTeams.find(t => t.name === teamName);
+    if (teamObj) {
+      updateModuleContent(moduleId, {
+        [teamKey]: teamObj.name.toUpperCase(),
+        [teamKey === 'teamA' ? 'flagA' : 'flagB']: teamObj.flag
+      });
+    }
+  };
 
   return (
     <>
       <div className="field">
         <label>Etiqueta</label>
-        <input type="text" value={content.label} onChange={(e) => onChange('label', e.target.value)} />
+        <input type="text" value={content.label || ''} onChange={(e) => onChange('label', e.target.value)} />
       </div>
       <div className="field">
         <label>Hora</label>
-        <input type="text" value={content.time} onChange={(e) => onChange('time', e.target.value)} />
+        <input type="text" value={content.time || ''} onChange={(e) => onChange('time', e.target.value)} />
       </div>
       <div className="field-row">
         <div className="field">
-          <label>Equipo A</label>
+          <label>Sel. Rápida Equipo A</label>
           <select
             value=""
-            onChange={(e) => {
-              if (e.target.value) {
-                onChange('teamA', e.target.value);
-              }
-            }}
+            onChange={(e) => handleSelectTeam('teamA', e.target.value)}
             style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
           >
-            <option value="">-- Sel. Rápida --</option>
+            <option value="">-- Seleccionar Equipo A --</option>
             {worldCupTeams.map((team) => (
-              <option key={`upcoming-a-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
-                {team.flag} {team.name}
+              <option key={`upcoming-sel-a-${team.name}`} value={team.name}>
+                {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
               </option>
             ))}
           </select>
-          <input type="text" value={content.teamA} onChange={(e) => onChange('teamA', e.target.value)} />
+          <label>Equipo A — Nombre</label>
+          <input type="text" value={content.teamA || ''} onChange={(e) => onChange('teamA', e.target.value)} />
+          
+          <label style={{ marginTop: '6px' }}>Equipo A — Bandera (emoji o imagen)</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={content.flagA || ''} 
+              onChange={(e) => onChange('flagA', e.target.value)} 
+              placeholder="Emoji o URL de imagen"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                onOpenLibrary((url) => {
+                  onChange('flagA', url);
+                });
+              }}
+            >
+              🖼️
+            </button>
+          </div>
         </div>
+
         <div className="field">
-          <label>Equipo B</label>
+          <label>Sel. Rápida Equipo B</label>
           <select
             value=""
-            onChange={(e) => {
-              if (e.target.value) {
-                onChange('teamB', e.target.value);
-              }
-            }}
+            onChange={(e) => handleSelectTeam('teamB', e.target.value)}
             style={{ marginBottom: '6px', padding: '6px 10px', fontSize: '12px' }}
           >
-            <option value="">-- Sel. Rápida --</option>
+            <option value="">-- Seleccionar Equipo B --</option>
             {worldCupTeams.map((team) => (
-              <option key={`upcoming-b-${team.name}`} value={`${team.flag} ${team.name.toUpperCase()}`}>
-                {team.flag} {team.name}
+              <option key={`upcoming-sel-b-${team.name}`} value={team.name}>
+                {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
               </option>
             ))}
           </select>
-          <input type="text" value={content.teamB} onChange={(e) => onChange('teamB', e.target.value)} />
+          <label>Equipo B — Nombre</label>
+          <input type="text" value={content.teamB || ''} onChange={(e) => onChange('teamB', e.target.value)} />
+          
+          <label style={{ marginTop: '6px' }}>Equipo B — Bandera (emoji o imagen)</label>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input 
+              type="text" 
+              value={content.flagB || ''} 
+              onChange={(e) => onChange('flagB', e.target.value)} 
+              placeholder="Emoji o URL de imagen"
+              style={{ flex: 1 }}
+            />
+            <button
+              type="button"
+              className="admin-btn admin-btn-secondary"
+              style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
+              onClick={() => {
+                onOpenLibrary((url) => {
+                  onChange('flagB', url);
+                });
+              }}
+            >
+              🖼️
+            </button>
+          </div>
         </div>
       </div>
     </>
@@ -1246,6 +1372,7 @@ function LivePreview({ modules, grid, screenType }) {
                 gridRows={layout.grid.rows} 
                 isLivePreview={true}
                 overrideWidth={isVerticalPreview ? 1080 : canvasWidth}
+                screenType={screenType}
               />
             </div>
           );

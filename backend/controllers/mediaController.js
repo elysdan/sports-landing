@@ -17,10 +17,23 @@ export async function handlePostUpload(req, res) {
     const buffer = Buffer.from(base64Data, 'base64');
     const timestamp = Date.now();
     const safeName = `${timestamp}_${filename.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
-
     const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
-    await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
-    sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
+
+    try {
+      await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
+      sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
+    } catch (dbErr) {
+      console.warn("[MediaController] DB offline/error, falling back to filesystem:", dbErr.message);
+      
+      const uploadDir = path.resolve(process.cwd(), 'public/update');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, safeName);
+      fs.writeFileSync(filePath, buffer);
+      
+      sendJson(res, 200, { url: `/update/${safeName}` });
+    }
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
