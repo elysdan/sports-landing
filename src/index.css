@@ -457,9 +457,10 @@ img.sb-team-flag {
 }
 
 .result-match-box {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  row-gap: calc(4px * var(--scale, 1));
   padding: clamp(4px, calc(8px * var(--scale, 1)), 16px) 0;
   border-bottom: 1px solid var(--color-border);
   width: 100%;
@@ -470,10 +471,7 @@ img.sb-team-flag {
 }
 
 .result-row-display {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: clamp(2px, calc(3px * var(--scale, 1)), 6px) 0;
+  display: contents;
 }
 
 .result-team-display {
@@ -488,10 +486,14 @@ img.sb-team-flag {
   text-overflow: clip;
   word-wrap: normal;
   word-break: normal;
-  max-width: 80%;
+  min-width: 0;
 }
 
 .result-score-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   font-family: var(--font-display);
   font-size: max(15px, calc(22px * var(--font-scale, 1)));
   font-weight: 800;
@@ -501,6 +503,7 @@ img.sb-team-flag {
   border-radius: 4px;
   padding: calc(3px * var(--scale, 1)) calc(8px * var(--scale, 1));
   min-width: calc(48px * var(--scale, 1));
+  width: 100%;
   text-align: center;
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.3);
 }

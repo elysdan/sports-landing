@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useCMS } from '../context/CMSContext';
 
 /* ─── Render a single module based on its type ─── */
-export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6, isLivePreview = false }) {
+export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6, isLivePreview = false, overrideWidth }) {
   const gp = gridPosition || module.gridPosition || { colSpan: 1, rowSpan: 1 };
   const colSpan = gp.colSpan || 1;
   const rowSpan = gp.rowSpan || 1;
@@ -12,16 +12,19 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   const colFraction = colSpan / gridCols;
   const rowFraction = rowSpan / gridRows;
   
-  // Normalize colFraction by aspect ratio (approx. 16:9 = 1.777) to match physical proportions
-  const sizeFactor = Math.min(colFraction * 1.777, rowFraction);
-  
   // Scale factor that is highly responsive to container dimensions.
   // In vertical layouts, we scale based on row fraction to prevent giant text overflows.
   const isVerticalLayout = gridCols === 1 || (window.innerWidth < window.innerHeight);
   
+  // Normalize colFraction by actual grid aspect ratio to match physical proportions
+  const gridAspect = isVerticalLayout ? 0.5625 : (gridCols / gridRows);
+  const sizeFactor = Math.min(colFraction * gridAspect, rowFraction);
+  
   // Calculate viewport scaling multiplier (base design resolution is 1920x1080 horizontal or 1080x1920 vertical)
   const baseWidth = isVerticalLayout ? 1080 : 1920;
-  const actualWidth = isLivePreview ? baseWidth : window.innerWidth;
+  const actualWidth = overrideWidth !== undefined
+    ? overrideWidth
+    : (isLivePreview ? baseWidth : window.innerWidth);
   const viewportScale = actualWidth / baseWidth;
 
   const baseScale = isVerticalLayout
@@ -458,6 +461,12 @@ export default function DisplayView() {
   const visibleModules = mappedModules.filter(m => m.visible !== false);
   const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid: activeLayoutObj.grid };
 
+  let actualGridWidth = window.innerWidth;
+  if (!isVertical && layout?.grid) {
+    const aspect = layout.grid.cols / layout.grid.rows;
+    actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
+  }
+
   if (!hasLoadedFromServer) {
     return (
       <div
@@ -543,6 +552,7 @@ export default function DisplayView() {
                 gridPosition={mod.gridPosition} 
                 gridCols={layout.grid.cols} 
                 gridRows={layout.grid.rows} 
+                overrideWidth={actualGridWidth}
               />
             </div>
           );

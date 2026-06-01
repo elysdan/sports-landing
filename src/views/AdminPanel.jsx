@@ -1227,6 +1227,7 @@ function LivePreview({ modules, grid, screenType }) {
                 gridCols={layout.grid.cols} 
                 gridRows={layout.grid.rows} 
                 isLivePreview={true}
+                overrideWidth={isVerticalPreview ? 1080 : canvasWidth}
               />
             </div>
           );
