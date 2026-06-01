@@ -471,12 +471,13 @@ img.sb-team-flag {
 .result-match-box {
   display: grid;
   grid-template-columns: 1fr auto;
+  grid-template-rows: 1fr 1fr;
   align-items: center;
   row-gap: calc(4px * var(--scale, 1));
   padding: clamp(4px, calc(8px * var(--scale, 1)), 16px) 0;
   border-bottom: 1px solid var(--color-border);
   width: 100%;
-  flex-shrink: 0;
+  flex: 1 0 auto;
 }
 
 .result-match-box:last-child {
@@ -496,7 +497,7 @@ img.sb-team-flag {
   text-transform: uppercase;
   white-space: nowrap !important;
   overflow: hidden;
-  text-overflow: clip;
+  text-overflow: ellipsis;
   word-wrap: normal;
   word-break: normal;
   min-width: 0;
@@ -526,51 +527,42 @@ img.sb-team-flag {
 .narrow-col-2 .result-match-box,
 .narrow-col-1 .result-match-box,
 .vertical .result-match-box {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
   align-items: center !important;
-  justify-items: center !important;
-  column-gap: calc(12px * var(--scale, 1)) !important;
-  row-gap: calc(6px * var(--scale, 1)) !important;
+  row-gap: calc(8px * var(--scale, 1)) !important;
+  column-gap: calc(16px * var(--scale, 1)) !important;
 }
 
-.large-text-layout .result-row-display:nth-child(1) .result-team-display,
-.narrow-col-2 .result-row-display:nth-child(1) .result-team-display,
-.narrow-col-1 .result-row-display:nth-child(1) .result-team-display,
-.vertical .result-row-display:nth-child(1) .result-team-display {
-  grid-row: 1 !important;
-  grid-column: 1 !important;
-  text-align: center !important;
-  justify-self: center !important;
+.large-text-layout .result-row-display,
+.narrow-col-2 .result-row-display,
+.narrow-col-1 .result-row-display,
+.vertical .result-row-display {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex: 1 1 calc(48% - 8px) !important;
+  min-width: min(100%, max(160px, calc(200px * var(--font-scale, 1)))) !important;
+  box-sizing: border-box !important;
 }
 
-.large-text-layout .result-row-display:nth-child(2) .result-team-display,
-.narrow-col-2 .result-row-display:nth-child(2) .result-team-display,
-.narrow-col-1 .result-row-display:nth-child(2) .result-team-display,
-.vertical .result-row-display:nth-child(2) .result-team-display {
-  grid-row: 1 !important;
-  grid-column: 2 !important;
-  text-align: center !important;
-  justify-self: center !important;
-}
-
-.large-text-layout .result-row-display:nth-child(1) .result-score-display,
-.narrow-col-2 .result-row-display:nth-child(1) .result-score-display,
-.narrow-col-1 .result-row-display:nth-child(1) .result-score-display,
-.vertical .result-row-display:nth-child(1) .result-score-display {
-  grid-row: 2 !important;
-  grid-column: 1 !important;
-  justify-self: center !important;
+.large-text-layout .result-team-display,
+.narrow-col-2 .result-team-display,
+.narrow-col-1 .result-team-display,
+.vertical .result-team-display {
+  margin-bottom: 0 !important;
+  margin-right: calc(8px * var(--scale, 1)) !important;
   width: auto !important;
+  flex: 1 !important;
+  text-align: left !important;
 }
 
-.large-text-layout .result-row-display:nth-child(2) .result-score-display,
-.narrow-col-2 .result-row-display:nth-child(2) .result-score-display,
-.narrow-col-1 .result-row-display:nth-child(2) .result-score-display,
-.vertical .result-row-display:nth-child(2) .result-score-display {
-  grid-row: 2 !important;
-  grid-column: 2 !important;
-  justify-self: center !important;
+.large-text-layout .result-score-display,
+.narrow-col-2 .result-score-display,
+.narrow-col-1 .result-score-display,
+.vertical .result-score-display {
   width: auto !important;
 }
 

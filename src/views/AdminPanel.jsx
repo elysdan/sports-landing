@@ -20,6 +20,17 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
     });
   };
 
+  const handleLayoutTextSizeChange = (value) => {
+    if (!canEdit) return;
+    updateModule(module.id, {
+      gridPosition: { ...module.gridPosition, textSizeFactor: parseFloat(value) || 1.0 }
+    });
+  };
+
+  const currentTextSizeFactor = module.gridPosition?.textSizeFactor !== undefined
+    ? module.gridPosition.textSizeFactor
+    : (module.content?.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0);
+
   const handleImageUpload = (e) => {
     if (!canEdit) return;
     const file = e.target.files[0];
@@ -266,8 +277,8 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
                   min="0.5"
                   max="3.0"
                   step="0.1"
-                  value={module.content.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0}
-                  onChange={(e) => handleContentChange('textSizeFactor', parseFloat(e.target.value))}
+                  value={currentTextSizeFactor}
+                  onChange={(e) => handleLayoutTextSizeChange(e.target.value)}
                   style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
                 />
                 <span style={{ 
@@ -278,7 +289,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
                   textAlign: 'right',
                   fontFamily: 'monospace'
                 }}>
-                  {(module.content.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0).toFixed(1)}x
+                  {currentTextSizeFactor.toFixed(1)}x
                 </span>
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
