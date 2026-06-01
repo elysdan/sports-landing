@@ -1185,9 +1185,11 @@ function LivePreview({ modules, grid, screenType }) {
           gridTemplateRows: isVerticalPreview
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
                 const rowNum = i + 1;
-                const mod = layout.modules.find(m => 
-                  m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
-                );
+                const mod = layout.modules.find(m => {
+                  const r = m.gridPosition?.row || 1;
+                  const rs = m.gridPosition?.rowSpan || 1;
+                  return r <= rowNum && rowNum < r + rs;
+                });
                 if (!mod) return '1fr';
                 if (mod.type === 'ticker') return '80px';
                 const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
@@ -1200,10 +1202,10 @@ function LivePreview({ modules, grid, screenType }) {
                 else if (mod.type === 'results') baseWeight = 1.8;
                 else if (mod.type === 'news') baseWeight = 1.8;
                 
-                return `${baseWeight / mod.gridPosition.rowSpan}fr`;
+                return `${baseWeight / (mod.gridPosition?.rowSpan || 1)}fr`;
               }).join(' ')
             : Array.from({ length: layout.grid.rows }).map((_, i) => 
-                layout.modules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
+                layout.modules.some(m => m.type === 'ticker' && (m.gridPosition?.row || 1) === i + 1) ? '80px' : '1fr'
               ).join(' '),
           background: 'var(--color-border)',
           gap: '2px',
@@ -1221,14 +1223,14 @@ function LivePreview({ modules, grid, screenType }) {
               key={mod.id}
               className="module-cell"
               style={{
-                gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
-                gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
+                gridColumn: `${mod.gridPosition?.col || 1} / span ${mod.gridPosition?.colSpan || 1}`,
+                gridRow: `${mod.gridPosition?.row || 1} / span ${mod.gridPosition?.rowSpan || 1}`,
                 zIndex: modules.length - indexInMaster
               }}
             >
               <RenderModule 
                 module={mod} 
-                gridPosition={mod.gridPosition} 
+                gridPosition={mod.gridPosition || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }} 
                 gridCols={layout.grid.cols} 
                 gridRows={layout.grid.rows} 
                 isLivePreview={true}
@@ -1244,6 +1246,9 @@ function LivePreview({ modules, grid, screenType }) {
 
 const compareConfigs = (before, after) => {
   const changes = [];
+  if (!after) {
+    return changes;
+  }
   if (!before) {
     changes.push("✨ Configuración inicial creada.");
     return changes;
@@ -3626,6 +3631,102 @@ function HistoryManagement({ setViewMode }) {
   const [expandedRows, setExpandedRows] = useState({});
   const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
 
+  const migrateHistoryConfig = (config) => {
+    if (!config) return null;
+    if (config.layouts) return config;
+
+    const parsed = JSON.parse(JSON.stringify(config));
+    const originalGrid = parsed.grid || { cols: 5, rows: 5 };
+    const originalPositions = {};
+    (parsed.modules || []).forEach(mod => {
+      originalPositions[mod.id] = mod.gridPosition || { col: 1, row: 1, colSpan: 1, rowSpan: 1 };
+    });
+
+    const defaults_12x6 = {
+      "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+      "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
+      "default_odds": { col: 6, row: 1, colSpan: 3, rowSpan: 2 },
+      "default_hero": { col: 9, row: 1, colSpan: 4, rowSpan: 4 },
+      "default_news": { col: 1, row: 2, colSpan: 2, rowSpan: 4 },
+      "default_results": { col: 3, row: 3, colSpan: 3, rowSpan: 3 },
+      "default_featured": { col: 6, row: 3, colSpan: 3, rowSpan: 3 },
+      "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 },
+      "default_ticker": { col: 1, row: 6, colSpan: 12, rowSpan: 1 }
+    };
+
+    const defaults_9x9 = {
+      "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
+      "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
+      "default_odds": { col: 6, row: 1, colSpan: 4, rowSpan: 2 },
+      "default_hero": { col: 1, row: 3, colSpan: 5, rowSpan: 4 },
+      "default_news": { col: 6, row: 3, colSpan: 4, rowSpan: 2 },
+      "default_results": { col: 6, row: 5, colSpan: 4, rowSpan: 2 },
+      "default_featured": { col: 1, row: 7, colSpan: 4, rowSpan: 2 },
+      "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 },
+      "default_ticker": { col: 1, row: 9, colSpan: 9, rowSpan: 1 }
+    };
+
+    const createHistoryPositions = (modules, targetCols, targetRows) => {
+      const positions = {};
+      const layoutDefaults = (targetCols === 12 && targetRows === 6) ? defaults_12x6 : defaults_9x9;
+      modules.forEach(mod => {
+        if (layoutDefaults[mod.id]) {
+          positions[mod.id] = { ...layoutDefaults[mod.id] };
+        } else if (originalPositions[mod.id]) {
+          let { col, row, colSpan, rowSpan } = originalPositions[mod.id];
+          colSpan = Math.max(1, Math.min(targetCols, colSpan));
+          rowSpan = Math.max(1, Math.min(targetRows, rowSpan));
+          col = Math.max(1, Math.min(targetCols - colSpan + 1, col));
+          row = Math.max(1, Math.min(targetRows - rowSpan + 1, row));
+          positions[mod.id] = { col, row, colSpan, rowSpan };
+        } else {
+          positions[mod.id] = { col: 1, row: 1, colSpan: 1, rowSpan: 1 };
+        }
+      });
+      return positions;
+    };
+
+    parsed.layouts = {
+      "12x6": {
+        grid: { cols: 12, rows: 6 },
+        positions: createHistoryPositions(parsed.modules || [], 12, 6)
+      },
+      "9x9": {
+        grid: { cols: 9, rows: 9 },
+        positions: createHistoryPositions(parsed.modules || [], 9, 9)
+      }
+    };
+    parsed.activeLayout = "12x6";
+    return parsed;
+  };
+
+  const getHistoryModules = (config) => {
+    if (!config) return [];
+    const migrated = migrateHistoryConfig(config);
+    const layoutName = migrated.activeLayout || '12x6';
+    const layoutObj = migrated.layouts?.[layoutName] || { grid: { cols: 12, rows: 6 }, positions: {} };
+    return (migrated.modules || []).map(mod => ({
+      ...mod,
+      gridPosition: layoutObj.positions?.[mod.id] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
+    }));
+  };
+
+  const getHistoryGrid = (config) => {
+    if (!config) return { cols: 12, rows: 6 };
+    const migrated = migrateHistoryConfig(config);
+    const layoutName = migrated.activeLayout || '12x6';
+    return migrated.layouts?.[layoutName]?.grid || { cols: 12, rows: 6 };
+  };
+
+  const getHistoryGridText = (config) => {
+    if (!config) return '';
+    const migrated = migrateHistoryConfig(config);
+    const layoutName = migrated.activeLayout || '12x6';
+    const grid = migrated.layouts?.[layoutName]?.grid || { cols: 12, rows: 6 };
+    const orientation = migrated.orientation === 'vertical' ? 'Vertical' : 'Horizontal';
+    return `${grid.cols}x${grid.rows} | ${orientation}`;
+  };
+
   useEffect(() => {
     async function loadHistory() {
       setLoading(true);
@@ -3778,7 +3879,7 @@ function HistoryManagement({ setViewMode }) {
                                   </div>
                                   {beforeEntry && (
                                     <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontWeight: '500' }}>
-                                      {beforeEntry.config_data?.grid?.cols || 5}x{beforeEntry.config_data?.grid?.rows || 5} | {beforeEntry.config_data?.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
+                                      {getHistoryGridText(beforeEntry.config_data)}
                                     </div>
                                   )}
                                 </div>
@@ -3792,8 +3893,8 @@ function HistoryManagement({ setViewMode }) {
                                     background: '#020202'
                                   }}>
                                     <LivePreview 
-                                      modules={beforeEntry.config_data?.modules || []} 
-                                      grid={beforeEntry.config_data?.grid || { cols: 5, rows: 5 }} 
+                                      modules={getHistoryModules(beforeEntry.config_data)} 
+                                      grid={getHistoryGrid(beforeEntry.config_data)} 
                                       screenType={beforeEntry.config_data?.orientation || 'horizontal'} 
                                     />
                                   </div>
@@ -3821,7 +3922,7 @@ function HistoryManagement({ setViewMode }) {
                                     ⏩ Estado Nuevo (Después)
                                   </div>
                                   <div style={{ fontSize: '11px', color: 'var(--color-gold)', fontWeight: '500' }}>
-                                    {entry.config_data?.grid?.cols || 5}x{entry.config_data?.grid?.rows || 5} | {entry.config_data?.orientation === 'vertical' ? 'Vertical' : 'Horizontal'}
+                                    {getHistoryGridText(entry.config_data)}
                                   </div>
                                 </div>
                                 <div style={{ 
@@ -3833,8 +3934,8 @@ function HistoryManagement({ setViewMode }) {
                                   background: '#020202'
                                 }}>
                                   <LivePreview 
-                                    modules={entry.config_data?.modules || []} 
-                                    grid={entry.config_data?.grid || { cols: 5, rows: 5 }} 
+                                    modules={getHistoryModules(entry.config_data)} 
+                                    grid={getHistoryGrid(entry.config_data)} 
                                     screenType={entry.config_data?.orientation || 'horizontal'} 
                                   />
                                 </div>
