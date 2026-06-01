@@ -63,20 +63,26 @@ export async function handleGetMedia(req, res) {
     scanDir(path.resolve(process.cwd(), 'dist'), '/');
 
     // Merge database assets
-    const dbAssets = await listMediaAssets();
-    dbAssets.forEach(asset => {
-      const url = `/api/media/file?name=${asset.filename}`;
-      const ext = path.extname(asset.filename).toLowerCase();
-      const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
-      
-      mediaMap.set(url, {
-        url,
-        filename: asset.filename,
-        type: isVideo ? 'video' : 'image',
-        size: asset.sizeBytes,
-        mtime: new Date(asset.createdAt).getTime()
-      });
-    });
+    try {
+      const dbAssets = await listMediaAssets();
+      if (Array.isArray(dbAssets)) {
+        dbAssets.forEach(asset => {
+          const url = `/api/media/file?name=${asset.filename}`;
+          const ext = path.extname(asset.filename).toLowerCase();
+          const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
+          
+          mediaMap.set(url, {
+            url,
+            filename: asset.filename,
+            type: isVideo ? 'video' : 'image',
+            size: asset.sizeBytes,
+            mtime: new Date(asset.createdAt).getTime()
+          });
+        });
+      }
+    } catch (dbErr) {
+      console.warn("[MediaController] No se pudieron cargar los archivos de la base de datos:", dbErr.message);
+    }
 
     const mediaFiles = Array.from(mediaMap.values());
     mediaFiles.sort((a, b) => b.mtime - a.mtime);

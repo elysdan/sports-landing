@@ -435,8 +435,13 @@ function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
       )}
 
       <div className="field" style={{ marginTop: 16 }}>
+        <label>Título de anuncio (opcional - si no hay imagen)</label>
+        <input type="text" value={content.overlayTitle || ''} onChange={(e) => onChange('overlayTitle', e.target.value)} placeholder="Ej: INFO DESTACADA" />
+      </div>
+
+      <div className="field">
         <label>Texto superpuesto (overlay)</label>
-        <textarea value={content.overlayText || ''} onChange={(e) => onChange('overlayText', e.target.value)} placeholder="Opcional: texto sobre la imagen" />
+        <textarea value={content.overlayText || ''} onChange={(e) => onChange('overlayText', e.target.value)} placeholder="Opcional: texto sobre la imagen o contenido de anuncio" />
       </div>
 
       <div className="field">
@@ -1631,26 +1636,24 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
         {!isMinimized && (
           <div className="layout-preview-screen-select" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto', marginRight: '16px' }}>
             <span style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Proporción:</span>
-            <select
-              value={previewType}
-              onChange={(e) => setPreviewType(e.target.value)}
+            <span
               style={{
                 padding: '4px 10px',
-                background: 'var(--color-bg-card)',
+                background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-sm)',
-                color: 'var(--color-white)',
+                color: 'var(--color-text-secondary)',
                 fontSize: '11px',
-                cursor: 'pointer',
-                outline: 'none',
-                fontFamily: 'var(--font-body)'
+                fontWeight: 'bold',
+                fontFamily: 'var(--font-body)',
+                userSelect: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
             >
-              <option value="horizontal">🖥️ Horizontal (16:9)</option>
-              <option value="vertical">📱 Vertical (9:16)</option>
-              <option value="12x6">📐 Pantalla 12x6 Mts (2:1)</option>
-              <option value="9x9">⬛ Pantalla 9x9 Mts (1:1)</option>
-            </select>
+              {activeLayout === '12x6' ? '📐 Pantalla 12x6 Mts (2:1)' : '⬛ Pantalla 9x9 Mts (1:1)'}
+            </span>
           </div>
         )}
  
@@ -2166,23 +2169,6 @@ export default function AdminPanel() {
           </select>
         </div>
 
-        {/* Logged in User Indicator & Logout */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)', marginLeft: '12px' }}>
-          <span style={{ fontSize: '14px' }}>👤</span>
-          <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{currentUser.name}</span>
-          <span style={{ fontSize: '10px', background: 'rgba(212, 168, 67, 0.15)', color: 'var(--color-gold)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
-            {currentUser.username === 'admin' ? 'Admin' : 'Editor'}
-          </span>
-          <button 
-            type="button" 
-            onClick={logout} 
-            className="admin-btn admin-btn-sm" 
-            style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', cursor: 'pointer', padding: '4px 10px', fontSize: '10px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition-fast)' }}
-          >
-            🚪 Cerrar Sesión
-          </button>
-        </div>
-
         <div className="admin-header-actions" style={{ marginLeft: 'auto' }}>
           {canApprove && (
             <button
@@ -2283,11 +2269,22 @@ export default function AdminPanel() {
 
           <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
 
-          {!isReadOnlyUser && (
-            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => { if (window.confirm('¿Restablecer todo a valores por defecto?')) resetAll(); }}>
-              Restablecer
+          {/* Logged in User Indicator & Logout */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid var(--color-border)', padding: '6px 14px', borderRadius: 'var(--radius-sm)' }}>
+            <span style={{ fontSize: '14px' }}>👤</span>
+            <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{currentUser.name}</span>
+            <span style={{ fontSize: '10px', background: 'rgba(212, 168, 67, 0.15)', color: 'var(--color-gold)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+              {currentUser.username === 'admin' ? 'Admin' : 'Editor'}
+            </span>
+            <button 
+              type="button" 
+              onClick={logout} 
+              className="admin-btn admin-btn-sm" 
+              style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', cursor: 'pointer', padding: '4px 10px', fontSize: '10px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition-fast)' }}
+            >
+              🚪 Cerrar Sesión
             </button>
-          )}
+          </div>
         </div>
       </div>
 

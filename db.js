@@ -274,18 +274,6 @@ export async function saveConfig(keyName, data, version, approvedBy = 'Desconoci
       VALUES (?, ?, ?, ?, ?)
     `, [approvedBy, approvedBy, modifiedBy, jsonStr, version]);
     console.log(`[DB] Historial registrado en base de datos. Aprobado por: ${approvedBy}`);
-
-    // MySQL limit deletion requires a wrapper subquery
-    await pool.query(`
-      DELETE FROM billboard_history
-      WHERE id NOT IN (
-        SELECT id FROM (
-          SELECT id FROM billboard_history
-          ORDER BY id DESC
-          LIMIT 10
-        ) as temp
-      )
-    `);
   }
   return true;
 }

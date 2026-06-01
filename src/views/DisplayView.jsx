@@ -33,10 +33,13 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
 
   const scale = baseScale * viewportScale;
   const content = module.content || {};
+  const layoutTextSizeFactor = gp.textSizeFactor !== undefined
+    ? gp.textSizeFactor
+    : (content.textSizeFactor !== undefined ? content.textSizeFactor : 1.0);
 
   const wrapperStyle = {
     '--scale': scale,
-    '--text-scale-factor': content.textSizeFactor !== undefined ? content.textSizeFactor : 1.0,
+    '--text-scale-factor': layoutTextSizeFactor,
     '--card-bg-color': content.cardBgColor || 'rgba(255, 255, 255, 0.03)',
     '--module-bg-color': content.moduleBgTransparent === true ? 'transparent' : (content.moduleBgColor || content.cardBgColor || '#0a0a0a'),
     '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
@@ -55,7 +58,8 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     `span-w-${colSpan}`,
     `span-h-${rowSpan}`,
     (colSpan <= 6) ? `narrow-col-${Math.min(4, colSpan)}` : '',
-    rowSpan === 1 ? 'short-row-1' : ''
+    rowSpan === 1 ? 'short-row-1' : '',
+    layoutTextSizeFactor >= 1.4 ? 'large-text-layout' : ''
   ].filter(Boolean).join(' ');
 
   return (
@@ -116,7 +120,9 @@ function MediaModule({ content }) {
       <div className="module-media media-text-only">
         <div className="media-text-glow" />
         <div className="media-text-container">
-          <div className="media-text-title">INFO DESTACADA</div>
+          {content.overlayTitle && (
+            <div className="media-text-title">{content.overlayTitle}</div>
+          )}
           <div className="media-text-content">{content.overlayText}</div>
         </div>
       </div>
