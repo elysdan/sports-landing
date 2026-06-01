@@ -358,7 +358,7 @@ function TickerModule({ content }) {
    ═══════════════════════════════════════════ */
 /* ─── DYNAMIC VERTICAL LAYOUT PACKER ─── */
 export function getVerticalLayout(modules) {
-  const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label.toLowerCase().includes('logo')));
+  const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label?.toLowerCase().includes('logo')));
   const ticker = modules.find(m => m.type === 'ticker');
   
   // Clone and filter rest of the modules
@@ -388,7 +388,7 @@ export function getVerticalLayout(modules) {
   }
 
   // 3. Hero Media (Stadium / Main Image)
-  const hero = rest.find(m => m.id === 'default_hero' || (m.type === 'media' && !m.label.toLowerCase().includes('logo') && m.id !== 'default_featured'));
+  const hero = rest.find(m => m.id === 'default_hero' || (m.type === 'media' && !m.label?.toLowerCase().includes('logo') && m.id !== 'default_featured'));
   if (hero) {
     verticalModules.push({
       ...hero,
