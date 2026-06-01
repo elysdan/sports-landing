@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap');
 
 /* ═══════════════════════════════════════════
    CSS VARIABLES & DESIGN TOKENS
@@ -25,8 +25,8 @@
   --color-danger: #e53e3e;
   --color-info: #4299e1;
 
-  --font-display: 'Oswald', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-display: 'Montserrat', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
 
   --gap-xs: 4px;
   --gap-sm: 8px;
