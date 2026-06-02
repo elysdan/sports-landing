@@ -84,14 +84,49 @@ const server = http.createServer(async (req, res) => {
       const ext = path.extname(resolvedPath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
       
-      fs.readFile(resolvedPath, (errRead, contentRead) => {
-        if (errRead) {
-          sendJson(res, 500, { error: 'Error reading file.' });
-        } else {
-          res.writeHead(200, { 'Content-Type': contentType });
-          res.end(contentRead);
+      // Support Range Requests for video streaming (HTTP 206)
+      const range = req.headers.range;
+      const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
+      
+      if (range && isVideo) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
+        const chunksize = (end - start) + 1;
+        
+        res.writeHead(206, {
+          'Content-Range': `bytes ${start}-${end}/${stats.size}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=31536000'
+        });
+        
+        const stream = fs.createReadStream(resolvedPath, { start, end });
+        stream.on('error', () => {
+          if (!res.headersSent) sendJson(res, 500, { error: 'Error streaming file.' });
+        });
+        stream.pipe(res);
+      } else {
+        const headers = { 
+          'Content-Type': contentType,
+          'Content-Length': stats.size
+        };
+        
+        // Cache control headers for static assets
+        if (resolvedPath.includes(path.join(process.cwd(), 'dist', 'assets')) || ext === '.woff2') {
+          headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+        } else if (pathname.startsWith('/update/')) {
+          headers['Cache-Control'] = 'public, max-age=86400'; // 1 day cache for uploads
         }
-      });
+        
+        res.writeHead(200, headers);
+        const stream = fs.createReadStream(resolvedPath);
+        stream.on('error', () => {
+          if (!res.headersSent) sendJson(res, 500, { error: 'Error streaming file.' });
+        });
+        stream.pipe(res);
+      }
     }
   });
 });
