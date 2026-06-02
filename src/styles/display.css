@@ -242,7 +242,7 @@
 }
 
 /* ─── MODULE TYPE: SCOREBOARD ─── */
-.module-wrapper:has(.module-scoreboard-display) .module-scoreboard-display {
+.module-wrapper:not(.bg-transparent):not(.has-custom-bg):has(.module-scoreboard-display) .module-scoreboard-display {
   background: linear-gradient(135deg, #1c180f 0%, #0c0b07 100%) !important;
   background-image: radial-gradient(rgba(212, 168, 67, 0.05) 1.5px, transparent 1.5px), linear-gradient(135deg, #1c180f 0%, #0c0b07 100%) !important;
   background-size: 24px 24px, 100% 100% !important;
@@ -466,8 +466,8 @@
 }
 
 .module-wrapper .module-upcoming-display img.sb-team-flag {
-  width: clamp(36px, calc(72px * var(--scale, 1)), 110px) !important;
-  height: clamp(36px, calc(72px * var(--scale, 1)), 110px) !important;
+  width: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
+  height: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
   object-fit: cover !important;
   border-radius: 50% !important;
   border: 2px solid rgba(255, 255, 255, 0.15) !important;
@@ -478,8 +478,8 @@
 }
 
 .module-wrapper .module-upcoming-display .sb-team-flag {
-  width: clamp(36px, calc(72px * var(--scale, 1)), 110px) !important;
-  height: clamp(36px, calc(72px * var(--scale, 1)), 110px) !important;
+  width: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
+  height: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
@@ -488,7 +488,7 @@
   border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  font-size: clamp(24px, calc(48px * var(--scale, 1)), 72px) !important;
+  font-size: clamp(36px, calc(90px * var(--scale, 1)), 140px) !important;
   flex-shrink: 0 !important;
 }
 
@@ -677,6 +677,24 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
+.apuesta-team-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: calc(6px * var(--scale, 1));
+  min-width: 0;
+  flex: 1;
+}
+
+.box-left .apuesta-team-info {
+  justify-content: flex-start;
+}
+
+.box-right .apuesta-team-info {
+  justify-content: flex-end;
+  flex-direction: row-reverse !important;
+}
+
 .apuesta-team-name {
   font-family: var(--font-display);
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 36px) !important;
@@ -711,6 +729,67 @@
   max-width: 100%;
   text-align: center;
   box-sizing: border-box;
+}
+
+/* Internal vertical alignment for betting options when width is narrow (e.g. 9x9 layout columns) and is not a short row */
+@container (min-width: 350px) and (max-width: 620px) {
+  /* Only apply in horizontal screen layouts when the module height is tall (not .short-row) */
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info {
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: calc(2px * var(--scale, 1)) !important;
+    flex: none !important;
+  }
+  
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: calc(6px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important;
+    gap: calc(6px * var(--scale, 1)) !important;
+  }
+
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box.box-left {
+    justify-content: space-between !important;
+  }
+
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box.box-right {
+    justify-content: space-between !important;
+  }
+
+  /* Flag style inside vertical info */
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info .sb-team-flag,
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info img.sb-team-flag {
+    width: calc(34px * var(--scale, 1)) !important;
+    height: calc(34px * var(--scale, 1)) !important;
+    border-radius: 50% !important;
+    margin: 0 !important;
+  }
+
+  /* Name style inside vertical info */
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info .apuesta-team-name {
+    text-align: center !important;
+    font-size: clamp(10px, calc(14px * var(--font-scale, 1)), 22px) !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    width: auto !important;
+    justify-self: center !important;
+  }
+
+  /* Odds Value style */
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box .apuesta-odd-value {
+    font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 40px) !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    justify-self: center !important;
+  }
+
+  /* Center Box (Draw / Empate) */
+  .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box.box-center {
+    justify-content: center !important;
+  }
 }
 
 /* Container query to stack betting options vertically when layout is narrow (< 350px) */

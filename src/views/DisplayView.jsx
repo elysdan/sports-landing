@@ -49,6 +49,13 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     ? gp.textSizeFactor
     : (content.textSizeFactor !== undefined ? content.textSizeFactor : 1.0);
 
+  const aspect = isVerticalLayout 
+    ? (9 / 16) 
+    : (screenType === '9x9' ? 1.0 : 2.0);
+  const actualGridHeight = actualWidth / aspect;
+  const cellHeight = (rowSpan / gridRows) * actualGridHeight;
+  const isShort = rowSpan === 1 || cellHeight < 200;
+
   const wrapperStyle = {
     '--scale': scale,
     '--text-scale-factor': layoutTextSizeFactor,
@@ -65,13 +72,18 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     minWidth: 0
   };
 
+  const isBgTransparent = content.moduleBgTransparent === true;
+  const hasCustomBg = !!content.moduleBgColor;
+
   const wrapperClass = [
     'module-wrapper',
     `span-w-${colSpan}`,
     `span-h-${rowSpan}`,
     (colSpan <= 6) ? `narrow-col-${Math.min(4, colSpan)}` : '',
     rowSpan === 1 ? 'short-row-1' : '',
-    layoutTextSizeFactor >= 1.4 ? 'large-text-layout' : ''
+    layoutTextSizeFactor >= 1.4 ? 'large-text-layout' : '',
+    isBgTransparent ? 'bg-transparent' : '',
+    hasCustomBg ? 'has-custom-bg' : ''
   ].filter(Boolean).join(' ');
 
   return (
@@ -85,7 +97,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
           case 'upcoming':
             return <UpcomingModule content={module.content} />;
           case 'apuesta':
-            return <ApuestaModule content={module.content} />;
+            return <ApuestaModule content={module.content} isVerticalLayout={isVerticalLayout} isShort={isShort} />;
           case 'pregunta':
             return <PreguntaModule content={module.content} />;
           default:
@@ -302,10 +314,10 @@ function UpcomingModule({ content }) {
 }
 
 /* ─── APUESTA MODULE ─── */
-function ApuestaModule({ content }) {
+function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const mode = content.mode || '3-way';
   return (
-    <div className="module-apuesta-display">
+    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`}>
       <div className="apuesta-header">
         <div className="apuesta-title">{content.title}</div>
         {content.tag && <div className="apuesta-tag">{content.tag}</div>}
@@ -314,8 +326,10 @@ function ApuestaModule({ content }) {
         {/* Box Left: Team A / Selection A (always rendered) */}
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div className="apuesta-odd-box box-left">
-            {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
-            <span className="apuesta-team-name">{content.teamA?.code || content.teamA?.name?.slice(0, 3).toUpperCase() || 'LOC'}</span>
+            <div className="apuesta-team-info">
+              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
+              <span className="apuesta-team-name">{content.teamA?.code || content.teamA?.name?.slice(0, 3).toUpperCase() || 'LOC'}</span>
+            </div>
             <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
           </div>
         )}
@@ -330,8 +344,10 @@ function ApuestaModule({ content }) {
         {(mode === '3-way' || mode === '2-way') && (
           <div className="apuesta-odd-box box-right">
             <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
-            <span className="apuesta-team-name">{content.teamB?.code || content.teamB?.name?.slice(0, 3).toUpperCase() || 'VIS'}</span>
-            {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
+            <div className="apuesta-team-info">
+              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
+              <span className="apuesta-team-name">{content.teamB?.code || content.teamB?.name?.slice(0, 3).toUpperCase() || 'VIS'}</span>
+            </div>
           </div>
         )}
       </div>
@@ -512,7 +528,7 @@ export default function DisplayView() {
       }}
     >
       <div
-        className={`billboard-grid ${isVertical ? 'vertical' : 'horizontal'}`}
+        className={`billboard-grid ${isVertical ? 'vertical' : 'horizontal'} screen-${screenType}`}
         style={{
           width: `${actualGridWidth}px`,
           height: `${actualGridHeight}px`,
