@@ -19,19 +19,21 @@ export async function handlePostUpload(req, res) {
     const safeName = `${timestamp}_${filename.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
     const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
 
+    // 1. Guardar físicamente el archivo en el sistema de archivos
+    const uploadDir = path.resolve(process.cwd(), 'public/update');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const filePath = path.join(uploadDir, safeName);
+    fs.writeFileSync(filePath, buffer);
+
+    // 2. Guardar únicamente los metadatos en la base de datos
     try {
-      await saveMediaAsset(safeName, mimeType, base64Data, buffer.length);
+      await saveMediaAsset(safeName, mimeType, buffer.length);
       sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
     } catch (dbErr) {
-      console.warn("[MediaController] DB offline/error, falling back to filesystem:", dbErr.message);
-      
-      const uploadDir = path.resolve(process.cwd(), 'public/update');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      const filePath = path.join(uploadDir, safeName);
-      fs.writeFileSync(filePath, buffer);
-      
+      console.warn("[MediaController] Error al guardar en base de datos, usando solo filesystem:", dbErr.message);
+      // fallback url en disco directo
       sendJson(res, 200, { url: `/update/${safeName}` });
     }
   } catch (err) {
@@ -138,6 +140,15 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
         return;
       }
       await deleteMediaAsset(filename);
+
+      // Eliminar archivo físico
+      const safeName = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      const uploadDir = path.resolve(process.cwd(), 'public/update');
+      const filePath = path.join(uploadDir, safeName);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
       sendJson(res, 200, { success: true });
       return;
     }
@@ -184,13 +195,32 @@ export async function handleGetMediaFile(req, res, parsedUrl) {
       return;
     }
 
-    const buffer = Buffer.from(asset.fileData, 'base64');
+    const safeName = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+    const uploadDir = path.resolve(process.cwd(), 'public/update');
+    const filePath = path.join(uploadDir, safeName);
+
+    // Prevent path traversal
+    const relativeResolved = path.relative(uploadDir, filePath);
+    if (relativeResolved.startsWith('..') || path.isAbsolute(relativeResolved)) {
+      sendJson(res, 403, { error: 'Acceso denegado.' });
+      return;
+    }
+
+    if (!fs.existsSync(filePath)) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Archivo físico no encontrado en el servidor' }));
+      return;
+    }
+
+    const stat = fs.statSync(filePath);
     res.writeHead(200, {
       'Content-Type': asset.mimeType,
-      'Content-Length': buffer.length,
+      'Content-Length': stat.size,
       'Cache-Control': 'public, max-age=31536000, immutable'
     });
-    res.end(buffer);
+    
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }

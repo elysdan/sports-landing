@@ -1,5 +1,6 @@
 import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover, getDbWorldCupTeams } from '../../db.js';
 import { readJsonBody, sendJson } from '../utils.js';
+import { broadcastEvent } from './sseController.js';
 
 export async function handleGetCms(req, res) {
   try {
@@ -24,6 +25,7 @@ export async function handlePostCms(req, res) {
     const { config, approvedBy, modifiedBy } = await readJsonBody(req);
     const version = Date.now();
     await saveConfig('live', config, version, approvedBy, modifiedBy);
+    broadcastEvent('update', { version });
     sendJson(res, 200, { success: true, version });
   } catch (err) {
     sendJson(res, 500, { error: err.message });
@@ -63,6 +65,7 @@ export async function handlePostCmsDraft(req, res) {
     const { config, modifiedBy } = await readJsonBody(req);
     const version = Date.now();
     await saveConfig('draft', config, version, 'Sistema', modifiedBy || 'Desconocido');
+    broadcastEvent('draftUpdate', { version });
     sendJson(res, 200, { success: true, version });
   } catch (err) {
     sendJson(res, 500, { error: err.message });

@@ -90,7 +90,6 @@ async function initDb() {
         id INT AUTO_INCREMENT PRIMARY KEY,
         filename VARCHAR(255) UNIQUE NOT NULL,
         mime_type VARCHAR(100) NOT NULL,
-        file_data LONGTEXT NOT NULL,
         size_bytes INT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
@@ -116,6 +115,19 @@ async function initDb() {
       )
     `)
   ]);
+
+  // Safe migration to drop file_data from media_assets if it still exists
+  try {
+    const [columns] = await pool.query("SHOW COLUMNS FROM media_assets LIKE 'file_data'");
+    if (columns.length > 0) {
+      console.log("[DB] Migración: Eliminando columna 'file_data' ineficiente de media_assets...");
+      await pool.query("ALTER TABLE media_assets DROP COLUMN file_data");
+      console.log("[DB] Columna 'file_data' eliminada con éxito.");
+    }
+  } catch (migErr) {
+    console.warn(`[DB] No se pudo migrar/eliminar columna file_data (puede que ya no exista): ${migErr.message}`);
+  }
+
   console.log('[DB] Todas las tablas han sido verificadas/creadas en paralelo.');
 
   // Seed default World Cup teams - only seed if table has fewer than 48 teams
@@ -441,24 +453,24 @@ export async function deleteDbTemplate(id) {
 
 // --- Media Assets Storage Functions ---
 
-export async function saveMediaAsset(filename, mimeType, base64Data, sizeBytes) {
+export async function saveMediaAsset(filename, mimeType, sizeBytes) {
   await ensureDb();
   await pool.query(`
-    INSERT INTO media_assets (filename, mime_type, file_data, size_bytes)
-    VALUES (?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE mime_type = VALUES(mime_type), file_data = VALUES(file_data), size_bytes = VALUES(size_bytes)
-  `, [filename, mimeType, base64Data, sizeBytes]);
+    INSERT INTO media_assets (filename, mime_type, size_bytes)
+    VALUES (?, ?, ?)
+    ON DUPLICATE KEY UPDATE mime_type = VALUES(mime_type), size_bytes = VALUES(size_bytes)
+  `, [filename, mimeType, sizeBytes]);
   console.log(`[DB] Archivo multimedia '${filename}' guardado en MySQL.`);
   return true;
 }
 
 export async function getMediaAsset(filename) {
   await ensureDb();
-  const [rows] = await pool.query('SELECT mime_type, file_data FROM media_assets WHERE filename = ?', [filename]);
+  const [rows] = await pool.query('SELECT mime_type, size_bytes FROM media_assets WHERE filename = ?', [filename]);
   if (rows.length > 0) {
     return {
       mimeType: rows[0].mime_type,
-      fileData: rows[0].file_data
+      sizeBytes: rows[0].size_bytes
     };
   }
   return null;

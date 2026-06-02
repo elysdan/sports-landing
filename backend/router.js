@@ -2,11 +2,18 @@ import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory, 
 import { handleLogin, handleGetUsers, handlePostUsers, handleDeleteUser } from './controllers/authController.js';
 import { handleGetTemplates, handlePostTemplates, handleDeleteTemplate } from './controllers/templateController.js';
 import { handlePostUpload, handleGetMedia, handleDeleteMedia, handleGetMediaFile } from './controllers/mediaController.js';
+import { handleSseConnection } from './controllers/sseController.js';
 
 export async function dispatchApiRoute(req, res) {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
   const method = req.method;
+
+  // Real-time SSE Endpoint
+  if (method === 'GET' && pathname === '/api/cms/events') {
+    await handleSseConnection(req, res);
+    return true;
+  }
 
   // CMS Endpoints
   if (method === 'GET' && pathname === '/api/cms') {

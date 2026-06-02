@@ -1,8 +1,17 @@
 export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
+    let bytesReceived = 0;
+    const MAX_SIZE = 20 * 1024 * 1024; // Límite de 20 MB
+
     req.on('data', chunk => {
-      body += chunk;
+      bytesReceived += chunk.length;
+      if (bytesReceived > MAX_SIZE) {
+        req.destroy();
+        reject(new Error('Payload demasiado grande. El límite es de 20MB.'));
+      } else {
+        body += chunk;
+      }
     });
     req.on('end', () => {
       if (!body) {

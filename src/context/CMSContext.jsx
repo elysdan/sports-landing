@@ -226,56 +226,63 @@ export function CMSProvider({ children }) {
     loadServerData();
   }, []);
 
-  // Polling to sync liveData in real-time (runs every 15 seconds)
+  // Real-time EventSource listener to sync both liveData and draftData
   useEffect(() => {
-    const interval = setInterval(async () => {
+    const eventSource = new EventSource('/api/cms/events');
+
+    eventSource.addEventListener('update', async (e) => {
       try {
-        const res = await fetch('/api/cms/version');
-        if (res.ok) {
-          const { version } = await res.json();
-          if (version && Number(version) > Number(currentVersion)) {
-            const dataRes = await fetch('/api/cms');
-            if (dataRes.ok) {
-              const data = await dataRes.json();
-              if (data && data.modules) {
-                const migrated = migrateData(data);
-                setRawLiveData(migrated);
-                setCurrentVersion(Number(version));
-                console.log(`[CMS] Vista actualizada a la versión: ${version}`);
-              }
+        const eventData = JSON.parse(e.data);
+        const version = Number(eventData.version);
+        if (version && version > Number(currentVersion)) {
+          const dataRes = await fetch('/api/cms');
+          if (dataRes.ok) {
+            const data = await dataRes.json();
+            if (data && data.modules) {
+              const migrated = migrateData(data);
+              setRawLiveData(migrated);
+              setCurrentVersion(version);
+              console.log(`[CMS-SSE] Vista actualizada a la versión: ${version}`);
             }
           }
         }
-      } catch (e) {
-        // Silently fail to avoid console flooding on offline
+      } catch (err) {
+        console.warn("[CMS-SSE] Error procesando evento update:", err);
       }
-    }, 15000); // 15 seconds
-    return () => clearInterval(interval);
-  }, [currentVersion]);
+    });
 
-  // Polling to sync draftData in real-time (only for display screens in draft mode, runs every 15 seconds)
-  useEffect(() => {
-    if (isEditor) return; // Do not poll draft if we are the editor tab
-    if (!isDraftMode) return; // Do not poll draft if we are not viewing the draft preview
+    eventSource.addEventListener('draftUpdate', async (e) => {
+      if (isEditor) return; // Si es el editor, ya maneja el estado localmente
+      if (!isDraftMode) return; // Si no está en vista previa de borrador, ignorar
 
-    const interval = setInterval(async () => {
       try {
-        const res = await fetch('/api/cms/draft');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.version && Number(data.version) > Number(currentDraftVersion)) {
-            const migrated = migrateData(data);
-            setRawDraftData(migrated);
-            setCurrentDraftVersion(Number(data.version));
-            console.log(`[CMS] Borrador en pantalla actualizado a la versión: ${data.version}`);
+        const eventData = JSON.parse(e.data);
+        const version = Number(eventData.version);
+        if (version && version > Number(currentDraftVersion)) {
+          const res = await fetch('/api/cms/draft');
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.modules) {
+              const migrated = migrateData(data);
+              setRawDraftData(migrated);
+              setCurrentDraftVersion(version);
+              console.log(`[CMS-SSE] Borrador en pantalla actualizado a la versión: ${version}`);
+            }
           }
         }
-      } catch (e) {
-        // Silently fail
+      } catch (err) {
+        console.warn("[CMS-SSE] Error procesando evento draftUpdate:", err);
       }
-    }, 15000); // 15 seconds
-    return () => clearInterval(interval);
-  }, [currentDraftVersion, currentUser]);
+    });
+
+    eventSource.onerror = () => {
+      // EventSource se reconectará automáticamente de forma nativa
+    };
+
+    return () => {
+      eventSource.close();
+    };
+  }, [currentVersion, currentDraftVersion, isEditor, isDraftMode]);
 
 
 
