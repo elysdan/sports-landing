@@ -44,36 +44,44 @@ export async function handleGetMedia(req, res) {
     const mediaMap = new Map();
     const allowedExts = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.mp4', '.webm', '.ogg'];
 
-    const scanDir = (dirPath, publicPrefix) => {
-      if (fs.existsSync(dirPath)) {
-        const files = fs.readdirSync(dirPath);
-        files.forEach(file => {
+    const scanDir = async (dirPath, publicPrefix) => {
+      try {
+        const files = await fs.promises.readdir(dirPath);
+        await Promise.all(files.map(async (file) => {
           const fullPath = path.join(dirPath, file);
-          const stat = fs.statSync(fullPath);
-          if (stat.isFile()) {
-            const ext = path.extname(file).toLowerCase();
-            if (allowedExts.includes(ext)) {
-              const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
-              const url = `${publicPrefix}${file}`;
-              if (!mediaMap.has(url)) {
-                mediaMap.set(url, {
-                  url,
-                  filename: file,
-                  type: isVideo ? 'video' : 'image',
-                  size: stat.size,
-                  mtime: stat.mtimeMs
-                });
+          try {
+            const stat = await fs.promises.stat(fullPath);
+            if (stat.isFile()) {
+              const ext = path.extname(file).toLowerCase();
+              if (allowedExts.includes(ext)) {
+                const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
+                const url = `${publicPrefix}${file}`;
+                if (!mediaMap.has(url)) {
+                  mediaMap.set(url, {
+                    url,
+                    filename: file,
+                    type: isVideo ? 'video' : 'image',
+                    size: stat.size,
+                    mtime: stat.mtimeMs
+                  });
+                }
               }
             }
+          } catch (statErr) {
+            // Ignore stat errors for individual files
           }
-        });
+        }));
+      } catch (dirErr) {
+        // Ignore directory read errors (e.g. if folder doesn't exist)
       }
     };
 
-    // Scan local directories
-    scanDir(path.resolve(process.cwd(), 'public/update'), '/update/');
-    scanDir(path.resolve(process.cwd(), 'public'), '/');
-    scanDir(path.resolve(process.cwd(), 'dist'), '/');
+    // Scan local directories in parallel
+    await Promise.all([
+      scanDir(path.resolve(process.cwd(), 'public/update'), '/update/'),
+      scanDir(path.resolve(process.cwd(), 'public'), '/'),
+      scanDir(path.resolve(process.cwd(), 'dist'), '/')
+    ]);
 
     // Merge database assets
     try {

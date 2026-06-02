@@ -525,15 +525,7 @@
 
 .match-editor-row:last-child { border-bottom: none; }
 
-/* Ticker items */
-.ticker-item-editor {
-  display: flex;
-  gap: var(--gap-sm);
-  align-items: center;
-  margin-bottom: var(--gap-sm);
-}
 
-.ticker-item-editor input { flex: 1; }
 
 /* Empty state */
 .admin-empty-state {

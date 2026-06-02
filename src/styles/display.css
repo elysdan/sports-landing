@@ -16,17 +16,10 @@
 }
 
 .billboard-grid {
-  width: 100%;
-  height: 100%;
   display: grid;
   gap: 2px;
   overflow: hidden;
   background: var(--color-border);
-}
-
-.billboard-grid.vertical {
-  width: 100%;
-  height: 100%;
 }
 
 /* ─── Module cell ─── */
@@ -261,7 +254,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center; /* Center vertically to keep it clean */
-  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important; /* Smaller top/bottom padding */
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) clamp(12px, 2vw, 32px) !important;
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -294,14 +287,13 @@
 .sb-team-card {
   display: flex;
   flex-direction: column;
-  width: auto; /* Scale width proportionally based on height and aspect-ratio */
-  height: clamp(120px, calc(265px * var(--scale, 1)), 330px); /* Larger default height */
-  max-height: 90% !important; /* Occupy 90% of the module height */
-  aspect-ratio: 170 / 200; /* More vertical proportions */
-  border-radius: calc(10px * var(--scale, 1));
+  flex: 1; /* Stretch to fill the module width */
+  height: 100% !important; /* Fill full height */
+  max-height: 100% !important;
+  border-radius: calc(10px * var(--scale, 1)) !important;
+  border: 1px solid rgba(212, 168, 67, 0.15) !important;
+  box-shadow: 0 calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) rgba(0, 0, 0, 0.5) !important;
   overflow: hidden;
-  box-shadow: 0 calc(8px * var(--scale, 1)) calc(24px * var(--scale, 1)) rgba(0, 0, 0, 0.65), 
-              0 0 0 1px rgba(212, 168, 67, 0.2);
   background: #1e2022;
   box-sizing: border-box;
   container-type: size; /* Enable container query units based on card dimensions */
@@ -315,8 +307,8 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: calc(120px * var(--scale, 1)); /* Fallback */
-  font-size: 72cqh !important; /* Scale dynamically as exactly ~91% of the yellow box height */
+  font-size: calc(120px * var(--font-scale, 1)); /* Fallback */
+  font-size: calc(72cqh * var(--text-scale-factor, 1)) !important; /* Scale dynamically as exactly ~91% of the yellow box height */
   font-weight: 900;
   line-height: 0.9 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -341,7 +333,7 @@
   justify-content: center !important;
   width: calc(28px * var(--scale, 1)) !important;
   height: calc(28px * var(--scale, 1)) !important;
-  font-size: calc(18px * var(--scale, 1)) !important;
+  font-size: calc(18px * var(--font-scale, 1)) !important;
   border-radius: 50% !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
   object-fit: cover !important;
@@ -353,7 +345,7 @@
 
 .sb-card-code {
   font-family: var(--font-display);
-  font-size: calc(18px * var(--scale, 1));
+  font-size: calc(18px * var(--font-scale, 1));
   font-weight: 800;
   color: #ffffff;
   letter-spacing: 0.5px;
@@ -362,7 +354,7 @@
 
 .sb-card-divider {
   font-family: var(--font-display);
-  font-size: calc(32px * var(--scale, 1));
+  font-size: calc(32px * var(--font-scale, 1));
   font-weight: 800;
   color: #ffffff;
   line-height: 1;
@@ -386,147 +378,38 @@
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-/* ─── MODULE TYPE: RESULTS ─── */
-.module-wrapper:has(.module-results-display) .module-results-display {
-  background: linear-gradient(135deg, #1c180f 0%, #0c0b07 100%) !important;
-  background-image: radial-gradient(rgba(212, 168, 67, 0.05) 1.5px, transparent 1.5px), linear-gradient(135deg, #1c180f 0%, #0c0b07 100%) !important;
-  background-size: 24px 24px, 100% 100% !important;
-}
 
-.module-results-display {
-  width: 100%; height: 100%;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px) !important;
-  display: flex;
-  flex-direction: column;
-  box-sizing: border-box;
-  overflow: hidden;
-  min-height: 0;
-  position: relative;
-}
-
-/* Background casino suit symbols decorative overlay */
-.module-results-display::before {
-  content: '♣ ♦ ♠ ♥';
-  position: absolute;
-  font-family: var(--font-display);
-  font-size: calc(28px * var(--scale, 1));
-  color: rgba(212, 168, 67, 0.03);
-  letter-spacing: 12px;
-  bottom: calc(10px * var(--scale, 1));
-  right: calc(10px * var(--scale, 1));
-  pointer-events: none;
-  font-weight: bold;
-}
-
-.results-title-display {
-  font-family: var(--font-display);
-  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 48px);
-  font-weight: 700;
-  letter-spacing: 2px;
-  color: var(--color-gold);
-  margin-bottom: calc(8px * var(--scale, 1));
-  text-transform: uppercase;
-  border-bottom: 2px solid var(--color-gold);
-  padding-bottom: calc(3px * var(--scale, 1));
-  align-self: stretch;
-  text-align: center;
-  z-index: 1;
-}
-
-.results-list-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: center;
-  align-items: center;
-  min-height: 0;
-  width: 100%;
-  overflow-y: auto;
-  gap: calc(12px * var(--scale, 1));
-  z-index: 1;
-}
-
-.results-list-container::-webkit-scrollbar {
-  width: 4px;
-}
-.results-list-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-.results-list-container::-webkit-scrollbar-thumb {
-  background: rgba(212, 168, 67, 0.2);
-  border-radius: 2px;
-}
-
-.result-match-card-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: calc(12px * var(--scale, 1)) !important;
-  width: 100%;
-  margin: calc(2px * var(--scale, 1)) 0 !important;
-}
-
-/* Compact scoreboard cards specifically for the Results list to prevent vertical scrolling */
-.module-results-display .sb-team-card {
-  width: calc(130px * var(--scale, 1)) !important;
-  height: calc(105px * var(--scale, 1)) !important;
-  border-radius: calc(6px * var(--scale, 1)) !important;
-  box-shadow: 0 calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) rgba(0, 0, 0, 0.55), 
-              0 0 0 1px rgba(212, 168, 67, 0.15) !important;
-}
-
-.module-results-display .sb-card-score {
-  font-size: calc(64px * var(--scale, 1)) !important; /* Fallback */
-  font-size: 68cqh !important; /* Scale dynamically with results cards container query */
-}
-
-.module-results-display .sb-card-info {
-  height: calc(30px * var(--scale, 1)) !important;
-  gap: calc(4px * var(--scale, 1)) !important;
-  padding: 0 calc(6px * var(--scale, 1)) !important;
-}
-
-.module-results-display .sb-card-info .sb-team-flag {
-  width: calc(18px * var(--scale, 1)) !important;
-  height: calc(18px * var(--scale, 1)) !important;
-  font-size: calc(12px * var(--scale, 1)) !important;
-}
-
-.module-results-display .sb-card-code {
-  font-size: calc(12px * var(--scale, 1)) !important;
-}
-
-.module-results-display .sb-card-divider {
-  font-size: calc(28px * var(--scale, 1)) !important;
-}
-
-.module-results-display .results-list-container {
-  gap: calc(6px * var(--scale, 1)) !important;
-}
 
 /* ─── MODULE TYPE: UPCOMING ─── */
 .module-upcoming-display {
   width: 100%; height: 100%;
-  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(8px, calc(16px * var(--scale, 1)), 24px);
-  background: var(--color-bg-primary);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) !important;
+  background: var(--module-bg-color, transparent) !important;
   display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
+  flex-direction: row; /* Side-by-side by default */
+  align-items: center;
+  justify-content: space-between;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
-  gap: calc(4px * var(--scale, 1));
+  gap: calc(16px * var(--scale, 1));
 }
 
 .upcoming-header-box {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0;
+  justify-content: center;
+  align-items: flex-start;
+  width: auto !important;
+  flex-shrink: 0;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 .upcoming-label-display {
   font-family: var(--font-display);
-  font-size: clamp(10px, calc(12px * var(--font-scale, 1)), 14px);
+  font-size: clamp(11px, calc(18px * var(--font-scale, 1)), 28px);
   font-weight: 700;
   letter-spacing: 2px;
   color: var(--color-gold);
@@ -536,7 +419,7 @@
 
 .upcoming-time-display {
   font-family: var(--font-display);
-  font-size: clamp(18px, calc(28px * var(--font-scale, 1)), 36px);
+  font-size: clamp(20px, calc(42px * var(--font-scale, 1)), 64px);
   font-weight: 800;
   color: var(--color-white);
   line-height: 1.1;
@@ -549,18 +432,15 @@
   justify-content: space-around;
   align-items: center;
   flex: 1;
-  margin-top: 0;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: clamp(4px, calc(8px * var(--scale, 1)), 12px) clamp(6px, calc(16px * var(--scale, 1)), 20px);
-  width: 100%;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
   gap: calc(10px * var(--scale, 1));
 }
 
 .upcoming-team {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 26px);
+  font-size: clamp(14px, calc(32px * var(--font-scale, 1)), 48px);
   font-weight: 700;
   color: var(--color-white);
   letter-spacing: 1.5px;
@@ -617,7 +497,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: clamp(11px, calc(16px * var(--font-scale, 1)), 32px);
+  font-size: clamp(12px, calc(24px * var(--font-scale, 1)), 48px);
   font-weight: 800;
   color: var(--color-bg-primary);
   background: var(--color-gold);
@@ -631,6 +511,26 @@
 }
 
 /* Stack vertically in narrow slots or portrait mode */
+.narrow-col-2 .module-upcoming-display,
+.narrow-col-1 .module-upcoming-display,
+.span-w-1 .module-upcoming-display,
+.span-w-2 .module-upcoming-display,
+.vertical .module-upcoming-display {
+  flex-direction: column !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  gap: calc(6px * var(--scale, 1)) !important;
+}
+
+.narrow-col-2 .upcoming-header-box,
+.narrow-col-1 .upcoming-header-box,
+.span-w-1 .upcoming-header-box,
+.span-w-2 .upcoming-header-box,
+.vertical .upcoming-header-box {
+  align-items: center !important;
+  text-align: center !important;
+}
+
 .narrow-col-2 .upcoming-vs-card,
 .narrow-col-1 .upcoming-vs-card,
 .span-w-1 .upcoming-vs-card,
@@ -639,7 +539,8 @@
   flex-direction: column !important;
   justify-content: space-evenly !important;
   gap: calc(8px * var(--scale, 1)) !important;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 36px) !important;
+  flex: 1 !important;
+  width: 100% !important;
 }
 
 .narrow-col-2 .upcoming-team,
@@ -651,50 +552,16 @@
   padding: 0 !important;
 }
 
-/* ─── MODULE TYPE: NEWS ─── */
-.module-news-display {
-  width: 100%; height: 100%;
-  padding: clamp(8px, calc(14px * var(--scale, 1)), 28px);
-  background: var(--color-bg-primary);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  box-sizing: border-box;
-  overflow: hidden;
-  min-height: 0;
-}
 
-.news-title-display {
-  font-family: var(--font-display);
-  font-size: max(14px, calc(24px * var(--font-scale, 1)));
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--color-white);
-  text-transform: uppercase;
-  margin-bottom: calc(6px * var(--scale, 1));
-  border-left: 3px solid var(--color-gold);
-  padding-left: calc(6px * var(--scale, 1));
-}
-
-.news-content-display {
-  font-family: var(--font-body);
-  font-size: max(12px, calc(16px * var(--font-scale, 1)));
-  line-height: 1.5;
-  color: var(--color-text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 6;
-  line-clamp: 6;
-  -webkit-box-orient: vertical;
-}
 
 /* ─── MODULE TYPE: APUESTA ─── */
 .module-apuesta-display {
   width: 100%;
   height: 100%;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
-  background: var(--color-bg-primary);
+  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px) clamp(12px, 2vw, 32px) !important;
+  background: var(--module-bg-color, #4b4b4b);
+  border: none !important;
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -714,26 +581,27 @@
 
 .apuesta-title {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 26px) !important; /* Adjusted size to fit completely on one line */
-  font-weight: 800;
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 48px) !important;
+  font-weight: 700;
   color: var(--color-white);
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-  white-space: nowrap !important; /* Force single line */
+  white-space: nowrap !important; /* Keep title strictly in a single line */
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   flex: 1;
   min-width: 0;
+  line-height: 1.25 !important;
 }
 
 .apuesta-tag {
   font-family: var(--font-display);
-  font-size: clamp(10px, calc(12px * var(--font-scale, 1)), 16px) !important; /* Slightly smaller tag size to prevent ellipsis */
+  font-size: clamp(11px, calc(18px * var(--font-scale, 1)), 32px) !important;
   font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   white-space: nowrap !important;
   flex-shrink: 0 !important;
 }
@@ -748,10 +616,10 @@
 
 /* ─── MODULE TYPE: APUESTA ─── */
 .apuesta-odd-box {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--card-bg-color, #161616);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 0 calc(12px * var(--scale, 1)) !important; /* Enlarged padding for better proportions */
+  padding: 0 calc(16px * var(--scale, 1)) !important;
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -759,10 +627,9 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  gap: calc(8px * var(--scale, 1)); /* Enlarged gap for more space */
+  gap: calc(10px * var(--scale, 1));
   box-sizing: border-box;
   transition: all 0.25s ease;
-  container-type: inline-size;
 }
 
 .apuesta-odd-box:hover {
@@ -802,27 +669,30 @@
   align-items: center !important;
   justify-content: center !important;
   background: none !important;
-  border: 1px solid rgba(212, 168, 67, 0.3) !important; /* Gold border to match theme */
+  border: 1px solid rgba(212, 168, 67, 0.3) !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: calc(16px * var(--scale, 1)) !important;
-  object-fit: cover !important; /* Keep circle flags perfectly cropped */
+  object-fit: cover !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .apuesta-team-name {
   font-family: var(--font-display);
-  font-size: clamp(10px, calc(13px * var(--font-scale, 1)), 18px) !important; /* Reduced base size to prevent ellipsis */
-  font-weight: 800; /* Bolder */
+  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 36px) !important;
+  font-weight: 600;
   color: var(--color-white);
-  text-transform: uppercase;
   letter-spacing: 0.5px;
-  white-space: nowrap !important;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
   min-width: 0;
   text-align: left;
   flex: 1 !important;
+  line-height: 1.1 !important;
 }
 
 .box-right .apuesta-team-name {
@@ -831,10 +701,10 @@
 
 .apuesta-odd-value {
   font-family: var(--font-display);
-  font-size: clamp(11px, calc(16px * var(--font-scale, 1)), 20px) !important; /* Adjusted odd font size */
+  font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 64px) !important;
   font-weight: 800;
-  color: var(--color-gold);
-  text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
+  color: #ffb300;
+  text-shadow: 0 0 10px rgba(255, 179, 0, 0.25);
   line-height: 1.1;
   white-space: nowrap !important;
   overflow: visible;
@@ -861,21 +731,64 @@
     gap: calc(4px * var(--scale, 1)) !important;
   }
 
-  .module-apuesta-display .apuesta-team-name {
+  .module-apuesta-display .box-left .sb-team-flag,
+  .module-apuesta-display .box-left img.sb-team-flag {
+    order: 1 !important;
+  }
+
+  .module-apuesta-display .box-left .apuesta-team-name {
+    order: 2 !important;
     font-size: clamp(10px, 14cqi, 18px) !important;
     text-align: left !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
+    white-space: normal !important; /* Allow wrapping */
+    word-wrap: break-word !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
     text-overflow: clip !important;
+    line-height: 1.1 !important;
+  }
+
+  .module-apuesta-display .box-left .apuesta-odd-value {
+    order: 3 !important;
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    white-space: nowrap !important;
+    text-align: right !important;
+    margin-left: auto !important;
+  }
+
+  .module-apuesta-display .box-center .apuesta-odd-value {
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    white-space: nowrap !important;
+    text-align: right !important; /* Align numbers to the right */
+    margin-left: auto !important; /* Align numbers to the right */
+  }
+
+  .module-apuesta-display .box-right .apuesta-odd-value {
+    order: 3 !important; /* Align numbers to the right */
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    white-space: nowrap !important;
+    text-align: right !important; /* Align numbers to the right */
+    margin-left: auto !important; /* Align numbers to the right */
+    margin-right: 0 !important;
   }
 
   .module-apuesta-display .box-right .apuesta-team-name {
-    text-align: right !important;
+    order: 2 !important;
+    font-size: clamp(10px, 14cqi, 18px) !important;
+    text-align: left !important; /* Align writing to the left */
+    white-space: normal !important; /* Allow wrapping */
+    word-wrap: break-word !important;
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    line-height: 1.1 !important;
   }
 
-  .module-apuesta-display .apuesta-odd-value {
-    font-size: clamp(11px, 16cqi, 20px) !important;
-    white-space: nowrap !important;
+  .module-apuesta-display .box-right .sb-team-flag,
+  .module-apuesta-display .box-right img.sb-team-flag {
+    order: 1 !important; /* Align flag/writing to the left */
   }
 
   .module-apuesta-display .sb-team-flag,
@@ -899,6 +812,8 @@
     height: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
   }
 }
+
+
 
 /* ─── MODULE TYPE: PREGUNTA (SÍ/NO) ─── */
 .module-pregunta-display {
@@ -1002,85 +917,7 @@
   white-space: nowrap !important;
 }
 
-/* ─── MODULE TYPE: TICKER ─── */
-.module-ticker-display {
-  width: 100%; height: 100%;
-  display: flex;
-  align-items: center;
-  background: var(--color-bg-secondary);
-  border-top: 3px solid var(--color-gold);
-  overflow: hidden;
-}
 
-.ticker-live-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--gap-sm);
-  padding: 0 var(--gap-xl);
-  height: 100%;
-  background: var(--color-live-bg);
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: 3px;
-  color: var(--color-white);
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.ticker-live-dot {
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: var(--color-white);
-  animation: pulse-dot 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.7); }
-}
-
-.ticker-content {
-  flex: 1;
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(90deg, #1a1510, #111, #1a1510);
-}
-
-.ticker-scroll {
-  display: flex;
-  align-items: center;
-  animation: ticker-scroll 25s linear infinite;
-  white-space: nowrap;
-}
-
-.ticker-scroll > span {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.ticker-text {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: 1px;
-  color: var(--color-gold);
-  padding: 0 var(--gap-xl);
-  white-space: nowrap;
-}
-
-.ticker-separator {
-  color: var(--color-text-muted);
-  font-size: 16px;
-}
-
-@keyframes ticker-scroll {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
 
 
 /* ─── NARROW AND SHORT DISPLAY OVERRIDES ─── */
@@ -1088,11 +925,9 @@
 .narrow-col-1 .apuesta-title {
   font-size: clamp(14px, calc(20px * var(--font-scale, 1)), 32px) !important;
   max-width: 100% !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: normal !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .narrow-col-2 .apuesta-tag,
@@ -1167,12 +1002,9 @@
 }
 
 .short-row-1 .module-scoreboard-display {
-  padding: calc(6px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important;
+  padding: calc(6px * var(--scale, 1)) calc(6px * var(--scale, 1)) !important;
 }
 
-.short-row-1 .module-results-display {
-  padding: calc(6px * var(--scale, 1)) !important;
-}
 
 .short-row-1 .module-upcoming-display {
   padding: calc(6px * var(--scale, 1)) !important;
@@ -1243,25 +1075,7 @@
   padding: calc(2px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important;
 }
 
-.short-row-1 .results-title-display {
-  font-size: calc(14px * var(--font-scale, 1)) !important;
-  margin-bottom: calc(4px * var(--scale, 1)) !important;
-  padding-bottom: 2px !important;
-}
 
-.short-row-1 .result-match-box {
-  padding: calc(2px * var(--scale, 1)) 0 !important;
-}
-
-.short-row-1 .result-team-display {
-  font-size: calc(16px * var(--font-scale, 1)) !important;
-}
-
-.short-row-1 .result-score-display {
-  font-size: calc(18px * var(--font-scale, 1)) !important;
-  min-width: calc(30px * var(--scale, 1)) !important;
-  padding: 2px calc(6px * var(--scale, 1)) !important;
-}
 
 .short-row-1 .module-upcoming-display {
   padding: calc(6px * var(--scale, 1)) !important;
@@ -1322,23 +1136,7 @@
   padding: 2px calc(6px * var(--scale, 1)) !important;
 }
 
-.short-row-1 .module-news-display {
-  padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
-  justify-content: center !important;
-}
 
-.short-row-1 .news-title-display {
-  font-size: calc(16px * var(--font-scale, 1)) !important;
-  margin-bottom: calc(4px * var(--scale, 1)) !important;
-  padding-left: calc(4px * var(--scale, 1)) !important;
-}
-
-.short-row-1 .news-content-display {
-  font-size: calc(14px * var(--font-scale, 1)) !important;
-  line-height: 1.35 !important;
-  -webkit-line-clamp: 2 !important;
-  line-clamp: 2 !important;
-}
 
 /* Narrow column cell overrides for other modules */
 .narrow-col-4 .sb-team-label,
@@ -1399,30 +1197,7 @@
   font-size: clamp(20px, calc(28px * var(--font-scale, 1)), 56px) !important;
 }
 
-.narrow-col-4 .news-title-display,
-.narrow-col-3 .news-title-display,
-.narrow-col-2 .news-title-display,
-.narrow-col-1 .news-title-display,
-.narrow-col-4 .results-title-display,
-.narrow-col-3 .results-title-display,
-.narrow-col-2 .results-title-display,
-.narrow-col-1 .results-title-display {
-  font-size: calc(13px * var(--font-scale, 1)) !important;
-  text-align: center !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  overflow: visible !important;
-}
 
-.narrow-col-4 .news-content-display,
-.narrow-col-3 .news-content-display,
-.narrow-col-2 .news-content-display,
-.narrow-col-1 .news-content-display {
-  font-size: calc(15px * var(--font-scale, 1)) !important;
-  -webkit-line-clamp: 4 !important;
-  line-clamp: 4 !important;
-}
 
 /* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
 .narrow-col-4 .pregunta-options-row,
@@ -1480,12 +1255,9 @@
 /* ─── OVERFLOW PREVENTION & BOUNDS ADAPTABILITY ─── */
 .module-cell,
 .module-scoreboard-display,
-.module-results-display,
 .module-upcoming-display,
-.module-news-display,
 .module-apuesta-display,
 .module-pregunta-display,
-.module-ticker-display,
 .module-media,
 .module-wrapper {
   max-width: 100% !important;
@@ -1511,12 +1283,9 @@
 /* Force inner flex items to be able to shrink so they never push contents out */
 .module-wrapper *,
 .module-scoreboard-display *,
-.module-results-display *,
 .module-upcoming-display *,
-.module-news-display *,
 .module-apuesta-display *,
 .module-pregunta-display *,
-.module-ticker-display *,
 .module-media * {
   min-height: 0;
   min-width: 0;
@@ -1543,9 +1312,7 @@ img.sb-team-flag,
 }
 
 .module-scoreboard-display,
-.module-results-display,
 .module-upcoming-display,
-.module-news-display,
 .module-apuesta-display,
 .module-pregunta-display {
   background: var(--module-bg-color, transparent) !important;
@@ -1556,19 +1323,12 @@ img.sb-team-flag,
 /* ─── CARD/ELEMENT STYLING WITH CUSTOMIZABLE BACKGROUND COLOR ─── */
 .pregunta-header,
 .apuesta-header,
-.upcoming-header-box,
-.results-title-display,
-.news-title-display,
 .pregunta-option-box,
 .apuesta-odd-box,
-.upcoming-vs-card,
-.result-match-box,
 .sb-main,
 .sb-status,
-.news-content-display,
 .media-text-container,
-.brand-overlay,
-.module-ticker-display {
+.brand-overlay {
   background: var(--card-bg-color, rgba(255, 255, 255, 0.03)) !important;
   background-color: var(--card-bg-color, rgba(255, 255, 255, 0.03)) !important;
   background-image: none !important;
@@ -1576,10 +1336,7 @@ img.sb-team-flag,
 
 /* Styled elements configuration (borders, paddings, margins) */
 .pregunta-header,
-.apuesta-header,
-.upcoming-header-box,
-.results-title-display,
-.news-title-display {
+.apuesta-header {
   border: 1px solid var(--module-border-color, var(--color-border)) !important;
   border-radius: var(--radius-md) !important;
   padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
@@ -1589,41 +1346,24 @@ img.sb-team-flag,
 
 .pregunta-option-box,
 .apuesta-odd-box,
-.upcoming-vs-card,
-.result-match-box,
 .sb-main,
-.media-text-container,
-.news-content-display {
+.media-text-container {
   border: 1px solid var(--module-border-color, var(--color-border)) !important;
   border-radius: var(--radius-md) !important;
   box-sizing: border-box !important;
 }
 
 /* Custom paddings/margins for specific inner components */
-.result-match-box {
-  padding: clamp(6px, calc(10px * var(--scale, 1)), 18px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
-  margin-bottom: calc(8px * var(--scale, 1)) !important;
-  border-bottom: 1px solid var(--module-border-color, var(--color-border)) !important;
-}
 
-.result-match-box:last-child {
-  margin-bottom: 0 !important;
-}
 
 .sb-main {
   padding: clamp(8px, calc(16px * var(--scale, 1)), 28px) !important;
   width: 100% !important;
 }
 
-.news-content-display {
-  padding: clamp(8px, calc(14px * var(--scale, 1)), 28px) !important;
-  width: 100% !important;
-  flex: 1 !important;
-}
 
-.upcoming-vs-card {
-  padding: clamp(4px, calc(8px * var(--scale, 1)), 12px) clamp(6px, calc(16px * var(--scale, 1)), 20px) !important;
-}
+
+
 
 
 
@@ -1635,11 +1375,6 @@ img.sb-team-flag,
 .module-wrapper[style*="--text-color"] .sb-team-code,
 .module-wrapper[style*="--text-color"] .sb-team-label,
 .module-wrapper[style*="--text-color"] .sb-score,
-.module-wrapper[style*="--text-color"] .news-title-display,
-.module-wrapper[style*="--text-color"] .news-content-display,
-.module-wrapper[style*="--text-color"] .results-title-display,
-.module-wrapper[style*="--text-color"] .result-team-display,
-.module-wrapper[style*="--text-color"] .result-score-display,
 .module-wrapper[style*="--text-color"] .upcoming-team,
 .module-wrapper[style*="--text-color"] .upcoming-time-display,
 .module-wrapper[style*="--text-color"] .upcoming-label-display,
@@ -1647,7 +1382,6 @@ img.sb-team-flag,
 .module-wrapper[style*="--text-color"] .pregunta-title,
 .module-wrapper[style*="--text-color"] .media-text-content,
 .module-wrapper[style*="--text-color"] .media-overlay-text,
-.module-wrapper[style*="--text-color"] .ticker-text,
 .module-wrapper[style*="--text-color"] .apuesta-odd-value,
 .module-wrapper[style*="--text-color"] .apuesta-odd-label,
 .module-wrapper[style*="--text-color"] .apuesta-tag,
@@ -1681,7 +1415,7 @@ img.sb-team-flag,
 }
 
 .vertical .module-scoreboard-display {
-  padding: var(--gap-xl) !important;
+  padding: var(--gap-xl) clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
 }
 
 .vertical .sb-main {
@@ -1749,53 +1483,7 @@ img.sb-team-flag,
   padding: clamp(3px, calc(5px * var(--scale, 1)), 8px) clamp(6px, calc(12px * var(--scale, 1)), 18px) !important;
 }
 
-.vertical .module-news-display {
-  padding: clamp(8px, calc(24px * var(--scale, 1)), 32px) !important;
-}
 
-.vertical .news-title-display {
-  font-size: clamp(18px, calc(36px * var(--font-scale, 1)), 40px) !important;
-  margin-bottom: clamp(6px, calc(12px * var(--scale, 1)), 16px) !important;
-}
-
-.vertical .news-content-display {
-  font-size: clamp(14px, calc(22px * var(--font-scale, 1)), 24px) !important;
-  line-height: 1.5 !important;
-}
-
-.vertical .module-results-display {
-  padding: clamp(8px, calc(24px * var(--scale, 1)), 32px) !important;
-}
-
-.vertical .results-title-display {
-  font-size: clamp(14px, calc(28px * var(--font-scale, 1)), 32px) !important;
-  margin-bottom: clamp(6px, calc(12px * var(--scale, 1)), 16px) !important;
-  padding-bottom: var(--gap-xs) !important;
-}
-
-.vertical .result-team-display {
-  font-size: clamp(14px, calc(28px * var(--font-scale, 1)), 32px) !important;
-}
-
-.vertical .result-score-display {
-  font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 36px) !important;
-  min-width: clamp(40px, calc(60px * var(--scale, 1)), 80px) !important;
-}
-
-.vertical .ticker-live-badge {
-  font-size: 26px !important;
-  padding: 0 var(--gap-xl) !important;
-}
-
-.vertical .ticker-live-dot {
-  width: 16px !important;
-  height: 16px !important;
-}
-
-.vertical .ticker-text {
-  font-size: 28px !important;
-  padding: 0 var(--gap-xl) !important;
-}
 
 .vertical .module-apuesta-display {
   padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
@@ -1804,11 +1492,9 @@ img.sb-team-flag,
 .vertical .apuesta-title {
   font-size: clamp(24px, calc(38px * var(--font-scale, 1)), 48px) !important;
   max-width: 100% !important;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: break-word !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
 }
 
 .vertical .apuesta-tag {
@@ -1846,27 +1532,57 @@ img.sb-team-flag,
 }
 
 
-.vertical .apuesta-odd-box.box-right .apuesta-team-info {
-  justify-content: flex-end !important;
+.vertical .box-left .sb-team-flag,
+.vertical .box-left img.sb-team-flag {
+  order: 1 !important;
 }
 
-.vertical .apuesta-team-name {
+.vertical .box-left .apuesta-team-name {
+  order: 2 !important;
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 32px) !important;
   text-align: left !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  text-overflow: clip !important;
-  word-wrap: normal !important;
+  white-space: normal !important; /* Allow wrapping */
+  word-wrap: break-word !important;
   word-break: normal !important;
+  overflow-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.1 !important;
 }
 
-.vertical .apuesta-odd-box.box-right .apuesta-team-name {
-  text-align: right !important;
-}
-
-.vertical .apuesta-odd-value {
+.vertical .box-left .apuesta-odd-value {
+  order: 3 !important;
   font-size: clamp(16px, calc(28px * var(--font-scale, 1)), 44px) !important;
   white-space: nowrap !important;
+  text-align: right !important;
+  margin-left: auto !important;
+}
+
+.vertical .box-right .apuesta-odd-value {
+  order: 1 !important;
+  font-size: clamp(16px, calc(28px * var(--font-scale, 1)), 44px) !important;
+  white-space: nowrap !important;
+  text-align: left !important;
+  margin-right: auto !important;
+  margin-left: 0 !important;
+}
+
+.vertical .box-right .apuesta-team-name {
+  order: 2 !important;
+  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 32px) !important;
+  text-align: right !important;
+  white-space: normal !important; /* Allow wrapping */
+  word-wrap: break-word !important;
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.1 !important;
+}
+
+.vertical .box-right .sb-team-flag,
+.vertical .box-right img.sb-team-flag {
+  order: 3 !important;
 }
 
 .vertical .apuesta-odd-label {

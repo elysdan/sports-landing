@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dispatchApiRoute } from './backend/router.js';
 import { sendJson } from './backend/utils.js';
+import { ensureDb } from './db.js';
 
 // Resolve __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -93,6 +94,11 @@ const server = http.createServer(async (req, res) => {
       });
     }
   });
+});
+
+// Pre-initialize DB connection on server startup
+ensureDb().catch(err => {
+  console.warn(`[DB] Pre-inicialización de base de datos falló: ${err.message}`);
 });
 
 server.listen(PORT, () => {

@@ -11,10 +11,7 @@ function uid() {
 export const MODULE_TYPES = {
   media: { label: 'Multimedia', icon: '🖼️', description: 'Imagen, GIF o Video MP4' },
   scoreboard: { label: 'Marcador', icon: '⚽', description: 'Resultado de partido en vivo' },
-  results: { label: 'Resultados', icon: '📊', description: 'Tabla de resultados' },
   upcoming: { label: 'Próximo Partido', icon: '📅', description: 'Próximo encuentro con horario' },
-  news: { label: 'Noticias', icon: '📰', description: 'Texto informativo / noticias' },
-  ticker: { label: 'Ticker En Vivo', icon: '📡', description: 'Barra de noticias en vivo (fila completa)' },
   apuesta: { label: 'Apuesta', icon: '🪙', description: 'Tarjeta de apuestas (1X2)' },
   pregunta: { label: 'Apuesta Sí/No', icon: '❓', description: 'Apuesta con respuesta Sí/No' },
 };
@@ -30,28 +27,16 @@ function defaultContentForType(type) {
         teamB: { name: 'EQUIPO B', code: 'EQB', score: 0, flag: '🏳️' },
         status: 'EN VIVO',
       };
-    case 'results':
-      return {
-        title: 'RESULTADOS DEL PARTIDO',
-        matches: [{ teamA: 'EQUIPO A', teamB: 'EQUIPO B', scoreA: 0, scoreB: 0 }],
-      };
     case 'upcoming':
       return { label: 'SIGUIENTE PARTIDO', time: '0:00PM', teamA: 'EQUIPO A', teamB: 'EQUIPO B' };
-    case 'news':
-      return { title: 'NOTICIAS', content: 'Contenido de la noticia aquí...' };
-    case 'ticker':
-      return {
-        isLive: true,
-        messages: ['Noticia en vivo #1', 'Noticia en vivo #2'],
-      };
     case 'apuesta':
       return {
         title: '¡MÁXIMA GANANCIA CON MÉXICO!',
         tag: 'Primer gol',
         mode: '3-way',
-        teamA: { name: 'México', flag: '🇲🇽', odd: '1,46' },
+        teamA: { name: 'México', flag: '🇲🇽', code: 'MEX', odd: '1,46' },
         draw: { odd: '4,25' },
-        teamB: { name: 'Sudáfrica', flag: '🇿🇦', odd: '6,66' }
+        teamB: { name: 'Sudáfrica', flag: '🇿🇦', code: 'RSA', odd: '6,66' }
       };
     case 'pregunta':
       return {
@@ -81,25 +66,17 @@ function createDefaultPositions(modules, targetCols, targetRows, originalGrid, o
   const defaults_12x6 = {
     "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
     "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
-    "default_odds": { col: 6, row: 1, colSpan: 3, rowSpan: 2 },
     "default_hero": { col: 9, row: 1, colSpan: 4, rowSpan: 4 },
-    "default_news": { col: 1, row: 2, colSpan: 2, rowSpan: 4 },
-    "default_results": { col: 3, row: 3, colSpan: 3, rowSpan: 3 },
     "default_featured": { col: 6, row: 3, colSpan: 3, rowSpan: 3 },
-    "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 },
-    "default_ticker": { col: 1, row: 6, colSpan: 12, rowSpan: 1 }
+    "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 }
   };
 
   const defaults_9x9 = {
     "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
     "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
-    "default_odds": { col: 6, row: 1, colSpan: 4, rowSpan: 2 },
     "default_hero": { col: 1, row: 3, colSpan: 5, rowSpan: 4 },
-    "default_news": { col: 6, row: 3, colSpan: 4, rowSpan: 2 },
-    "default_results": { col: 6, row: 5, colSpan: 4, rowSpan: 2 },
     "default_featured": { col: 1, row: 7, colSpan: 4, rowSpan: 2 },
-    "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 },
-    "default_ticker": { col: 1, row: 9, colSpan: 9, rowSpan: 1 }
+    "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 }
   };
 
   const layoutDefaults = (targetCols === 12 && targetRows === 6) ? defaults_12x6 : defaults_9x9;
@@ -177,6 +154,8 @@ const CMSContext = createContext(null);
 export function CMSProvider({ children }) {
   const CMS_SESSION_KEY = 'sports-billboard-cms-session';
   const isEditor = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
+  const isDraftMode = typeof window !== 'undefined' && 
+    (window.location.search.includes('draft=true') || window.location.search.includes('mode=draft'));
 
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -203,13 +182,15 @@ export function CMSProvider({ children }) {
   useEffect(() => {
     async function loadServerData() {
       try {
-        const resLive = await fetch('/api/cms');
+        const [resLive, resDraft] = await Promise.all([
+          fetch('/api/cms'),
+          fetch('/api/cms/draft')
+        ]);
         let serverLive = null;
         if (resLive.ok) {
           serverLive = await resLive.json();
         }
 
-        const resDraft = await fetch('/api/cms/draft');
         let serverDraft = null;
         if (resDraft.ok) {
           serverDraft = await resDraft.json();
@@ -245,7 +226,7 @@ export function CMSProvider({ children }) {
     loadServerData();
   }, []);
 
-  // Polling to sync liveData in real-time
+  // Polling to sync liveData in real-time (runs every 15 seconds)
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -268,13 +249,14 @@ export function CMSProvider({ children }) {
       } catch (e) {
         // Silently fail to avoid console flooding on offline
       }
-    }, 3000);
+    }, 15000); // 15 seconds
     return () => clearInterval(interval);
   }, [currentVersion]);
 
-  // Polling to sync draftData in real-time (only for display screens where user is not logged in)
+  // Polling to sync draftData in real-time (only for display screens in draft mode, runs every 15 seconds)
   useEffect(() => {
     if (isEditor) return; // Do not poll draft if we are the editor tab
+    if (!isDraftMode) return; // Do not poll draft if we are not viewing the draft preview
 
     const interval = setInterval(async () => {
       try {
@@ -291,7 +273,7 @@ export function CMSProvider({ children }) {
       } catch (e) {
         // Silently fail
       }
-    }, 3000);
+    }, 15000); // 15 seconds
     return () => clearInterval(interval);
   }, [currentDraftVersion, currentUser]);
 

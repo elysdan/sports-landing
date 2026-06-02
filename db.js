@@ -56,80 +56,67 @@ async function initDb() {
     throw new Error('No se pudo establecer conexión con la base de datos MySQL.');
   }
 
-  // Create billboard_config table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS billboard_config (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      key_name VARCHAR(50) UNIQUE,
-      config_data LONGTEXT,
-      version BIGINT,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('[DB] Tabla billboard_config verificada/creada.');
-
-  // Create users table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      username VARCHAR(50) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      name VARCHAR(100) NOT NULL,
-      allowed_types TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('[DB] Tabla users verificada/creada.');
-
-  // Create billboard_templates table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS billboard_templates (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      template_name VARCHAR(100) UNIQUE NOT NULL,
-      config_data LONGTEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('[DB] Tabla billboard_templates verificada/creada.');
-
-  // Create media_assets table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS media_assets (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      filename VARCHAR(255) UNIQUE NOT NULL,
-      mime_type VARCHAR(100) NOT NULL,
-      file_data LONGTEXT NOT NULL,
-      size_bytes INT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-  console.log('[DB] Tabla media_assets verificada/creada.');
-
-  // Create billboard_history table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS billboard_history (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      username VARCHAR(50) NOT NULL,
-      approved_by VARCHAR(50) DEFAULT 'Desconocido',
-      modified_by VARCHAR(50) DEFAULT 'Desconocido',
-      config_data LONGTEXT NOT NULL,
-      version BIGINT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      INDEX idx_billboard_history_created_at (created_at DESC)
-    )
-  `);
-  console.log('[DB] Tabla billboard_history verificada/creada.');
-
-  // Create world_cup_teams table if not exists
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS world_cup_teams (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(100) UNIQUE NOT NULL,
-      code VARCHAR(10) NOT NULL,
-      flag VARCHAR(255) NOT NULL
-    )
-  `);
-  console.log('[DB] Tabla world_cup_teams verificada/creada.');
+  // Create tables in parallel
+  await Promise.all([
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS billboard_config (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        key_name VARCHAR(50) UNIQUE,
+        config_data LONGTEXT,
+        version BIGINT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `),
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        allowed_types TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `),
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS billboard_templates (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        template_name VARCHAR(100) UNIQUE NOT NULL,
+        config_data LONGTEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `),
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS media_assets (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        filename VARCHAR(255) UNIQUE NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        file_data LONGTEXT NOT NULL,
+        size_bytes INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `),
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS billboard_history (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(50) NOT NULL,
+        approved_by VARCHAR(50) DEFAULT 'Desconocido',
+        modified_by VARCHAR(50) DEFAULT 'Desconocido',
+        config_data LONGTEXT NOT NULL,
+        version BIGINT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_billboard_history_created_at (created_at DESC)
+      )
+    `),
+    pool.query(`
+      CREATE TABLE IF NOT EXISTS world_cup_teams (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) UNIQUE NOT NULL,
+        code VARCHAR(10) NOT NULL,
+        flag VARCHAR(255) NOT NULL
+      )
+    `)
+  ]);
+  console.log('[DB] Todas las tablas han sido verificadas/creadas en paralelo.');
 
   // Seed default World Cup teams - only seed if table has fewer than 48 teams
   const [teamsCountRes] = await pool.query('SELECT COUNT(*) as count FROM world_cup_teams');
@@ -188,14 +175,14 @@ async function initDb() {
       { name: 'Turquía', code: 'TUR', flag: '🇹🇷' }
     ];
 
-    for (const team of defaultTeams) {
-      await pool.query(`
-        INSERT INTO world_cup_teams (name, code, flag)
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE code = VALUES(code), flag = VALUES(flag)
-      `, [team.name, team.code, team.flag]);
-    }
-    console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA.');
+    const valuesPlaceholders = defaultTeams.map(() => '(?, ?, ?)').join(', ');
+    const queryParams = defaultTeams.flatMap(team => [team.name, team.code, team.flag]);
+    await pool.query(`
+      INSERT INTO world_cup_teams (name, code, flag)
+      VALUES ${valuesPlaceholders}
+      ON DUPLICATE KEY UPDATE code = VALUES(code), flag = VALUES(flag)
+    `, queryParams);
+    console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA en un único lote.');
   }
 
   // Seed default users if they do not exist
@@ -209,14 +196,21 @@ async function initDb() {
   const [existingUsersRes] = await pool.query('SELECT username FROM users');
   const existingUsernames = existingUsersRes.map(r => r.username.toLowerCase());
 
+  const usersToInsert = [];
+  const insertUserParams = [];
   for (const u of defaultUsers) {
     if (!existingUsernames.includes(u.username.toLowerCase())) {
-      await pool.query(`
-        INSERT INTO users (username, password, name, allowed_types)
-        VALUES (?, ?, ?, ?)
-      `, [u.username, u.password, u.name, JSON.stringify(u.allowedTypes)]);
-      console.log(`[DB] Usuario por defecto (${u.username} / ${u.password}) creado.`);
+      usersToInsert.push('(?, ?, ?, ?)');
+      insertUserParams.push(u.username, u.password, u.name, JSON.stringify(u.allowedTypes));
     }
+  }
+
+  if (usersToInsert.length > 0) {
+    await pool.query(`
+      INSERT INTO users (username, password, name, allowed_types)
+      VALUES ${usersToInsert.join(', ')}
+    `, insertUserParams);
+    console.log(`[DB] Se crearon los usuarios por defecto faltantes en lote.`);
   }
 
   // Seed default billboard config if empty
@@ -229,13 +223,79 @@ async function initDb() {
     `, ['live', defaultDataStr, Date.now()]);
     console.log('[DB] Configuración por defecto de la valla creada en la base de datos.');
   }
+
+  // Clean existing configs and templates from deleted module types (news, results, ticker)
+  try {
+    const [existingConfigs] = await pool.query("SELECT key_name, config_data FROM billboard_config");
+    for (const row of existingConfigs) {
+      let parsed = JSON.parse(row.config_data);
+      const originalCount = parsed.modules?.length || 0;
+      parsed = cleanConfigData(parsed);
+      const newCount = parsed.modules?.length || 0;
+      if (originalCount !== newCount) {
+        await pool.query(
+          "UPDATE billboard_config SET config_data = ?, version = ? WHERE key_name = ?",
+          [JSON.stringify(parsed), Date.now(), row.key_name]
+        );
+        console.log(`[DB] Configuración '${row.key_name}' depurada: se eliminaron ${originalCount - newCount} módulos de tipo descontinuado (news, results, ticker).`);
+      }
+    }
+
+    const [existingTemplates] = await pool.query("SELECT id, template_name, config_data FROM billboard_templates");
+    for (const row of existingTemplates) {
+      let parsed = JSON.parse(row.config_data);
+      const originalCount = parsed.modules?.length || 0;
+      parsed = cleanConfigData(parsed);
+      const newCount = parsed.modules?.length || 0;
+      if (originalCount !== newCount) {
+        await pool.query(
+          "UPDATE billboard_templates SET config_data = ? WHERE id = ?",
+          [JSON.stringify(parsed), row.id]
+        );
+        console.log(`[DB] Plantilla '${row.template_name}' depurada.`);
+      }
+    }
+  } catch (cleanErr) {
+    console.warn(`[DB] Advertencia al depurar configuraciones existentes: ${cleanErr.message}`);
+  }
+}
+
+function cleanConfigData(config) {
+  if (!config || !Array.isArray(config.modules)) return config;
+  const typesToRemove = ['news', 'results', 'ticker'];
+  const removedIds = new Set();
+  
+  config.modules = config.modules.filter(m => {
+    if (typesToRemove.includes(m.type)) {
+      removedIds.add(m.id);
+      return false;
+    }
+    return true;
+  });
+  
+  if (config.layouts) {
+    Object.keys(config.layouts).forEach(layoutKey => {
+      const layout = config.layouts[layoutKey];
+      if (layout && layout.positions) {
+        Object.keys(layout.positions).forEach(modId => {
+          if (removedIds.has(modId)) {
+            delete layout.positions[modId];
+          }
+        });
+      }
+    });
+  }
+  return config;
 }
 
 // Lazy database initialization helper
 let initPromise = null;
 export async function ensureDb() {
   if (!initPromise) {
-    initPromise = initDb();
+    initPromise = initDb().catch(err => {
+      initPromise = null; // Clear promise on error so we retry on next call
+      throw err;
+    });
   }
   return initPromise;
 }
@@ -468,3 +528,4 @@ export async function getDbWorldCupTeams() {
   const [rows] = await pool.query('SELECT name, code, flag FROM world_cup_teams ORDER BY name ASC');
   return rows;
 }
+

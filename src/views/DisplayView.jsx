@@ -52,9 +52,9 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   const wrapperStyle = {
     '--scale': scale,
     '--text-scale-factor': layoutTextSizeFactor,
-    '--card-bg-color': content.cardBgColor || 'rgba(255, 255, 255, 0.03)',
-    '--module-bg-color': content.moduleBgTransparent === true ? 'transparent' : (content.moduleBgColor || content.cardBgColor || '#0a0a0a'),
-    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
+    '--card-bg-color': content.cardBgColor || (module.type === 'apuesta' ? '#161616' : 'rgba(255, 255, 255, 0.03)'),
+    '--module-bg-color': content.moduleBgTransparent === true ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
+    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || (module.type === 'apuesta' ? 'rgba(255, 255, 255, 0.15)' : 'var(--color-border)')),
     ...(content.textColor ? { '--text-color': content.textColor } : {}),
     width: '100%',
     height: '100%',
@@ -82,14 +82,8 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
             return <MediaModule content={module.content} />;
           case 'scoreboard':
             return <ScoreboardModule content={module.content} />;
-          case 'results':
-            return <ResultsModule content={module.content} />;
           case 'upcoming':
             return <UpcomingModule content={module.content} />;
-          case 'news':
-            return <NewsModule content={module.content} />;
-          case 'ticker':
-            return <TickerModule content={module.content} />;
           case 'apuesta':
             return <ApuestaModule content={module.content} />;
           case 'pregunta':
@@ -283,47 +277,6 @@ export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = 
   return found ? found.flag : null;
 }
 
-/* ─── RESULTS MODULE ─── */
-function ResultsModule({ content }) {
-  const { worldCupTeams = [] } = useCMS();
-  return (
-    <div className="module-results-display">
-      <div className="results-list-container">
-        {(content.matches || []).map((match, i) => {
-          const teamAInfo = parseTeamString(match.teamA);
-          const teamBInfo = parseTeamString(match.teamB);
-          const flagA = getTeamFlag(teamAInfo.name, match.flagA, teamAInfo.flag, worldCupTeams);
-          const flagB = getTeamFlag(teamBInfo.name, match.flagB, teamBInfo.flag, worldCupTeams);
-          return (
-            <div key={i} className="result-match-card-row">
-              {/* Team A Card */}
-              <div className="sb-team-card">
-                <div className="sb-card-score">{match.scoreA}</div>
-                <div className="sb-card-info">
-                  <TeamFlag flag={flagA} />
-                  <span className="sb-card-code">{teamAInfo.name.slice(0, 3).toUpperCase()}</span>
-                </div>
-              </div>
-              
-              {/* Divider */}
-              <div className="sb-card-divider">-</div>
-              
-              {/* Team B Card */}
-              <div className="sb-team-card">
-                <div className="sb-card-score">{match.scoreB}</div>
-                <div className="sb-card-info">
-                  <TeamFlag flag={flagB} />
-                  <span className="sb-card-code">{teamBInfo.name.slice(0, 3).toUpperCase()}</span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 /* ─── UPCOMING MODULE ─── */
 function UpcomingModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
@@ -348,16 +301,6 @@ function UpcomingModule({ content }) {
   );
 }
 
-/* ─── NEWS MODULE ─── */
-function NewsModule({ content }) {
-  return (
-    <div className="module-news-display">
-      <div className="news-title-display">{content.title}</div>
-      <div className="news-content-display">{content.content}</div>
-    </div>
-  );
-}
-
 /* ─── APUESTA MODULE ─── */
 function ApuestaModule({ content }) {
   const mode = content.mode || '3-way';
@@ -372,7 +315,7 @@ function ApuestaModule({ content }) {
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div className="apuesta-odd-box box-left">
             {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
-            <span className="apuesta-team-name">{content.teamA?.name || 'Local'}</span>
+            <span className="apuesta-team-name">{content.teamA?.code || content.teamA?.name?.slice(0, 3).toUpperCase() || 'LOC'}</span>
             <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
           </div>
         )}
@@ -384,11 +327,10 @@ function ApuestaModule({ content }) {
           </div>
         )}
         
-        {/* Box Right: Team B (in 3-way and 2-way modes) */}
         {(mode === '3-way' || mode === '2-way') && (
           <div className="apuesta-odd-box box-right">
             <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
-            <span className="apuesta-team-name">{content.teamB?.name || 'Visitante'}</span>
+            <span className="apuesta-team-name">{content.teamB?.code || content.teamB?.name?.slice(0, 3).toUpperCase() || 'VIS'}</span>
             {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
           </div>
         )}
@@ -418,41 +360,15 @@ function PreguntaModule({ content }) {
   );
 }
 
-/* ─── TICKER MODULE ─── */
-function TickerModule({ content }) {
-  const allMessages = [...(content.messages || []), ...(content.messages || [])];
-  return (
-    <div className="module-ticker-display">
-      {content.isLive && (
-        <div className="ticker-live-badge">
-          <span className="ticker-live-dot" />
-          EN VIVO
-        </div>
-      )}
-      <div className="ticker-content">
-        <div className="ticker-scroll">
-          {allMessages.map((msg, i) => (
-            <span key={i}>
-              <span className="ticker-text">{msg}</span>
-              {i < allMessages.length - 1 && <span className="ticker-separator">|</span>}
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 /* ═══════════════════════════════════════════
    DISPLAY VIEW — BILLBOARD 1920×1080
    ═══════════════════════════════════════════ */
 /* ─── DYNAMIC VERTICAL LAYOUT PACKER ─── */
 export function getVerticalLayout(modules) {
   const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label?.toLowerCase().includes('logo')));
-  const ticker = modules.find(m => m.type === 'ticker');
   
   // Clone and filter rest of the modules
-  const rest = modules.filter(m => m !== brand && m !== ticker).map(m => ({ ...m }));
+  const rest = modules.filter(m => m !== brand).map(m => ({ ...m }));
   
   const verticalModules = [];
   let currentRow = 1;
@@ -502,17 +418,9 @@ export function getVerticalLayout(modules) {
     currentRow += rowSpan;
   }
 
-  // 5. Ticker at the bottom
-  if (ticker) {
-    verticalModules.push({
-      ...ticker,
-      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 1 }
-    });
-  }
-
   return {
     modules: verticalModules,
-    grid: { cols: 1, rows: ticker ? currentRow : (currentRow - 1) }
+    grid: { cols: 1, rows: currentRow - 1 }
   };
 }
 
@@ -557,10 +465,19 @@ export default function DisplayView() {
   const visibleModules = mappedModules.filter(m => m.visible !== false);
   const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid: activeLayoutObj.grid };
 
+  const aspect = isVertical 
+    ? (9 / 16) 
+    : (screenType === '9x9' ? 1.0 : 2.0);
+
   let actualGridWidth = window.innerWidth;
-  if (!isVertical && layout?.grid) {
-    const aspect = screenType === '9x9' ? 1.0 : 2.0;
+  let actualGridHeight = window.innerHeight;
+
+  if (isVertical) {
     actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
+    actualGridHeight = actualGridWidth / aspect;
+  } else if (layout?.grid) {
+    actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
+    actualGridHeight = actualGridWidth / aspect;
   }
 
   if (!hasLoadedFromServer) {
@@ -597,11 +514,10 @@ export default function DisplayView() {
       <div
         className={`billboard-grid ${isVertical ? 'vertical' : 'horizontal'}`}
         style={{
-          width: '100%',
-          height: '100%',
-          maxWidth: isVertical ? '56.25vh' : (screenType === '9x9' ? '100vh' : '200vh'),
-          maxHeight: isVertical ? '177.78vw' : (screenType === '9x9' ? '100vw' : '50vw'),
-          aspectRatio: isVertical ? '9 / 16' : (screenType === '9x9' ? '1 / 1' : '2 / 1'),
+          width: `${actualGridWidth}px`,
+          height: `${actualGridHeight}px`,
+          maxWidth: '100%',
+          maxHeight: '100%',
           gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
           gridTemplateRows: isVertical
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
@@ -610,7 +526,6 @@ export default function DisplayView() {
                   m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
                 );
                 if (!mod) return '1fr';
-                if (mod.type === 'ticker') return '80px';
                 const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
                 if (isBrand) return '80px';
                 
@@ -618,16 +533,12 @@ export default function DisplayView() {
                 if (mod.type === 'media') baseWeight = 2.5;
                 else if (mod.type === 'scoreboard') baseWeight = 1.8;
                 else if (mod.type === 'upcoming') baseWeight = 1.5;
-                else if (mod.type === 'results') baseWeight = 1.8;
-                else if (mod.type === 'news') baseWeight = 1.8;
                 else if (mod.type === 'pregunta') baseWeight = 1.8;
                 else if (mod.type === 'apuesta') baseWeight = 1.8;
                 
                 return `${baseWeight / mod.gridPosition.rowSpan}fr`;
               }).join(' ')
-            : Array.from({ length: layout.grid.rows }).map((_, i) => 
-                layout.modules.some(m => m.type === 'ticker' && m.gridPosition.row === i + 1) ? '80px' : '1fr'
-              ).join(' '),
+            : `repeat(${layout.grid.rows}, 1fr)`,
           display: 'grid',
           gap: '2px',
           background: 'var(--color-border)'

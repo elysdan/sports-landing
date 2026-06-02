@@ -360,7 +360,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
         </div>
       </div>
 
-      {(module.type === 'scoreboard' || module.type === 'apuesta') && (
             <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
               <div className="field" style={{ marginBottom: 0 }}>
                 <label>Proporciones del Módulo (Escala de Elementos)</label>
@@ -393,7 +392,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
                 {/* Spacer */}
               </div>
             </div>
-          )}
 
         </div>
 
@@ -411,9 +409,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           {module.type === 'scoreboard' && (
             <ScoreboardEditor content={module.content} onChange={handleContentChange} updateModuleContent={updateModuleContent} moduleId={module.id} onOpenLibrary={onOpenLibrary} />
           )}
-          {module.type === 'results' && (
-            <ResultsEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} onOpenLibrary={onOpenLibrary} />
-          )}
+
           {module.type === 'upcoming' && (
             <UpcomingEditor 
               content={module.content} 
@@ -423,12 +419,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
               onOpenLibrary={onOpenLibrary}
             />
           )}
-          {module.type === 'news' && (
-            <NewsEditor content={module.content} onChange={handleContentChange} />
-          )}
-          {module.type === 'ticker' && (
-            <TickerEditor content={module.content} updateModuleContent={updateModuleContent} moduleId={module.id} />
-          )}
+
           {module.type === 'apuesta' && (
             <ApuestaEditor
               content={module.content}
@@ -701,7 +692,8 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
         [teamKey]: {
           ...existing,
           name: teamObj.name,
-          flag: teamObj.flag
+          flag: teamObj.flag,
+          code: teamObj.code
         }
       });
     }
@@ -757,7 +749,7 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
         {content.mode === '1-way' ? 'Opción Única (Jugador / Equipo)' : 'Opción A (Local)'}
       </h3>
-      <div className="field-row" style={{ marginBottom: '16px' }}>
+      <div className="field-row-3" style={{ marginBottom: '16px' }}>
         <div className="field" style={{ marginBottom: 0 }}>
           <label>Selección Rápida</label>
           <select
@@ -772,13 +764,23 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
             ))}
           </select>
         </div>
-        <div className="field">
+        <div className="field" style={{ marginBottom: 0 }}>
           <label>Nombre</label>
           <input
             type="text"
             value={content.teamA?.name || ''}
             onChange={(e) => updateTeam('teamA', 'name', e.target.value)}
             placeholder={content.mode === '1-way' ? 'Nombre del jugador o equipo' : 'Nombre del equipo'}
+          />
+        </div>
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Código (Abreviatura)</label>
+          <input
+            type="text"
+            value={content.teamA?.code || ''}
+            onChange={(e) => updateTeam('teamA', 'code', e.target.value.toUpperCase())}
+            placeholder="ej: MEX"
+            maxLength={5}
           />
         </div>
       </div>
@@ -845,7 +847,7 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
           <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
             Opción B (Visitante)
           </h3>
-          <div className="field-row" style={{ marginBottom: '16px' }}>
+          <div className="field-row-3" style={{ marginBottom: '16px' }}>
             <div className="field" style={{ marginBottom: 0 }}>
               <label>Selección Rápida de Equipo B</label>
               <select
@@ -860,12 +862,22 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
                 ))}
               </select>
             </div>
-            <div className="field">
+            <div className="field" style={{ marginBottom: 0 }}>
               <label>Equipo B — Nombre</label>
               <input
                 type="text"
                 value={content.teamB?.name || ''}
                 onChange={(e) => updateTeam('teamB', 'name', e.target.value)}
+              />
+            </div>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Código (Abreviatura)</label>
+              <input
+                type="text"
+                value={content.teamB?.code || ''}
+                onChange={(e) => updateTeam('teamB', 'code', e.target.value.toUpperCase())}
+                placeholder="ej: ZAF"
+                maxLength={5}
               />
             </div>
           </div>
@@ -943,164 +955,6 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
           />
         </div>
       </div>
-    </>
-  );
-}
-
-/* ─── Results Editor ─── */
-function ResultsEditor({ content, updateModuleContent, moduleId, onOpenLibrary }) {
-  const { worldCupTeams = [] } = useCMS();
-
-  const updateMatch = (idx, field, value) => {
-    const updated = [...(content.matches || [])];
-    updated[idx] = { ...updated[idx], [field]: value };
-    updateModuleContent(moduleId, { matches: updated });
-  };
-
-  const addMatch = () => {
-    updateModuleContent(moduleId, {
-      matches: [...(content.matches || []), { teamA: 'EQUIPO A', teamB: 'EQUIPO B', scoreA: 0, scoreB: 0, flagA: '', flagB: '' }],
-    });
-  };
-
-  const removeMatch = (idx) => {
-    updateModuleContent(moduleId, {
-      matches: content.matches.filter((_, i) => i !== idx),
-    });
-  };
-
-  const handleSelectTeam = (idx, teamKey, teamName) => {
-    if (!teamName) return;
-    const teamObj = worldCupTeams.find(t => t.name === teamName);
-    if (teamObj) {
-      const updated = [...(content.matches || [])];
-      updated[idx] = {
-        ...updated[idx],
-        [teamKey]: teamObj.name.toUpperCase(),
-        [teamKey === 'teamA' ? 'flagA' : 'flagB']: teamObj.flag
-      };
-      updateModuleContent(moduleId, { matches: updated });
-    }
-  };
-
-  return (
-    <>
-      {(content.matches || []).map((match, i) => (
-        <div className="match-editor-box" key={i} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '16px', marginBottom: '16px', background: 'rgba(255, 255, 255, 0.02)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontWeight: 'bold', color: 'var(--color-gold)', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '1px' }}>Partido #{i + 1}</span>
-            <button type="button" className="admin-btn-icon danger" onClick={() => removeMatch(i)} style={{ height: '24px', width: '24px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-          </div>
-          
-          <div className="field-row" style={{ marginBottom: '8px' }}>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label>Sel. Rápida Equipo A</label>
-              <select
-                value=""
-                onChange={(e) => handleSelectTeam(i, 'teamA', e.target.value)}
-                style={{ padding: '6px 10px', fontSize: '12px' }}
-              >
-                <option value="">-- Seleccionar Equipo A --</option>
-                {worldCupTeams.map((team) => (
-                  <option key={`match-sel-a-${team.name}`} value={team.name}>
-                    {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label>Sel. Rápida Equipo B</label>
-              <select
-                value=""
-                onChange={(e) => handleSelectTeam(i, 'teamB', e.target.value)}
-                style={{ padding: '6px 10px', fontSize: '12px' }}
-              >
-                <option value="">-- Seleccionar Equipo B --</option>
-                {worldCupTeams.map((team) => (
-                  <option key={`match-sel-b-${team.name}`} value={team.name}>
-                    {team.flag.startsWith('/') || team.flag.startsWith('http') || team.flag.includes('.') ? '🖼️' : team.flag} {team.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="field-row">
-            <div className="field">
-              <label>Equipo A — Nombre</label>
-              <input type="text" value={match.teamA} onChange={(e) => updateMatch(i, 'teamA', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Equipo B — Nombre</label>
-              <input type="text" value={match.teamB} onChange={(e) => updateMatch(i, 'teamB', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="field-row">
-            <div className="field">
-              <label>Equipo A — Goles</label>
-              <input type="text" value={match.scoreA} onChange={(e) => updateMatch(i, 'scoreA', e.target.value)} />
-            </div>
-            <div className="field">
-              <label>Equipo B — Goles</label>
-              <input type="text" value={match.scoreB} onChange={(e) => updateMatch(i, 'scoreB', e.target.value)} />
-            </div>
-          </div>
-
-          <div className="field-row" style={{ marginBottom: 0 }}>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label>Equipo A — Bandera (emoji o imagen)</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input 
-                  type="text" 
-                  value={match.flagA || ''} 
-                  onChange={(e) => updateMatch(i, 'flagA', e.target.value)} 
-                  placeholder="Emoji o URL de imagen"
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-secondary"
-                  style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
-                  onClick={() => {
-                    onOpenLibrary((url) => {
-                      updateMatch(i, 'flagA', url);
-                    });
-                  }}
-                >
-                  🖼️
-                </button>
-              </div>
-            </div>
-            <div className="field" style={{ marginBottom: 0 }}>
-              <label>Equipo B — Bandera (emoji o imagen)</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input 
-                  type="text" 
-                  value={match.flagB || ''} 
-                  onChange={(e) => updateMatch(i, 'flagB', e.target.value)} 
-                  placeholder="Emoji o URL de imagen"
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  className="admin-btn admin-btn-secondary"
-                  style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}
-                  onClick={() => {
-                    onOpenLibrary((url) => {
-                      updateMatch(i, 'flagB', url);
-                    });
-                  }}
-                >
-                  🖼️
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-
-      <button type="button" className="add-module-btn" onClick={addMatch}>+ Agregar partido</button>
     </>
   );
 }
@@ -1217,84 +1071,6 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
   );
 }
 
-/* ─── News Editor ─── */
-function NewsEditor({ content, onChange }) {
-  return (
-    <>
-      <div className="field">
-        <label>Título</label>
-        <input type="text" value={content.title} onChange={(e) => onChange('title', e.target.value)} />
-      </div>
-      <div className="field">
-        <label>Contenido</label>
-        <textarea value={content.content} onChange={(e) => onChange('content', e.target.value)} />
-      </div>
-    </>
-  );
-}
-
-/* ─── Ticker Editor ─── */
-function TickerEditor({ content, updateModuleContent, moduleId }) {
-  const updateMessage = (idx, value) => {
-    const updated = [...content.messages];
-    updated[idx] = value;
-    updateModuleContent(moduleId, { messages: updated });
-  };
-
-  return (
-    <>
-      <div className="field">
-        <label>
-          <input
-            type="checkbox"
-            checked={content.isLive}
-            onChange={(e) => updateModuleContent(moduleId, { isLive: e.target.checked })}
-            style={{ marginRight: 8 }}
-          />
-          Mostrar badge "EN VIVO"
-        </label>
-      </div>
-
-      <div style={{ marginTop: 16 }}>
-        <label style={{ display: 'block', fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 8 }}>
-          Mensajes del ticker
-        </label>
-        {(content.messages || []).map((msg, i) => (
-          <div className="ticker-item-editor" key={i}>
-            <input
-              type="text"
-              value={msg}
-              onChange={(e) => updateMessage(i, e.target.value)}
-              style={{
-                flex: 1, padding: '10px 14px',
-                background: 'var(--color-bg-card)', border: '1px solid var(--color-border)',
-                borderRadius: 'var(--radius-sm)', color: 'var(--color-white)',
-                fontFamily: 'var(--font-body)', fontSize: 14,
-              }}
-            />
-            <button
-              className="admin-btn-icon danger"
-              onClick={() => {
-                updateModuleContent(moduleId, {
-                  messages: content.messages.filter((_, j) => j !== i),
-                });
-              }}
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-        <button
-          className="add-module-btn"
-          onClick={() => updateModuleContent(moduleId, { messages: [...content.messages, 'Nuevo mensaje...'] })}
-        >
-          + Agregar mensaje
-        </button>
-      </div>
-    </>
-  );
-}
-
 /* ═══════════════════════════════════════════
    LAYOUT PREVIEW — Interactive blueprint builder
    ═══════════════════════════════════════════ */
@@ -1374,7 +1150,6 @@ function LivePreview({ modules, grid, screenType }) {
                   return r <= rowNum && rowNum < r + rs;
                 });
                 if (!mod) return '1fr';
-                if (mod.type === 'ticker') return '80px';
                 const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
                 if (isBrand) return '80px';
                 
@@ -1382,14 +1157,10 @@ function LivePreview({ modules, grid, screenType }) {
                 if (mod.type === 'media') baseWeight = 2.5;
                 else if (mod.type === 'scoreboard') baseWeight = 1.8;
                 else if (mod.type === 'upcoming') baseWeight = 1.5;
-                else if (mod.type === 'results') baseWeight = 1.8;
-                else if (mod.type === 'news') baseWeight = 1.8;
                 
                 return `${baseWeight / (mod.gridPosition?.rowSpan || 1)}fr`;
               }).join(' ')
-            : Array.from({ length: layout.grid.rows }).map((_, i) => 
-                layout.modules.some(m => m.type === 'ticker' && (m.gridPosition?.row || 1) === i + 1) ? '80px' : '1fr'
-              ).join(' '),
+            : `repeat(${layout.grid.rows}, 1fr)`,
           background: 'var(--color-border)',
           gap: '2px',
           display: 'grid',
@@ -3831,11 +3602,8 @@ function HistoryManagement({ setViewMode }) {
       "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
       "default_odds": { col: 6, row: 1, colSpan: 3, rowSpan: 2 },
       "default_hero": { col: 9, row: 1, colSpan: 4, rowSpan: 4 },
-      "default_news": { col: 1, row: 2, colSpan: 2, rowSpan: 4 },
-      "default_results": { col: 3, row: 3, colSpan: 3, rowSpan: 3 },
       "default_featured": { col: 6, row: 3, colSpan: 3, rowSpan: 3 },
-      "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 },
-      "default_ticker": { col: 1, row: 6, colSpan: 12, rowSpan: 1 }
+      "default_upcoming": { col: 9, row: 5, colSpan: 4, rowSpan: 1 }
     };
 
     const defaults_9x9 = {
@@ -3843,11 +3611,8 @@ function HistoryManagement({ setViewMode }) {
       "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
       "default_odds": { col: 6, row: 1, colSpan: 4, rowSpan: 2 },
       "default_hero": { col: 1, row: 3, colSpan: 5, rowSpan: 4 },
-      "default_news": { col: 6, row: 3, colSpan: 4, rowSpan: 2 },
-      "default_results": { col: 6, row: 5, colSpan: 4, rowSpan: 2 },
       "default_featured": { col: 1, row: 7, colSpan: 4, rowSpan: 2 },
-      "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 },
-      "default_ticker": { col: 1, row: 9, colSpan: 9, rowSpan: 1 }
+      "default_upcoming": { col: 5, row: 7, colSpan: 5, rowSpan: 2 }
     };
 
     const createHistoryPositions = (modules, targetCols, targetRows) => {
