@@ -260,8 +260,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px) !important;
+  justify-content: flex-start; /* Align from the top to respect padding */
+  padding: calc(18px * var(--scale, 1)) calc(12px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important; /* Explicit top padding to push contents down */
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -285,17 +285,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: calc(24px * var(--scale, 1));
+  gap: calc(14px * var(--scale, 1));
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  /* Removed flex: 1 to prevent expanding to the very top */
+  margin-top: calc(8px * var(--scale, 1)); /* Added margin top to push cards further down */
 }
 
 .sb-team-card {
   display: flex;
   flex-direction: column;
-  width: calc(160px * var(--scale, 1));
-  height: calc(190px * var(--scale, 1));
+  width: calc(185px * var(--scale, 1));
+  height: calc(195px * var(--scale, 1)); /* Shorter card to clear the top and bottom bounds */
   border-radius: calc(10px * var(--scale, 1));
   overflow: hidden;
   box-shadow: 0 calc(8px * var(--scale, 1)) calc(24px * var(--scale, 1)) rgba(0, 0, 0, 0.65), 
@@ -314,7 +314,7 @@
   justify-content: center;
   font-family: var(--font-display);
   font-size: calc(120px * var(--scale, 1)); /* Fallback */
-  font-size: 68cqh !important; /* Scale dynamically as exactly ~91% of the yellow box height */
+  font-size: 72cqh !important; /* Scale dynamically as exactly ~91% of the yellow box height */
   font-weight: 900;
   line-height: 0.9 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -360,7 +360,7 @@
 
 .sb-card-divider {
   font-family: var(--font-display);
-  font-size: calc(48px * var(--scale, 1));
+  font-size: calc(32px * var(--scale, 1));
   font-weight: 800;
   color: #ffffff;
   line-height: 1;
@@ -369,17 +369,19 @@
 
 .sb-status-badge {
   font-family: var(--font-display);
-  font-size: calc(11px * var(--scale, 1));
+  font-size: calc(12px * var(--scale, 1)); 
+  font-weight: 800; 
   letter-spacing: 3px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: calc(8px * var(--scale, 1));
+  color: #ffffff; 
+  margin-top: auto; /* Push badge to the bottom of the flex column */
+  margin-bottom: calc(4px * var(--scale, 1)); /* Clear space from bottom border */
   text-transform: uppercase;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(212, 168, 67, 0.15);
-  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1));
+  background: rgba(15, 15, 15, 0.85); 
+  border: 1px solid var(--color-gold); 
+  padding: calc(5px * var(--scale, 1)) calc(16px * var(--scale, 1));
   border-radius: 20px;
   line-height: 1;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
 /* ─── MODULE TYPE: RESULTS ─── */
@@ -710,27 +712,28 @@
 
 .apuesta-title {
   font-family: var(--font-display);
-  font-size: clamp(18px, calc(32px * var(--font-scale, 1)), 84px);
+  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 26px) !important; /* Adjusted size to fit completely on one line */
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-  white-space: normal;
-  overflow: visible;
-  word-wrap: break-word;
-  word-break: break-word;
+  white-space: nowrap !important; /* Force single line */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   flex: 1;
   min-width: 0;
 }
 
 .apuesta-tag {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 48px);
+  font-size: clamp(10px, calc(12px * var(--font-scale, 1)), 16px) !important; /* Slightly smaller tag size to prevent ellipsis */
   font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
 }
 
 .apuesta-odds-row {
@@ -746,7 +749,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 0 clamp(6px, calc(10px * var(--scale, 1)), 14px) !important;
+  padding: 0 calc(6px * var(--scale, 1)) !important; /* Optimized padding to gain horizontal space */
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -754,7 +757,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  gap: clamp(4px, calc(8px * var(--scale, 1)), 12px);
+  gap: calc(5px * var(--scale, 1)); /* Tightened gap to save space */
   box-sizing: border-box;
   transition: all 0.25s ease;
 }
@@ -789,23 +792,25 @@
 }
 
 .module-wrapper .module-apuesta-display .sb-team-flag {
-  width: calc(24px * var(--scale, 1)) !important;
-  height: calc(24px * var(--scale, 1)) !important;
+  width: calc(28px * var(--scale, 1)) !important;
+  height: calc(28px * var(--scale, 1)) !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   background: none !important;
-  border: none !important;
+  border: 1px solid rgba(212, 168, 67, 0.3) !important; /* Gold border to match theme */
   padding: 0 !important;
   margin: 0 !important;
-  font-size: calc(15px * var(--scale, 1)) !important;
+  font-size: calc(16px * var(--scale, 1)) !important;
+  object-fit: cover !important; /* Keep circle flags perfectly cropped */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .apuesta-team-name {
   font-family: var(--font-display);
-  font-size: clamp(10px, calc(14px * var(--font-scale, 1)), 18px) !important;
-  font-weight: 700;
+  font-size: clamp(10px, calc(13px * var(--font-scale, 1)), 18px) !important; /* Reduced base size to prevent ellipsis */
+  font-weight: 800; /* Bolder */
   color: var(--color-white);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -823,7 +828,7 @@
 
 .apuesta-odd-value {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 24px) !important;
+  font-size: clamp(11px, calc(16px * var(--font-scale, 1)), 20px) !important; /* Adjusted odd font size */
   font-weight: 800;
   color: var(--color-gold);
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
@@ -1019,11 +1024,9 @@
 
 
 /* ─── NARROW AND SHORT DISPLAY OVERRIDES ─── */
-.narrow-col-4 .apuesta-title,
-.narrow-col-3 .apuesta-title,
 .narrow-col-2 .apuesta-title,
 .narrow-col-1 .apuesta-title {
-  font-size: clamp(16px, calc(24px * var(--font-scale, 1)), 38px) !important;
+  font-size: clamp(14px, calc(20px * var(--font-scale, 1)), 32px) !important;
   max-width: 100% !important;
   white-space: normal !important;
   word-wrap: break-word !important;
@@ -1032,15 +1035,17 @@
   text-overflow: clip !important;
 }
 
-.narrow-col-4 .apuesta-tag,
-.narrow-col-3 .apuesta-tag,
 .narrow-col-2 .apuesta-tag,
 .narrow-col-1 .apuesta-tag {
   display: none !important;
 }
 
 .narrow-col-4 .apuesta-header,
-.narrow-col-3 .apuesta-header,
+.narrow-col-3 .apuesta-header {
+  justify-content: space-between !important;
+  margin-bottom: 6px !important;
+}
+
 .narrow-col-2 .apuesta-header,
 .narrow-col-1 .apuesta-header {
   justify-content: center !important;

@@ -171,13 +171,49 @@ function isVideo(src, mediaType) {
   return src.match(/\.(mp4|webm|ogg)(\?|$)/i) || src.startsWith('data:video');
 }
 
+export function emojiToCountryCode(emoji) {
+  if (!emoji) return null;
+  try {
+    const codePoints = Array.from(emoji);
+    if (codePoints.length >= 1) {
+      const charCode = codePoints[0].codePointAt(0);
+      // Regional Indicator Symbol range is U+1F1E6 (127462) to U+1F1FF (127487)
+      if (charCode >= 127462 && charCode <= 127487) {
+        let code = '';
+        for (let i = 0; i < Math.min(2, codePoints.length); i++) {
+          const cp = codePoints[i].codePointAt(0);
+          if (cp >= 127462 && cp <= 127487) {
+            code += String.fromCharCode(cp - 127462 + 65);
+          }
+        }
+        if (code.length === 2) {
+          return code.toLowerCase();
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error parsing emoji flag:", e);
+  }
+  return null;
+}
+
 export function TeamFlag({ flag }) {
   if (!flag) return null;
   const isUrl = flag.startsWith('/') || flag.startsWith('http') || flag.includes('.') || flag.startsWith('data:image');
+  let flagUrl = null;
   if (isUrl) {
+    flagUrl = flag;
+  } else {
+    const countryCode = emojiToCountryCode(flag);
+    if (countryCode) {
+      flagUrl = `https://flagcdn.com/w160/${countryCode}.png`;
+    }
+  }
+
+  if (flagUrl) {
     return (
       <img
-        src={flag}
+        src={flagUrl}
         alt="Flag"
         className="sb-team-flag sb-team-flag-img"
         style={{
@@ -330,7 +366,7 @@ function ApuestaModule({ content }) {
     <div className="module-apuesta-display">
       <div className="apuesta-header">
         <div className="apuesta-title">{content.title}</div>
-        <div className="apuesta-tag">{content.tag}</div>
+        {content.tag && <div className="apuesta-tag">{content.tag}</div>}
       </div>
       <div className="apuesta-odds-row">
         {/* Box Left: Team A / Selection A (always rendered) */}
