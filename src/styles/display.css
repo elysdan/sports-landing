@@ -73,6 +73,12 @@
   object-fit: fill;
 }
 
+.spans-all-grid .media-content {
+  object-fit: fill !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
 .module-media .media-overlay {
   position: absolute;
   inset: 0;
@@ -497,12 +503,12 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(24px * var(--font-scale, 1)), 48px);
+  font-size: clamp(14px, calc(32px * var(--font-scale, 1)), 60px);
   font-weight: 800;
   color: var(--color-bg-primary);
   background: var(--color-gold);
-  padding: clamp(3px, calc(5px * var(--scale, 1)), 8px) clamp(6px, calc(12px * var(--scale, 1)), 18px);
-  border-radius: 6px;
+  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(12px, calc(20px * var(--scale, 1)), 32px);
+  border-radius: calc(6px * var(--scale, 1));
   align-self: center;
   letter-spacing: 1.5px;
   line-height: 1;
@@ -659,6 +665,7 @@
   padding: 0 !important;
   margin: 0 !important;
   aspect-ratio: 1/1 !important;
+  flex-shrink: 0 !important;
 }
 
 .module-wrapper .module-apuesta-display .sb-team-flag {
@@ -675,6 +682,7 @@
   font-size: calc(16px * var(--scale, 1)) !important;
   object-fit: cover !important;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0 !important;
 }
 
 .apuesta-team-info {
@@ -701,13 +709,10 @@
   font-weight: 600;
   color: var(--color-white);
   letter-spacing: 0.5px;
-  white-space: normal !important;
-  word-wrap: break-word !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
-  min-width: 0;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: max-content !important;
   text-align: left;
   flex: 1 !important;
   line-height: 1.1 !important;
@@ -732,7 +737,7 @@
 }
 
 /* Internal vertical alignment for betting options when width is narrow (e.g. 9x9 layout columns) and is not a short row */
-@container (min-width: 350px) and (max-width: 620px) {
+@container (min-width: 350px) and (max-width: 950px) {
   /* Only apply in horizontal screen layouts when the module height is tall (not .short-row) */
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info {
     flex-direction: column !important;
@@ -819,12 +824,9 @@
     order: 2 !important;
     font-size: clamp(10px, 14cqi, 18px) !important;
     text-align: left !important;
-    white-space: normal !important; /* Allow wrapping */
-    word-wrap: break-word !important;
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     line-height: 1.1 !important;
   }
 
@@ -856,12 +858,9 @@
     order: 2 !important;
     font-size: clamp(10px, 14cqi, 18px) !important;
     text-align: left !important; /* Align writing to the left */
-    white-space: normal !important; /* Allow wrapping */
-    word-wrap: break-word !important;
-    word-break: normal !important;
-    overflow-wrap: break-word !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     line-height: 1.1 !important;
   }
 
@@ -878,6 +877,7 @@
     max-height: 32px !important;
     aspect-ratio: 1/1 !important;
     border-radius: 50% !important;
+    flex-shrink: 0 !important;
   }
 
   /* Compact sizes for short cells */
@@ -889,6 +889,7 @@
   .short-row-1 .module-apuesta-display img.sb-team-flag {
     width: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
     height: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
+    flex-shrink: 0 !important;
   }
 }
 
@@ -1262,7 +1263,11 @@
 }
 
 .narrow-col-4 .upcoming-vs-badge,
-.narrow-col-3 .upcoming-vs-badge,
+.narrow-col-3 .upcoming-vs-badge {
+  font-size: clamp(14px, calc(28px * var(--font-scale, 1)), 54px) !important;
+  padding: clamp(5px, calc(8px * var(--scale, 1)), 14px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
+}
+
 .narrow-col-2 .upcoming-vs-badge,
 .narrow-col-1 .upcoming-vs-badge {
   font-size: clamp(11px, calc(16px * var(--font-scale, 1)), 24px) !important;
@@ -1620,12 +1625,9 @@ img.sb-team-flag,
   order: 2 !important;
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 32px) !important;
   text-align: left !important;
-  white-space: normal !important; /* Allow wrapping */
-  word-wrap: break-word !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   line-height: 1.1 !important;
 }
 
@@ -1650,12 +1652,9 @@ img.sb-team-flag,
   order: 2 !important;
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 32px) !important;
   text-align: right !important;
-  white-space: normal !important; /* Allow wrapping */
-  word-wrap: break-word !important;
-  word-break: normal !important;
-  overflow-wrap: break-word !important;
-  overflow: visible !important;
-  text-overflow: clip !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
   line-height: 1.1 !important;
 }
 

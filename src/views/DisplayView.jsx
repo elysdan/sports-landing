@@ -485,16 +485,12 @@ export default function DisplayView() {
     ? (9 / 16) 
     : (screenType === '9x9' ? 1.0 : 2.0);
 
-  let actualGridWidth = window.innerWidth;
-  let actualGridHeight = window.innerHeight;
+  // Native design resolution of the screen
+  const targetWidth = isVertical ? 1080 : 1920;
+  const targetHeight = targetWidth / aspect;
 
-  if (isVertical) {
-    actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
-    actualGridHeight = actualGridWidth / aspect;
-  } else if (layout?.grid) {
-    actualGridWidth = Math.min(window.innerWidth, window.innerHeight * aspect);
-    actualGridHeight = actualGridWidth / aspect;
-  }
+  // Scale factor to center and fit the canvas inside the viewport
+  const scaleFit = Math.min(window.innerWidth / targetWidth, window.innerHeight / targetHeight);
 
   if (!hasLoadedFromServer) {
     return (
@@ -515,8 +511,8 @@ export default function DisplayView() {
     <div
       className={`viewport-container ${isVertical ? 'vertical' : 'horizontal'}`}
       style={{
-        width: '100%',
-        height: '100%',
+        width: '100vw',
+        height: '100vh',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -530,10 +526,11 @@ export default function DisplayView() {
       <div
         className={`billboard-grid ${isVertical ? 'vertical' : 'horizontal'} screen-${screenType}`}
         style={{
-          width: `${actualGridWidth}px`,
-          height: `${actualGridHeight}px`,
-          maxWidth: '100%',
-          maxHeight: '100%',
+          width: `${targetWidth}px`,
+          height: `${targetHeight}px`,
+          transform: `scale(${scaleFit})`,
+          transformOrigin: 'center center',
+          flexShrink: 0,
           gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
           gridTemplateRows: isVertical
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
@@ -562,10 +559,12 @@ export default function DisplayView() {
       >
         {layout.modules.map((mod) => {
           const indexInMaster = modules.findIndex((m) => m.id === mod.id);
+          const spansAll = mod.gridPosition.colSpan === layout.grid.cols && 
+                           mod.gridPosition.rowSpan === layout.grid.rows;
           return (
             <div
               key={mod.id}
-              className="module-cell"
+              className={`module-cell ${spansAll ? 'spans-all-grid' : ''}`}
               style={{
                 gridColumn: `${mod.gridPosition.col} / span ${mod.gridPosition.colSpan}`,
                 gridRow: `${mod.gridPosition.row} / span ${mod.gridPosition.rowSpan}`,
@@ -577,7 +576,7 @@ export default function DisplayView() {
                 gridPosition={mod.gridPosition} 
                 gridCols={layout.grid.cols} 
                 gridRows={layout.grid.rows} 
-                overrideWidth={actualGridWidth}
+                overrideWidth={targetWidth}
                 screenType={screenType}
               />
             </div>
