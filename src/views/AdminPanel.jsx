@@ -31,6 +31,17 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
     ? module.gridPosition.textSizeFactor
     : (module.content?.textSizeFactor !== undefined ? module.content.textSizeFactor : 1.0);
 
+  const handleLayoutScaleChange = (value) => {
+    if (!canEdit) return;
+    updateModule(module.id, {
+      gridPosition: { ...module.gridPosition, scaleFactor: parseFloat(value) || 1.0 }
+    });
+  };
+
+  const currentScaleFactor = module.gridPosition?.scaleFactor !== undefined
+    ? module.gridPosition.scaleFactor
+    : (module.content?.scaleFactor !== undefined ? module.content.scaleFactor : 1.0);
+
   const handleImageUpload = (e) => {
     if (!canEdit) return;
     const file = e.target.files[0];
@@ -345,9 +356,44 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
                 Deja el campo vacío para usar los colores predeterminados del módulo.
+          </div>
+        </div>
+      </div>
+
+      {(module.type === 'scoreboard' || module.type === 'apuesta') && (
+            <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
+              <div className="field" style={{ marginBottom: 0 }}>
+                <label>Proporciones del Módulo (Escala de Elementos)</label>
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.5"
+                    step="0.05"
+                    value={currentScaleFactor}
+                    onChange={(e) => handleLayoutScaleChange(e.target.value)}
+                    style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+                  />
+                  <span style={{ 
+                    fontSize: '14px', 
+                    fontWeight: '600', 
+                    color: 'var(--color-primary)', 
+                    minWidth: '40px', 
+                    textAlign: 'right',
+                    fontFamily: 'monospace'
+                  }}>
+                    {currentScaleFactor.toFixed(2)}x
+                  </span>
+                </div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                  Ajusta las proporciones, espacios y tamaño de las tarjetas/elementos dentro de este módulo.
+                </div>
+              </div>
+              <div className="field" style={{ marginBottom: 0, opacity: 0, pointerEvents: 'none' }}>
+                {/* Spacer */}
               </div>
             </div>
-          </div>
+          )}
 
         </div>
 

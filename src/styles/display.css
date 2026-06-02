@@ -260,8 +260,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start; /* Align from the top to respect padding */
-  padding: calc(18px * var(--scale, 1)) calc(12px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important; /* Explicit top padding to push contents down */
+  justify-content: center; /* Center vertically to keep it clean */
+  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important; /* Smaller top/bottom padding */
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -287,15 +287,17 @@
   justify-content: center;
   gap: calc(14px * var(--scale, 1));
   width: 100%;
-  /* Removed flex: 1 to prevent expanding to the very top */
-  margin-top: calc(8px * var(--scale, 1)); /* Added margin top to push cards further down */
+  flex: 1; /* Center cards vertically */
+  margin-top: 0;
 }
 
 .sb-team-card {
   display: flex;
   flex-direction: column;
-  width: calc(185px * var(--scale, 1));
-  height: calc(195px * var(--scale, 1)); /* Shorter card to clear the top and bottom bounds */
+  width: auto; /* Scale width proportionally based on height and aspect-ratio */
+  height: clamp(120px, calc(265px * var(--scale, 1)), 330px); /* Larger default height */
+  max-height: 90% !important; /* Occupy 90% of the module height */
+  aspect-ratio: 170 / 200; /* More vertical proportions */
   border-radius: calc(10px * var(--scale, 1));
   overflow: hidden;
   box-shadow: 0 calc(8px * var(--scale, 1)) calc(24px * var(--scale, 1)) rgba(0, 0, 0, 0.65), 
@@ -749,7 +751,7 @@
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 0 calc(6px * var(--scale, 1)) !important; /* Optimized padding to gain horizontal space */
+  padding: 0 calc(12px * var(--scale, 1)) !important; /* Enlarged padding for better proportions */
   flex: 1;
   display: flex;
   flex-direction: row;
@@ -757,9 +759,10 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
-  gap: calc(5px * var(--scale, 1)); /* Tightened gap to save space */
+  gap: calc(8px * var(--scale, 1)); /* Enlarged gap for more space */
   box-sizing: border-box;
   transition: all 0.25s ease;
+  container-type: inline-size;
 }
 
 .apuesta-odd-box:hover {
@@ -838,6 +841,63 @@
   max-width: 100%;
   text-align: center;
   box-sizing: border-box;
+}
+
+/* Container query to stack betting options vertically when layout is narrow (< 350px) */
+@container (max-width: 350px) {
+  .module-apuesta-display .apuesta-odds-row {
+    flex-direction: column !important;
+    gap: calc(4px * var(--scale, 1)) !important;
+  }
+
+  .module-apuesta-display .apuesta-odd-box {
+    width: 100% !important;
+    height: auto !important;
+    flex: 1 !important;
+    padding: calc(3px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    gap: calc(4px * var(--scale, 1)) !important;
+  }
+
+  .module-apuesta-display .apuesta-team-name {
+    font-size: clamp(10px, 14cqi, 18px) !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+  }
+
+  .module-apuesta-display .box-right .apuesta-team-name {
+    text-align: right !important;
+  }
+
+  .module-apuesta-display .apuesta-odd-value {
+    font-size: clamp(11px, 16cqi, 20px) !important;
+    white-space: nowrap !important;
+  }
+
+  .module-apuesta-display .sb-team-flag,
+  .module-apuesta-display img.sb-team-flag {
+    width: clamp(18px, calc(24px * var(--scale, 1)), 32px) !important;
+    height: clamp(18px, calc(24px * var(--scale, 1)), 32px) !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    aspect-ratio: 1/1 !important;
+    border-radius: 50% !important;
+  }
+
+  /* Compact sizes for short cells */
+  .short-row-1 .module-apuesta-display .apuesta-odd-box {
+    padding: calc(2px * var(--scale, 1)) calc(6px * var(--scale, 1)) !important;
+    gap: calc(2px * var(--scale, 1)) !important;
+  }
+  .short-row-1 .module-apuesta-display .sb-team-flag,
+  .short-row-1 .module-apuesta-display img.sb-team-flag {
+    width: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
+    height: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
+  }
 }
 
 /* ─── MODULE TYPE: PREGUNTA (SÍ/NO) ─── */
@@ -1445,6 +1505,7 @@
   border: 1px solid var(--module-border-color, var(--color-border)) !important;
   background: var(--module-bg-color, transparent) !important;
   background-color: var(--module-bg-color, transparent) !important;
+  container-type: inline-size;
 }
 
 /* Force inner flex items to be able to shrink so they never push contents out */

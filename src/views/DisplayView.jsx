@@ -43,8 +43,8 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     ? (0.45 + (rowFraction * 1.5))
     : (0.12 + (sizeFactor * 2.8) + (Math.min(colFraction, rowFraction * 1.8) * 0.6));
 
-  const scale = baseScale * viewportScale;
   const content = module.content || {};
+  const scale = baseScale * viewportScale * (gp.scaleFactor !== undefined ? gp.scaleFactor : (content.scaleFactor !== undefined ? content.scaleFactor : 1.0));
   const layoutTextSizeFactor = gp.textSizeFactor !== undefined
     ? gp.textSizeFactor
     : (content.textSizeFactor !== undefined ? content.textSizeFactor : 1.0);
@@ -257,7 +257,6 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
       </div>
-      {content.status && <div className="sb-status-badge">{content.status}</div>}
     </div>
   );
 }
