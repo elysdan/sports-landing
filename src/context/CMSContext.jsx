@@ -228,59 +228,84 @@ export function CMSProvider({ children }) {
 
   // Real-time EventSource listener to sync both liveData and draftData
   useEffect(() => {
-    const eventSource = new EventSource('/api/cms/events');
+    let eventSource;
+    let isClosed = false;
 
-    eventSource.addEventListener('update', async (e) => {
-      try {
-        const eventData = JSON.parse(e.data);
-        const version = Number(eventData.version);
-        if (version && version > Number(currentVersion)) {
-          const dataRes = await fetch('/api/cms');
-          if (dataRes.ok) {
-            const data = await dataRes.json();
-            if (data && data.modules) {
-              const migrated = migrateData(data);
-              setRawLiveData(migrated);
-              setCurrentVersion(version);
-              console.log(`[CMS-SSE] Vista actualizada a la versión: ${version}`);
+    const initEventSource = () => {
+      if (isClosed) return;
+      eventSource = new EventSource('/api/cms/events');
+
+      eventSource.addEventListener('update', async (e) => {
+        try {
+          const eventData = JSON.parse(e.data);
+          const version = Number(eventData.version);
+          if (version && version > Number(currentVersion)) {
+            const dataRes = await fetch('/api/cms');
+            if (dataRes.ok) {
+              const data = await dataRes.json();
+              if (data && data.modules) {
+                const migrated = migrateData(data);
+                setRawLiveData(migrated);
+                setCurrentVersion(version);
+                console.log(`[CMS-SSE] Vista actualizada a la versión: ${version}`);
+              }
             }
           }
+        } catch (err) {
+          console.warn("[CMS-SSE] Error procesando evento update:", err);
         }
-      } catch (err) {
-        console.warn("[CMS-SSE] Error procesando evento update:", err);
-      }
-    });
+      });
 
-    eventSource.addEventListener('draftUpdate', async (e) => {
-      if (isEditor) return; // Si es el editor, ya maneja el estado localmente
-      if (!isDraftMode) return; // Si no está en vista previa de borrador, ignorar
+      eventSource.addEventListener('draftUpdate', async (e) => {
+        if (isEditor) return; // Si es el editor, ya maneja el estado localmente
+        if (!isDraftMode) return; // Si no está en vista previa de borrador, ignorar
 
-      try {
-        const eventData = JSON.parse(e.data);
-        const version = Number(eventData.version);
-        if (version && version > Number(currentDraftVersion)) {
-          const res = await fetch('/api/cms/draft');
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.modules) {
-              const migrated = migrateData(data);
-              setRawDraftData(migrated);
-              setCurrentDraftVersion(version);
-              console.log(`[CMS-SSE] Borrador en pantalla actualizado a la versión: ${version}`);
+        try {
+          const eventData = JSON.parse(e.data);
+          const version = Number(eventData.version);
+          if (version && version > Number(currentDraftVersion)) {
+            const res = await fetch('/api/cms/draft');
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.modules) {
+                const migrated = migrateData(data);
+                setRawDraftData(migrated);
+                setCurrentDraftVersion(version);
+                console.log(`[CMS-SSE] Borrador en pantalla actualizado a la versión: ${version}`);
+              }
             }
           }
+        } catch (err) {
+          console.warn("[CMS-SSE] Error procesando evento draftUpdate:", err);
         }
-      } catch (err) {
-        console.warn("[CMS-SSE] Error procesando evento draftUpdate:", err);
-      }
-    });
+      });
 
-    eventSource.onerror = () => {
-      // EventSource se reconectará automáticamente de forma nativa
+      eventSource.onerror = () => {
+        // EventSource se reconectará automáticamente de forma nativa
+      };
     };
 
+    // Postpone SSE connection slightly to let the page finish loading without blocking
+    let timeoutId;
+    if (document.readyState === 'complete') {
+      timeoutId = setTimeout(initEventSource, 1500);
+    } else {
+      const handleLoad = () => {
+        timeoutId = setTimeout(initEventSource, 1500);
+      };
+      window.addEventListener('load', handleLoad);
+      return () => {
+        isClosed = true;
+        window.removeEventListener('load', handleLoad);
+        clearTimeout(timeoutId);
+        if (eventSource) eventSource.close();
+      };
+    }
+
     return () => {
-      eventSource.close();
+      isClosed = true;
+      clearTimeout(timeoutId);
+      if (eventSource) eventSource.close();
     };
   }, [currentVersion, currentDraftVersion, isEditor, isDraftMode]);
 
