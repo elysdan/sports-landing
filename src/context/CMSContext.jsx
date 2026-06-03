@@ -149,6 +149,59 @@ function loadFromStorage(key) {
   return defaultData;
 }
 
+function preloadImage(url) {
+  return new Promise((resolve) => {
+    if (!url) return resolve();
+    const img = new Image();
+    img.src = url;
+    img.onload = () => resolve();
+    img.onerror = () => resolve(); // Resolve anyway on error to avoid blocking the app
+  });
+}
+
+async function preloadConfigImages(config) {
+  if (!config || !Array.isArray(config.modules)) return;
+  const urls = [];
+
+  config.modules.forEach(mod => {
+    if (!mod || !mod.content) return;
+    
+    // 1. Media modules (exclude videos from image preloading)
+    if (mod.type === 'media' && mod.content.src) {
+      const isVid = mod.content.src.match(/\.(mp4|webm|ogg)(\?|$)/i) || mod.content.src.startsWith('data:video');
+      if (!isVid) {
+        urls.push(mod.content.src);
+      }
+    }
+    
+    // 2. Scoreboard flags
+    if (mod.type === 'scoreboard') {
+      if (mod.content.teamA?.flag) urls.push(mod.content.teamA.flag);
+      if (mod.content.teamB?.flag) urls.push(mod.content.teamB.flag);
+    }
+    
+    // 3. Upcoming flags
+    if (mod.type === 'upcoming') {
+      if (mod.content.flagA) urls.push(mod.content.flagA);
+      if (mod.content.flagB) urls.push(mod.content.flagB);
+    }
+    
+    // 4. Apuesta flags
+    if (mod.type === 'apuesta') {
+      if (mod.content.teamA?.flag) urls.push(mod.content.teamA.flag);
+      if (mod.content.teamB?.flag) urls.push(mod.content.teamB.flag);
+    }
+  });
+
+  const uniqueUrls = [...new Set(urls.filter(Boolean))];
+  
+  // Wait for all to preload, with a fallback timeout of 2.5 seconds
+  await Promise.race([
+    Promise.all(uniqueUrls.map(url => preloadImage(url))),
+    new Promise(resolve => setTimeout(resolve, 2500))
+  ]);
+}
+
 const CMSContext = createContext(null);
 
 export function CMSProvider({ children }) {
@@ -204,6 +257,10 @@ export function CMSProvider({ children }) {
 
         if (serverLive && serverLive.modules) {
           const migratedLive = migrateData(serverLive);
+          
+          // Preload all critical layout images (flags, LCP hero) before rendering
+          await preloadConfigImages(migratedLive);
+
           setRawLiveData(migratedLive);
 
           if (serverDraft && serverDraft.modules) {
@@ -241,13 +298,15 @@ export function CMSProvider({ children }) {
       if (isClosed) return;
       eventSource = new EventSource('/api/cms/events');
 
-      eventSource.addEventListener('update', (e) => {
+      eventSource.addEventListener('update', async (e) => {
         try {
           const eventData = JSON.parse(e.data);
           const version = Number(eventData.version);
 
           if (eventData.config) {
-            setRawLiveData(migrateData(eventData.config));
+            const migrated = migrateData(eventData.config);
+            await preloadConfigImages(migrated);
+            setRawLiveData(migrated);
             setCurrentVersion(version);
             console.log(`[CMS-SSE] Renderizado instantáneo aplicado. Versión: ${version}`);
           }
@@ -269,6 +328,7 @@ export function CMSProvider({ children }) {
               const data = await res.json();
               if (data && data.modules) {
                 const migrated = migrateData(data);
+                await preloadConfigImages(migrated);
                 setRawDraftData(migrated);
                 setCurrentDraftVersion(version);
                 console.log(`[CMS-SSE] Borrador en pantalla actualizado a la versión: ${version}`);
