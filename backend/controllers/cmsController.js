@@ -2,10 +2,107 @@ import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover, getDbW
 import { readJsonBody, sendJson } from '../utils.js';
 import { broadcastEvent } from './sseController.js';
 
+function parseTeamString(teamStr) {
+  if (!teamStr) return '';
+  const trimmed = teamStr.trim();
+  const emojiRegex = /^([\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]|\p{Emoji_Presentation}|\p{Emoji})/u;
+  const match = trimmed.match(emojiRegex);
+  if (match) {
+    return trimmed.slice(match[0].length).trim();
+  }
+  return trimmed;
+}
+
+async function populateFlagsInConfig(config) {
+  if (!config || !Array.isArray(config.modules)) return config;
+
+  try {
+    const teams = await getDbWorldCupTeams();
+    const teamNameToTeam = {};
+    const teamFlagToTeam = {};
+
+    teams.forEach(t => {
+      if (t.name) {
+        teamNameToTeam[t.name.toUpperCase().trim()] = t;
+      }
+      if (t.flag) {
+        teamFlagToTeam[t.flag.trim()] = t;
+      }
+    });
+
+    const getFlagUrl = (teamName, currentFlag) => {
+      // 1. If it's already a clean SVG flag URL, don't modify it
+      if (typeof currentFlag === 'string' && (currentFlag.startsWith('/paises/') || !isNaN(currentFlag))) {
+        return currentFlag;
+      }
+
+      // 2. Lookup by name
+      if (teamName) {
+        const match = teamNameToTeam[teamName.toUpperCase().trim()];
+        if (match) return `/paises/${match.id}.svg`;
+      }
+
+      // 3. Lookup by flag emoji
+      if (currentFlag && currentFlag !== '?' && currentFlag !== '??') {
+        const match = teamFlagToTeam[currentFlag.trim()];
+        if (match) return `/paises/${match.id}.svg`;
+      }
+
+      return currentFlag;
+    };
+
+    config.modules = config.modules.map(mod => {
+      if (!mod || !mod.content) return mod;
+
+      const newMod = { ...mod, content: { ...mod.content } };
+
+      if (mod.type === 'scoreboard') {
+        if (newMod.content.teamA) {
+          newMod.content.teamA = {
+            ...newMod.content.teamA,
+            flag: getFlagUrl(newMod.content.teamA.name, newMod.content.teamA.flag)
+          };
+        }
+        if (newMod.content.teamB) {
+          newMod.content.teamB = {
+            ...newMod.content.teamB,
+            flag: getFlagUrl(newMod.content.teamB.name, newMod.content.teamB.flag)
+          };
+        }
+      } else if (mod.type === 'upcoming') {
+        const nameA = parseTeamString(newMod.content.teamA);
+        const nameB = parseTeamString(newMod.content.teamB);
+        newMod.content.flagA = getFlagUrl(nameA, newMod.content.flagA);
+        newMod.content.flagB = getFlagUrl(nameB, newMod.content.flagB);
+      } else if (mod.type === 'apuesta') {
+        if (newMod.content.teamA) {
+          newMod.content.teamA = {
+            ...newMod.content.teamA,
+            flag: getFlagUrl(newMod.content.teamA.name, newMod.content.teamA.flag)
+          };
+        }
+        if (newMod.content.teamB) {
+          newMod.content.teamB = {
+            ...newMod.content.teamB,
+            flag: getFlagUrl(newMod.content.teamB.name, newMod.content.teamB.flag)
+          };
+        }
+      }
+
+      return newMod;
+    });
+  } catch (err) {
+    console.error("[Backend] Error populating flag URLs from DB:", err);
+  }
+
+  return config;
+}
+
 export async function handleGetCms(req, res) {
   try {
     const config = await getConfig('live');
-    sendJson(res, 200, config || {});
+    const processedConfig = await populateFlagsInConfig(config);
+    sendJson(res, 200, processedConfig || {});
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
@@ -54,7 +151,8 @@ export async function handleGetCmsDraft(req, res) {
       // Fallback to live config if draft is empty
       config = await getConfig('live');
     }
-    sendJson(res, 200, config || {});
+    const processedConfig = await populateFlagsInConfig(config);
+    sendJson(res, 200, processedConfig || {});
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }

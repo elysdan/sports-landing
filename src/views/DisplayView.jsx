@@ -222,7 +222,7 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
   if (targetName && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
     const found = worldCupTeams.find(
       t => t.name.toUpperCase() === targetName.trim().toUpperCase() || 
-           t.flag === flag
+           (flag && flag !== '?' && flag !== '??' && t.flag === flag)
     );
     if (found && found.id) {
       flagUrl = `/paises/${found.id}.svg`;
