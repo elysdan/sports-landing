@@ -18,14 +18,15 @@ async function initDb() {
 
   // 1. Try to connect without database to create it if it doesn't exist
   try {
-    console.log(`[DB] Verificando/Creando base de datos '${database}' en MySQL...`);
+    console.log(`[DB] Verificando/Creando base de datos '${database}' en MySQL con soporte utf8mb4...`);
     const adminConnection = await mysql.createConnection({
       host,
       port,
       user,
-      password
+      password,
+      charset: 'utf8mb4'
     });
-    await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\``);
+    await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
     await adminConnection.end();
     console.log(`[DB] Base de datos '${database}' verificada/creada con éxito.`);
     connected = true;
@@ -43,12 +44,14 @@ async function initDb() {
       database,
       waitForConnections: true,
       connectionLimit: 5,
-      queueLimit: 0
+      queueLimit: 0,
+      charset: 'utf8mb4'
     });
     
     // Test pool connection
     const connection = await pool.getConnection();
-    console.log(`[DB] Conectado exitosamente a la base de datos MySQL '${database}'.`);
+    await connection.query('SET NAMES utf8mb4');
+    console.log(`[DB] Conectado exitosamente a la base de datos MySQL '${database}' con charset utf8mb4.`);
     connection.release();
     connected = true;
   } catch (err) {
@@ -56,7 +59,14 @@ async function initDb() {
     throw new Error('No se pudo establecer conexión con la base de datos MySQL.');
   }
 
-  // Create tables in parallel
+  // Convert database and set default collation
+  try {
+    await pool.query(`ALTER DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
+  } catch (err) {
+    console.warn(`[DB] No se pudo alterar el conjunto de caracteres de la base de datos: ${err.message}`);
+  }
+
+  // Create tables in parallel with explicit utf8mb4 charset
   await Promise.all([
     pool.query(`
       CREATE TABLE IF NOT EXISTS billboard_config (
@@ -65,7 +75,7 @@ async function initDb() {
         config_data LONGTEXT,
         version BIGINT,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `),
     pool.query(`
       CREATE TABLE IF NOT EXISTS users (
@@ -75,7 +85,7 @@ async function initDb() {
         name VARCHAR(100) NOT NULL,
         allowed_types TEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `),
     pool.query(`
       CREATE TABLE IF NOT EXISTS billboard_templates (
@@ -83,7 +93,7 @@ async function initDb() {
         template_name VARCHAR(100) UNIQUE NOT NULL,
         config_data LONGTEXT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `),
     pool.query(`
       CREATE TABLE IF NOT EXISTS media_assets (
@@ -92,7 +102,7 @@ async function initDb() {
         mime_type VARCHAR(100) NOT NULL,
         size_bytes INT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `),
     pool.query(`
       CREATE TABLE IF NOT EXISTS billboard_history (
@@ -104,7 +114,7 @@ async function initDb() {
         version BIGINT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_billboard_history_created_at (created_at DESC)
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `),
     pool.query(`
       CREATE TABLE IF NOT EXISTS world_cup_teams (
@@ -112,9 +122,20 @@ async function initDb() {
         name VARCHAR(100) UNIQUE NOT NULL,
         code VARCHAR(10) NOT NULL,
         flag VARCHAR(255) NOT NULL
-      )
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
     `)
   ]);
+
+  // Convert existing tables to utf8mb4 in case they were created with standard utf8 or latin1 in production
+  try {
+    console.log("[DB] Convirtiendo tablas existentes a charset utf8mb4...");
+    await pool.query("ALTER TABLE billboard_config CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    await pool.query("ALTER TABLE world_cup_teams CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    await pool.query("ALTER TABLE billboard_history CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
+    console.log("[DB] Conversión de tablas a utf8mb4 completada.");
+  } catch (convErr) {
+    console.warn(`[DB] No se pudo convertir las tablas a utf8mb4: ${convErr.message}`);
+  }
 
   // Safe migration to drop file_data from media_assets if it still exists
   try {
@@ -130,10 +151,23 @@ async function initDb() {
 
   console.log('[DB] Todas las tablas han sido verificadas/creadas en paralelo.');
 
-  // Seed default World Cup teams - only seed if table has fewer than 48 teams
+  // Seed default World Cup teams - only seed if table does not have exactly 48 teams OR has corrupted emoji flags (e.g. "??" due to previous encoding issue)
   const [teamsCountRes] = await pool.query('SELECT COUNT(*) as count FROM world_cup_teams');
   const teamsCount = parseInt(teamsCountRes[0].count) || 0;
-  if (teamsCount < 48) {
+  
+  // Test if any team has a '?' in their flag, indicating encoding corruption
+  let hasCorruptedFlags = false;
+  try {
+    const [testRows] = await pool.query("SELECT id FROM world_cup_teams WHERE flag LIKE '%?%' LIMIT 1");
+    if (testRows.length > 0) {
+      hasCorruptedFlags = true;
+      console.log("[DB] Se detectaron banderas corruptas (con '?') debido a problemas previos de codificación.");
+    }
+  } catch (testErr) {
+    console.warn("[DB] Error al buscar banderas corruptas:", testErr.message);
+  }
+
+  if (teamsCount !== 48 || hasCorruptedFlags) {
     console.log(`[DB] Sembrando selecciones oficiales del mundial (Equipos actuales: ${teamsCount}/48)...`);
     await pool.query('DELETE FROM world_cup_teams');
     const defaultTeams = [
