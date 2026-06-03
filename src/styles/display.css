@@ -1,11 +1,10 @@
-/* ═══════════════════════════════════════════════════
-   ███ DISPLAY / BILLBOARD — 1920×1080 FIXED ███
-   ═══════════════════════════════════════════════════ */
+/*DISPLAY / BILLBOARD — 1920×1080 FIXED*/
 .viewport-container {
   width: 100%;
   height: 100%;
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   overflow: hidden;
   background: var(--color-bg-primary);
 }
@@ -82,19 +81,20 @@
 .module-media .media-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.6) 100%);
+  background: linear-gradient(to bottom, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
   pointer-events: none;
 }
 
 .module-media .media-overlay-text {
   position: absolute;
   bottom: var(--gap-lg);
-  left: var(--gap-xl); right: var(--gap-xl);
+  left: var(--gap-xl);
+  right: var(--gap-xl);
   font-family: var(--font-display);
   font-size: max(16px, calc(26px * var(--font-scale, 1)));
   font-weight: 700;
   color: var(--color-white);
-  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
   white-space: pre-line;
   letter-spacing: 1px;
   line-height: 1.25;
@@ -111,8 +111,10 @@
 
 .media-text-glow {
   position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
   background: radial-gradient(circle, rgba(212, 168, 67, 0.04) 0%, transparent 60%);
   pointer-events: none;
 }
@@ -183,7 +185,8 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 50%;
-  width: 72px; height: 72px;
+  width: 72px;
+  height: 72px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -214,7 +217,8 @@
   content: '♣ ♦ ♠ ♥ ♣ ♦ ♠ ♥ ♣ ♦ ♠ ♥';
   position: absolute;
   top: 10px;
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
   text-align: center;
   font-size: 16px;
   letter-spacing: 12px;
@@ -224,7 +228,8 @@
 }
 
 .brand-icon {
-  width: 48px; height: 48px;
+  width: 48px;
+  height: 48px;
   background: var(--color-gold);
   border-radius: var(--radius-md);
   display: flex;
@@ -255,11 +260,13 @@
 }
 
 .module-scoreboard-display {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* Center vertically to keep it clean */
+  justify-content: center;
+  /* Center vertically to keep it clean */
   padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) clamp(12px, 2vw, 32px) !important;
   box-sizing: border-box;
   overflow: hidden;
@@ -286,15 +293,18 @@
   justify-content: center;
   gap: calc(14px * var(--scale, 1));
   width: 100%;
-  flex: 1; /* Center cards vertically */
+  flex: 1;
+  /* Center cards vertically */
   margin-top: 0;
 }
 
 .sb-team-card {
   display: flex;
   flex-direction: column;
-  flex: 1; /* Stretch to fill the module width */
-  height: 100% !important; /* Fill full height */
+  flex: 1;
+  /* Stretch to fill the module width */
+  height: 100% !important;
+  /* Fill full height */
   max-height: 100% !important;
   border-radius: calc(10px * var(--scale, 1)) !important;
   border: 1px solid rgba(212, 168, 67, 0.15) !important;
@@ -302,19 +312,23 @@
   overflow: hidden;
   background: #1e2022;
   box-sizing: border-box;
-  container-type: size; /* Enable container query units based on card dimensions */
+  container-type: size;
+  /* Enable container query units based on card dimensions */
 }
 
 .sb-card-score {
-  background: #ffd014; /* Vibrant yellow */
+  background: #ffd014;
+  /* Vibrant yellow */
   color: #121212;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: calc(120px * var(--font-scale, 1)); /* Fallback */
-  font-size: calc(72cqh * var(--text-scale-factor, 1)) !important; /* Scale dynamically as exactly ~91% of the yellow box height */
+  font-size: calc(120px * var(--font-scale, 1));
+  /* Fallback */
+  font-size: calc(72cqh * var(--text-scale-factor, 1)) !important;
+  /* Scale dynamically as exactly ~91% of the yellow box height */
   font-weight: 900;
   line-height: 0.9 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
@@ -322,7 +336,8 @@
 }
 
 .sb-card-info {
-  background: #151719; /* Dark charcoal */
+  background: #151719;
+  /* Dark charcoal */
   height: calc(48px * var(--scale, 1));
   display: flex;
   align-items: center;
@@ -369,30 +384,32 @@
 
 .sb-status-badge {
   font-family: var(--font-display);
-  font-size: calc(12px * var(--scale, 1)); 
-  font-weight: 800; 
+  font-size: calc(12px * var(--scale, 1));
+  font-weight: 800;
   letter-spacing: 3px;
-  color: #ffffff; 
-  margin-top: auto; /* Push badge to the bottom of the flex column */
-  margin-bottom: calc(4px * var(--scale, 1)); /* Clear space from bottom border */
+  color: #ffffff;
+  margin-top: auto;
+  /* Push badge to the bottom of the flex column */
+  margin-bottom: calc(4px * var(--scale, 1));
+  /* Clear space from bottom border */
   text-transform: uppercase;
-  background: rgba(15, 15, 15, 0.85); 
-  border: 1px solid var(--color-gold); 
+  background: rgba(15, 15, 15, 0.85);
+  border: 1px solid var(--color-gold);
   padding: calc(5px * var(--scale, 1)) calc(16px * var(--scale, 1));
   border-radius: 20px;
   line-height: 1;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.6);
 }
 
-
-
 /* ─── MODULE TYPE: UPCOMING ─── */
 .module-upcoming-display {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) !important;
   background: var(--module-bg-color, transparent) !important;
   display: flex;
-  flex-direction: row; /* Side-by-side by default */
+  flex-direction: row;
+  /* Side-by-side by default */
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
@@ -558,8 +575,6 @@
   padding: 0 !important;
 }
 
-
-
 /* ─── MODULE TYPE: APUESTA ─── */
 .module-apuesta-display {
   width: 100%;
@@ -593,7 +608,8 @@
   text-transform: uppercase;
   letter-spacing: 1px;
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
-  white-space: nowrap !important; /* Keep title strictly in a single line */
+  white-space: nowrap !important;
+  /* Keep title strictly in a single line */
   overflow: hidden !important;
   text-overflow: ellipsis !important;
   flex: 1;
@@ -738,6 +754,7 @@
 
 /* Internal vertical alignment for betting options when width is narrow (e.g. 9x9 layout columns) and is not a short row */
 @container (min-width: 350px) and (max-width: 950px) {
+
   /* Only apply in horizontal screen layouts when the module height is tall (not .short-row) */
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info {
     flex-direction: column !important;
@@ -746,7 +763,7 @@
     gap: calc(2px * var(--scale, 1)) !important;
     flex: none !important;
   }
-  
+
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box {
     display: flex !important;
     flex-direction: row !important;
@@ -841,23 +858,29 @@
   .module-apuesta-display .box-center .apuesta-odd-value {
     font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
     white-space: nowrap !important;
-    text-align: right !important; /* Align numbers to the right */
-    margin-left: auto !important; /* Align numbers to the right */
+    text-align: right !important;
+    /* Align numbers to the right */
+    margin-left: auto !important;
+    /* Align numbers to the right */
   }
 
   .module-apuesta-display .box-right .apuesta-odd-value {
-    order: 3 !important; /* Align numbers to the right */
+    order: 3 !important;
+    /* Align numbers to the right */
     font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
     white-space: nowrap !important;
-    text-align: right !important; /* Align numbers to the right */
-    margin-left: auto !important; /* Align numbers to the right */
+    text-align: right !important;
+    /* Align numbers to the right */
+    margin-left: auto !important;
+    /* Align numbers to the right */
     margin-right: 0 !important;
   }
 
   .module-apuesta-display .box-right .apuesta-team-name {
     order: 2 !important;
     font-size: clamp(10px, 14cqi, 18px) !important;
-    text-align: left !important; /* Align writing to the left */
+    text-align: left !important;
+    /* Align writing to the left */
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
@@ -866,7 +889,8 @@
 
   .module-apuesta-display .box-right .sb-team-flag,
   .module-apuesta-display .box-right img.sb-team-flag {
-    order: 1 !important; /* Align flag/writing to the left */
+    order: 1 !important;
+    /* Align flag/writing to the left */
   }
 
   .module-apuesta-display .sb-team-flag,
@@ -885,6 +909,7 @@
     padding: calc(2px * var(--scale, 1)) calc(6px * var(--scale, 1)) !important;
     gap: calc(2px * var(--scale, 1)) !important;
   }
+
   .short-row-1 .module-apuesta-display .sb-team-flag,
   .short-row-1 .module-apuesta-display img.sb-team-flag {
     width: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
@@ -892,8 +917,6 @@
     flex-shrink: 0 !important;
   }
 }
-
-
 
 /* ─── MODULE TYPE: PREGUNTA (SÍ/NO) ─── */
 .module-pregunta-display {
@@ -959,7 +982,8 @@
   padding: clamp(8px, calc(20px * var(--scale, 1)), 64px);
   flex: 1;
   display: flex;
-  flex-direction: column; /* Stack label and value vertically to maximize vertical space */
+  flex-direction: column;
+  /* Stack label and value vertically to maximize vertical space */
   align-items: center;
   justify-content: space-evenly;
   height: 100%;
@@ -997,9 +1021,6 @@
   white-space: nowrap !important;
 }
 
-
-
-
 /* ─── NARROW AND SHORT DISPLAY OVERRIDES ─── */
 .narrow-col-2 .apuesta-title,
 .narrow-col-1 .apuesta-title {
@@ -1027,27 +1048,11 @@
   margin-bottom: 2px !important;
 }
 
-.narrow-col-4 .pregunta-option-box,
-.narrow-col-3 .pregunta-option-box,
-.narrow-col-2 .pregunta-option-box,
-.narrow-col-1 .pregunta-option-box {
-  flex-direction: column !important;
-  justify-content: space-evenly !important; /* Spread elements vertically to fill height */
-  gap: calc(8px * var(--scale, 1)) !important;
-  padding: calc(12px * var(--scale, 1)) !important;
-}
-
-.narrow-col-4 .pregunta-option-value,
-.narrow-col-3 .pregunta-option-value,
-.narrow-col-2 .pregunta-option-value,
-.narrow-col-1 .pregunta-option-value {
+[class*="narrow-col-"] .pregunta-option-value {
   white-space: nowrap !important;
 }
 
-.narrow-col-4 .pregunta-title,
-.narrow-col-3 .pregunta-title,
-.narrow-col-2 .pregunta-title,
-.narrow-col-1 .pregunta-title {
+[class*="narrow-col-"] .pregunta-title {
   font-size: clamp(16px, calc(24px * var(--font-scale, 1)), 38px) !important;
   max-width: 100% !important;
   white-space: normal !important;
@@ -1057,26 +1062,16 @@
   text-overflow: clip !important;
 }
 
-.narrow-col-4 .pregunta-tag,
-.narrow-col-3 .pregunta-tag,
-.narrow-col-2 .pregunta-tag,
-.narrow-col-1 .pregunta-tag {
+[class*="narrow-col-"] .pregunta-tag {
   display: none !important;
 }
 
-.narrow-col-4 .pregunta-header,
-.narrow-col-3 .pregunta-header,
-.narrow-col-2 .pregunta-header,
-.narrow-col-1 .pregunta-header {
+[class*="narrow-col-"] .pregunta-header {
   justify-content: center !important;
-  margin-bottom: 2px !important;
+  margin-bottom: 0 !important;
 }
 
 /* Short height cell overrides */
-.short-row-1 .module-apuesta-display {
-  padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
-}
-
 .short-row-1 .module-pregunta-display {
   padding: calc(6px * var(--scale, 1)) calc(10px * var(--scale, 1)) !important;
 }
@@ -1084,7 +1079,6 @@
 .short-row-1 .module-scoreboard-display {
   padding: calc(6px * var(--scale, 1)) calc(6px * var(--scale, 1)) !important;
 }
-
 
 .short-row-1 .module-upcoming-display {
   padding: calc(6px * var(--scale, 1)) !important;
@@ -1155,8 +1149,6 @@
   padding: calc(2px * var(--scale, 1)) calc(8px * var(--scale, 1)) !important;
 }
 
-
-
 .short-row-1 .module-upcoming-display {
   padding: calc(6px * var(--scale, 1)) !important;
   border-left-width: 2px !important;
@@ -1216,48 +1208,28 @@
   padding: 2px calc(6px * var(--scale, 1)) !important;
 }
 
-
-
 /* Narrow column cell overrides for other modules */
-.narrow-col-4 .sb-team-label,
-.narrow-col-3 .sb-team-label,
-.narrow-col-2 .sb-team-label,
-.narrow-col-1 .sb-team-label {
+[class*="narrow-col-"] .sb-team-label {
   font-size: calc(13px * var(--font-scale, 1)) !important;
 }
 
-.narrow-col-4 .sb-team-code,
-.narrow-col-3 .sb-team-code,
-.narrow-col-2 .sb-team-code,
-.narrow-col-1 .sb-team-code {
+[class*="narrow-col-"] .sb-team-code {
   font-size: calc(22px * var(--font-scale, 1)) !important;
 }
 
-.narrow-col-4 .sb-score,
-.narrow-col-3 .sb-score,
-.narrow-col-2 .sb-score,
-.narrow-col-1 .sb-score {
+[class*="narrow-col-"] .sb-score {
   font-size: calc(48px * var(--font-scale, 1)) !important;
 }
 
-.narrow-col-4 .sb-divider,
-.narrow-col-3 .sb-divider,
-.narrow-col-2 .sb-divider,
-.narrow-col-1 .sb-divider {
+[class*="narrow-col-"] .sb-divider {
   font-size: calc(32px * var(--font-scale, 1)) !important;
 }
 
-.narrow-col-4 .result-team-display,
-.narrow-col-3 .result-team-display,
-.narrow-col-2 .result-team-display,
-.narrow-col-1 .result-team-display {
+[class*="narrow-col-"] .result-team-display {
   font-size: calc(16px * var(--font-scale, 1)) !important;
 }
 
-.narrow-col-4 .upcoming-team,
-.narrow-col-3 .upcoming-team,
-.narrow-col-2 .upcoming-team,
-.narrow-col-1 .upcoming-team {
+[class*="narrow-col-"] .upcoming-team {
   font-size: clamp(14px, calc(18px * var(--font-scale, 1)), 40px) !important;
   line-height: 1.3 !important;
 }
@@ -1274,65 +1246,50 @@
   padding: clamp(3px, calc(5px * var(--scale, 1)), 8px) clamp(6px, calc(12px * var(--scale, 1)), 18px) !important;
 }
 
-.narrow-col-4 .upcoming-time-display,
-.narrow-col-3 .upcoming-time-display,
-.narrow-col-2 .upcoming-time-display,
-.narrow-col-1 .upcoming-time-display {
+[class*="narrow-col-"] .upcoming-time-display {
   font-size: clamp(20px, calc(28px * var(--font-scale, 1)), 56px) !important;
 }
 
-
-
 /* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
-.narrow-col-4 .pregunta-options-row,
-.narrow-col-3 .pregunta-options-row,
-.narrow-col-2 .pregunta-options-row,
-.narrow-col-1 .pregunta-options-row,
-.span-w-1 .pregunta-options-row,
-.span-w-2 .pregunta-options-row,
-.span-w-3 .pregunta-options-row,
-.span-w-4 .pregunta-options-row {
+[class*="narrow-col-"] .module-pregunta-display,
+[class*="narrow-col-"] .module-apuesta-display,
+[class*="narrow-col-"] .module-upcoming-display,
+[class*="narrow-col-"] .module-scoreboard-display {
+  padding-left: clamp(12px, 2vw, 32px) !important;
+  padding-right: clamp(12px, 2vw, 32px) !important;
+}
+
+[class*="narrow-col-"] .module-pregunta-display {
+  justify-content: center !important;
+}
+
+[class*="narrow-col-"] .pregunta-options-row {
   flex-direction: column !important;
-  justify-content: flex-start !important; /* Align to top to prevent header overlap in short containers */
-  gap: clamp(2px, calc(4px * var(--scale, 1)), 6px) !important;
+  flex: none !important;
+  /* Do not stretch the options row vertically */
+  margin-top: calc(10px * var(--scale, 1)) !important;
+  /* Same gap as between SI and NO */
+  gap: calc(10px * var(--scale, 1)) !important;
+  /* Same gap as between SI and NO */
   width: 100% !important;
 }
 
-.narrow-col-4 .pregunta-option-box,
-.narrow-col-3 .pregunta-option-box,
-.narrow-col-2 .pregunta-option-box,
-.narrow-col-1 .pregunta-option-box,
-.span-w-1 .pregunta-option-box,
-.span-w-2 .pregunta-option-box,
-.span-w-3 .pregunta-option-box,
-.span-w-4 .pregunta-option-box {
+[class*="narrow-col-"] .pregunta-option-box {
   width: 100% !important;
-  height: auto !important; /* Prevent 100% height from pushing the second box out */
-  flex: 1 !important; /* Stretch vertically to fill the available height */
+  height: auto !important;
+  /* Prevent 100% height from pushing the second box out */
+  flex: none !important;
+  /* Do not stretch the option boxes vertically */
   flex-direction: row !important;
   justify-content: space-between !important;
-  padding: clamp(3px, calc(5px * var(--scale, 1)), 8px) clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
+  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
 }
 
-.narrow-col-4 .pregunta-option-label,
-.narrow-col-3 .pregunta-option-label,
-.narrow-col-2 .pregunta-option-label,
-.narrow-col-1 .pregunta-option-label,
-.span-w-1 .pregunta-option-label,
-.span-w-2 .pregunta-option-label,
-.span-w-3 .pregunta-option-label,
-.span-w-4 .pregunta-option-label {
+[class*="narrow-col-"] .pregunta-option-label {
   font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 36px) !important;
 }
 
-.narrow-col-4 .pregunta-option-value,
-.narrow-col-3 .pregunta-option-value,
-.narrow-col-2 .pregunta-option-value,
-.narrow-col-1 .pregunta-option-value,
-.span-w-1 .pregunta-option-value,
-.span-w-2 .pregunta-option-value,
-.span-w-3 .pregunta-option-value,
-.span-w-4 .pregunta-option-value {
+[class*="narrow-col-"] .pregunta-option-value {
   font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 44px) !important;
 }
 
@@ -1445,13 +1402,6 @@ img.sb-team-flag,
   width: 100% !important;
 }
 
-
-
-
-
-
-
-
 /* ─── CUSTOM TEXT COLOR OVERRIDES ─── */
 .module-wrapper[style*="--text-color"] .apuesta-team-name,
 .module-wrapper[style*="--text-color"] .pregunta-option-label,
@@ -1476,9 +1426,7 @@ img.sb-team-flag,
   color: var(--text-color) !important;
 }
 
-/* ═══════════════════════════════════════════
-   VERTICAL RESPONSIVE OVERRIDES (PORTRAIT MODE)
-   ═══════════════════════════════════════════ */
+/* VERTICAL RESPONSIVE OVERRIDES (PORTRAIT MODE) */
 .vertical .brand-overlay {
   flex-direction: row;
   justify-content: flex-start;
@@ -1615,7 +1563,6 @@ img.sb-team-flag,
   font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 24px) !important;
 }
 
-
 .vertical .box-left .sb-team-flag,
 .vertical .box-left img.sb-team-flag {
   order: 1 !important;
@@ -1691,14 +1638,16 @@ img.sb-team-flag,
 
 .vertical .pregunta-options-row {
   flex-direction: column !important;
-  justify-content: flex-start !important; /* Align to top to prevent header overlap in short containers */
+  justify-content: flex-start !important;
+  /* Align to top to prevent header overlap in short containers */
   gap: clamp(2px, calc(4px * var(--scale, 1)), 6px) !important;
 }
 
 .vertical .pregunta-option-box {
   width: 100% !important;
   height: auto !important;
-  flex: 1 !important; /* Stretch vertically to fill the available height */
+  flex: 1 !important;
+  /* Stretch vertically to fill the available height */
   padding: clamp(3px, calc(5px * var(--scale, 1)), 8px) clamp(16px, calc(24px * var(--scale, 1)), 32px) !important;
   flex-direction: row !important;
   justify-content: space-between !important;

@@ -7,15 +7,15 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   const gp = gridPosition || module.gridPosition || { colSpan: 1, rowSpan: 1 };
   const colSpan = gp.colSpan || 1;
   const rowSpan = gp.rowSpan || 1;
-  
+
   // Calculate relative proportions of the grid that the module occupies
   const colFraction = colSpan / gridCols;
   const rowFraction = rowSpan / gridRows;
-  
+
   // Scale factor that is highly responsive to container dimensions.
   // In vertical layouts, we scale based on row fraction to prevent giant text overflows.
   const isVerticalLayout = gridCols === 1 || (window.innerWidth < window.innerHeight);
-  
+
   // Normalize colFraction by actual grid aspect ratio to match physical proportions
   let gridAspect = 2.0; // Default to 12x6 physical aspect ratio (2:1)
   if (isVerticalLayout) {
@@ -31,7 +31,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     }
   }
   const sizeFactor = Math.min(colFraction * gridAspect, rowFraction);
-  
+
   // Calculate viewport scaling multiplier (base design resolution is 1920x1080 horizontal or 1080x1920 vertical)
   const baseWidth = isVerticalLayout ? 1080 : 1920;
   const actualWidth = overrideWidth !== undefined
@@ -49,8 +49,8 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     ? gp.textSizeFactor
     : (content.textSizeFactor !== undefined ? content.textSizeFactor : 1.0);
 
-  const aspect = isVerticalLayout 
-    ? (9 / 16) 
+  const aspect = isVerticalLayout
+    ? (9 / 16)
     : (screenType === '9x9' ? 1.0 : 2.0);
   const actualGridHeight = actualWidth / aspect;
   const cellHeight = (rowSpan / gridRows) * actualGridHeight;
@@ -61,7 +61,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     '--text-scale-factor': layoutTextSizeFactor,
     '--card-bg-color': content.cardBgColor || (module.type === 'apuesta' ? '#161616' : 'rgba(255, 255, 255, 0.03)'),
     '--module-bg-color': content.moduleBgTransparent === true ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
-    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || (module.type === 'apuesta' ? 'rgba(255, 255, 255, 0.15)' : 'var(--color-border)')),
+    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
     ...(content.textColor ? { '--text-color': content.textColor } : {}),
     width: '100%',
     height: '100%',
@@ -294,7 +294,7 @@ function UpcomingModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
   const teamAInfo = parseTeamString(content.teamA);
   const teamBInfo = parseTeamString(content.teamB);
-  
+
   const flagA = getTeamFlag(teamAInfo.name, content.flagA, teamAInfo.flag, worldCupTeams);
   const flagB = getTeamFlag(teamBInfo.name, content.flagB, teamBInfo.flag, worldCupTeams);
 
@@ -333,14 +333,14 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
             <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
           </div>
         )}
-        
+
         {/* Box Center: Draw (only in 3-way mode) */}
         {mode === '3-way' && (
           <div className="apuesta-odd-box box-center">
             <span className="apuesta-odd-value">{content.draw?.odd || '—'}</span>
           </div>
         )}
-        
+
         {(mode === '3-way' || mode === '2-way') && (
           <div className="apuesta-odd-box box-right">
             <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
@@ -376,16 +376,14 @@ function PreguntaModule({ content }) {
   );
 }
 
-/* ═══════════════════════════════════════════
-   DISPLAY VIEW — BILLBOARD 1920×1080
-   ═══════════════════════════════════════════ */
+/* DISPLAY VIEW — BILLBOARD 1920×1080 */
 /* ─── DYNAMIC VERTICAL LAYOUT PACKER ─── */
 export function getVerticalLayout(modules) {
   const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label?.toLowerCase().includes('logo')));
-  
+
   // Clone and filter rest of the modules
   const rest = modules.filter(m => m !== brand).map(m => ({ ...m }));
-  
+
   const verticalModules = [];
   let currentRow = 1;
 
@@ -463,7 +461,7 @@ export default function DisplayView() {
     // Otherwise, default to the 12x6 layout.
     screenType = viewportRatio <= 1.35 ? '9x9' : '12x6';
   }
-  
+
   const isDraft = searchParams.get('draft') === 'true' || searchParams.get('mode') === 'draft';
   const targetData = isDraft ? rawDraftData : rawLiveData;
 
@@ -481,8 +479,8 @@ export default function DisplayView() {
   const visibleModules = mappedModules.filter(m => m.visible !== false);
   const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid: activeLayoutObj.grid };
 
-  const aspect = isVertical 
-    ? (9 / 16) 
+  const aspect = isVertical
+    ? (9 / 16)
     : (screenType === '9x9' ? 1.0 : 2.0);
 
   // Native design resolution of the screen
@@ -534,23 +532,23 @@ export default function DisplayView() {
           gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
           gridTemplateRows: isVertical
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
-                const rowNum = i + 1;
-                const mod = layout.modules.find(m => 
-                  m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
-                );
-                if (!mod) return '1fr';
-                const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
-                if (isBrand) return '80px';
-                
-                let baseWeight = 1.5;
-                if (mod.type === 'media') baseWeight = 2.5;
-                else if (mod.type === 'scoreboard') baseWeight = 1.8;
-                else if (mod.type === 'upcoming') baseWeight = 1.5;
-                else if (mod.type === 'pregunta') baseWeight = 1.8;
-                else if (mod.type === 'apuesta') baseWeight = 1.8;
-                
-                return `${baseWeight / mod.gridPosition.rowSpan}fr`;
-              }).join(' ')
+              const rowNum = i + 1;
+              const mod = layout.modules.find(m =>
+                m.gridPosition.row <= rowNum && rowNum < m.gridPosition.row + m.gridPosition.rowSpan
+              );
+              if (!mod) return '1fr';
+              const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
+              if (isBrand) return '80px';
+
+              let baseWeight = 1.5;
+              if (mod.type === 'media') baseWeight = 2.5;
+              else if (mod.type === 'scoreboard') baseWeight = 1.8;
+              else if (mod.type === 'upcoming') baseWeight = 1.5;
+              else if (mod.type === 'pregunta') baseWeight = 1.8;
+              else if (mod.type === 'apuesta') baseWeight = 1.8;
+
+              return `${baseWeight / mod.gridPosition.rowSpan}fr`;
+            }).join(' ')
             : `repeat(${layout.grid.rows}, 1fr)`,
           display: 'grid',
           gap: '2px',
@@ -559,8 +557,8 @@ export default function DisplayView() {
       >
         {layout.modules.map((mod) => {
           const indexInMaster = modules.findIndex((m) => m.id === mod.id);
-          const spansAll = mod.gridPosition.colSpan === layout.grid.cols && 
-                           mod.gridPosition.rowSpan === layout.grid.rows;
+          const spansAll = mod.gridPosition.colSpan === layout.grid.cols &&
+            mod.gridPosition.rowSpan === layout.grid.rows;
           return (
             <div
               key={mod.id}
@@ -571,11 +569,11 @@ export default function DisplayView() {
                 zIndex: modules.length - indexInMaster
               }}
             >
-              <RenderModule 
-                module={mod} 
-                gridPosition={mod.gridPosition} 
-                gridCols={layout.grid.cols} 
-                gridRows={layout.grid.rows} 
+              <RenderModule
+                module={mod}
+                gridPosition={mod.gridPosition}
+                gridCols={layout.grid.cols}
+                gridRows={layout.grid.rows}
                 overrideWidth={targetWidth}
                 screenType={screenType}
               />
