@@ -443,6 +443,9 @@ export default function DisplayView() {
   const [searchParams] = useSearchParams();
   const [viewportRatio, setViewportRatio] = useState(window.innerWidth / window.innerHeight);
   const [isVertical, setIsVertical] = useState(window.innerWidth < window.innerHeight);
+  
+  const [showCurtain, setShowCurtain] = useState(true);
+  const [fadeCurtain, setFadeCurtain] = useState(false);
 
   useEffect(() => {
     function handleResize() {
@@ -452,6 +455,25 @@ export default function DisplayView() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    if (hasLoadedFromServer) {
+      // Begin fade out after a short delay so that rendering has completed
+      const fadeTimer = setTimeout(() => {
+        setFadeCurtain(true);
+      }, 300);
+
+      // Completely remove the curtain from the DOM after the fade transition ends (500ms)
+      const removeTimer = setTimeout(() => {
+        setShowCurtain(false);
+      }, 800);
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(removeTimer);
+      };
+    }
+  }, [hasLoadedFromServer]);
 
   // Detect screen layout: manual query param has priority, then auto-detection by aspect ratio
   let screenType = searchParams.get('screen');
@@ -490,18 +512,28 @@ export default function DisplayView() {
   // Scale factor to center and fit the canvas inside the viewport
   const scaleFit = Math.min(window.innerWidth / targetWidth, window.innerHeight / targetHeight);
 
-  if (!hasLoadedFromServer) {
+  if (!hasLoadedFromServer && !targetData?.modules) {
     return (
       <div
         style={{
           width: '100vw',
           height: '100vh',
-          background: '#0a0a0a',
+          background: 'linear-gradient(135deg, #111111 0%, #1c1810 100%)',
           position: 'fixed',
           top: 0,
-          left: 0
+          left: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'var(--font-display)',
+          color: 'var(--color-gold)'
         }}
-      />
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <img src="/logo%20GANA%20Y%20SIN.webp" alt="miCasino.com" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
+        </div>
+      </div>
     );
   }
 
@@ -581,6 +613,31 @@ export default function DisplayView() {
           );
         })}
       </div>
+
+      {/* Telón animado de carga para una transición premium sin pantallas negras */}
+      {showCurtain && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, #111111 0%, #1c1810 100%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'var(--font-display)',
+            color: 'var(--color-gold)',
+            opacity: fadeCurtain ? 0 : 1,
+            transition: 'opacity 0.5s ease',
+            pointerEvents: 'none'
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <img src="/logo%20GANA%20Y%20SIN.webp" alt="miCasino.com" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,7 +13,14 @@
 </head>
 
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Telón inicial estático para evitar pantallas en negro durante la carga inicial -->
+    <div id="initial-curtain" style="position: fixed; inset: 0; z-index: 9999; background: linear-gradient(135deg, #111111 0%, #1c1810 100%); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <img src="/logo%20GANA%20Y%20SIN.webp" alt="miCasino.com" style="width: 500px; max-width: 85%; height: auto; filter: drop-shadow(0 0 20px rgba(212, 168, 67, 0.45));" />
+      </div>
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 

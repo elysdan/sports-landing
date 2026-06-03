@@ -537,7 +537,7 @@ export async function getDbHistory() {
 
 export async function getDbWorldCupTeams() {
   await ensureDb();
-  const [rows] = await pool.query('SELECT name, code, flag FROM world_cup_teams ORDER BY name ASC');
+  const [rows] = await pool.query('SELECT id, name, code, flag FROM world_cup_teams ORDER BY name ASC');
   return rows;
 }
 

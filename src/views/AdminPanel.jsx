@@ -71,6 +71,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
             updateModuleContent(module.id, {
               src: data.url,
               mediaType: isVid ? 'video' : (file.name.endsWith('.gif') ? 'gif' : 'image'),
+              teamFlagId: '',
             });
           } else {
             console.error('Error al subir archivo:', data.error);
@@ -87,7 +88,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
 
   const handleSelectFromLibrary = (url, type) => {
     if (!canEdit) return;
-    updateModuleContent(module.id, { src: url, mediaType: type });
+    updateModuleContent(module.id, { src: url, mediaType: type, teamFlagId: '' });
   };
 
   return (
@@ -462,6 +463,8 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
 
 /* ─── Media Editor ─── */
 function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
+  const { worldCupTeams = [] } = useCMS();
+
   return (
     <>
       <div className="media-upload-zone">
@@ -480,6 +483,30 @@ function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
         🖼️ Seleccionar de Biblioteca
       </button>
 
+      <div className="field" style={{ marginTop: 16 }}>
+        <label>Seleccionar Bandera de Selección / País</label>
+        <select
+          value={content.teamFlagId || ''}
+          onChange={(e) => {
+            const val = e.target.value;
+            onChange('teamFlagId', val);
+            if (val) {
+              onChange('src', `/paises/${val}.svg`);
+              onChange('mediaType', 'image');
+            } else {
+              onChange('src', '');
+            }
+          }}
+        >
+          <option value="">-- Ninguno (Subir o usar Biblioteca) --</option>
+          {worldCupTeams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.flag && !team.flag.startsWith('/') && !team.flag.startsWith('http') && !team.flag.includes('.') ? team.flag : '🚩'} {team.name} ({team.code})
+            </option>
+          ))}
+        </select>
+      </div>
+
       {content.src && (
         <div className="media-preview">
           {content.mediaType === 'video' ? (
@@ -487,7 +514,7 @@ function MediaEditor({ content, onChange, onUpload, onOpenLibrary }) {
           ) : (
             <img className={content.objectFit || 'contain'} src={content.src} alt="Preview" style={{ objectFit: content.objectFit || 'contain' }} />
           )}
-          <button className="media-preview-remove" onClick={() => onChange('src', '')}>✕</button>
+          <button className="media-preview-remove" onClick={() => { onChange('src', ''); onChange('teamFlagId', ''); }}>✕</button>
         </div>
       )}
 
