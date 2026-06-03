@@ -167,9 +167,28 @@ async function initDb() {
     console.warn("[DB] Error al buscar banderas corruptas:", testErr.message);
   }
 
-  if (teamsCount !== 48 || hasCorruptedFlags) {
+  // Test if any team has an ID greater than 48, indicating the auto_increment is too high
+  let hasIncorrectIds = false;
+  try {
+    const [idRows] = await pool.query("SELECT id FROM world_cup_teams WHERE id > 48 LIMIT 1");
+    if (idRows.length > 0) {
+      hasIncorrectIds = true;
+      console.log("[DB] Se detectaron IDs superiores a 48 debido al incremento automático. Se corregirán.");
+    }
+  } catch (idErr) {
+    console.warn("[DB] Error al buscar IDs incorrectos:", idErr.message);
+  }
+
+  if (teamsCount !== 48 || hasCorruptedFlags || hasIncorrectIds) {
     console.log(`[DB] Sembrando selecciones oficiales del mundial (Equipos actuales: ${teamsCount}/48)...`);
     await pool.query('DELETE FROM world_cup_teams');
+    // Reset auto-increment counter to 1 so the IDs are strictly 1 to 48
+    try {
+      await pool.query('ALTER TABLE world_cup_teams AUTO_INCREMENT = 1');
+      console.log("[DB] Contador AUTO_INCREMENT reiniciado a 1.");
+    } catch (autoIncErr) {
+      console.warn("[DB] No se pudo reiniciar el AUTO_INCREMENT:", autoIncErr.message);
+    }
     const defaultTeams = [
       { name: 'Canadá', code: 'CAN', flag: '🇨🇦' },
       { name: 'México', code: 'MEX', flag: '🇲🇽' },
