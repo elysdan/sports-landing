@@ -221,8 +221,8 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
   const targetName = teamName || (typeof flag === 'string' && flag.length > 4 ? flag : null);
   if (targetName && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
     const found = worldCupTeams.find(
-      t => t.name.toUpperCase() === targetName.trim().toUpperCase() || 
-           (flag && flag !== '?' && flag !== '??' && t.flag === flag)
+      t => t.name.toUpperCase() === targetName.trim().toUpperCase() ||
+        (flag && flag !== '?' && flag !== '??' && t.flag === flag)
     );
     if (found && found.id) {
       flagUrl = `/paises/${found.id}.svg`;
@@ -269,7 +269,7 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
       />
     );
   }
-  
+
   return <span className="sb-team-flag">{flag || '🏳️'}</span>;
 }
 
@@ -473,7 +473,7 @@ export default function DisplayView() {
   const [searchParams] = useSearchParams();
   const [viewportRatio, setViewportRatio] = useState(window.innerWidth / window.innerHeight);
   const [isVertical, setIsVertical] = useState(window.innerWidth < window.innerHeight);
-  
+
   const [showCurtain, setShowCurtain] = useState(true);
   const [fadeCurtain, setFadeCurtain] = useState(false);
 
@@ -561,7 +561,7 @@ export default function DisplayView() {
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <img src="/logo%20GANA%20Y%20SIN.webp" alt="miCasino.com" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
+          <img src="/logo_GANA_Y_SIN.webp" alt="miCasino.com" fetchPriority="high" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
         </div>
       </div>
     );
@@ -664,7 +664,7 @@ export default function DisplayView() {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <img src="/logo%20GANA%20Y%20SIN.webp" alt="miCasino.com" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
+            <img src="/logo_GANA_Y_SIN.webp" alt="miCasino.com" fetchPriority="high" style={{ width: '500px', maxWidth: '85%', height: 'auto', filter: 'drop-shadow(0 0 20px rgba(212, 168, 67, 0.45))' }} />
           </div>
         </div>
       )}

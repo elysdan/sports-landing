@@ -62,7 +62,7 @@ const defaultUsers = [
 // Helper to generate safe coordinates for old layouts being migrated
 function createDefaultPositions(modules, targetCols, targetRows, originalGrid, originalPositions) {
   const positions = {};
-  
+
   const defaults_12x6 = {
     "default_brand": { col: 1, row: 1, colSpan: 2, rowSpan: 1 },
     "default_scoreboard": { col: 3, row: 1, colSpan: 3, rowSpan: 2 },
@@ -154,7 +154,7 @@ const CMSContext = createContext(null);
 export function CMSProvider({ children }) {
   const CMS_SESSION_KEY = 'sports-billboard-cms-session';
   const isEditor = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
-  const isDraftMode = typeof window !== 'undefined' && 
+  const isDraftMode = typeof window !== 'undefined' &&
     (window.location.search.includes('draft=true') || window.location.search.includes('mode=draft'));
 
   const [currentUser, setCurrentUser] = useState(() => {
@@ -241,24 +241,18 @@ export function CMSProvider({ children }) {
       if (isClosed) return;
       eventSource = new EventSource('/api/cms/events');
 
-      eventSource.addEventListener('update', async (e) => {
+      eventSource.addEventListener('update', (e) => {
         try {
           const eventData = JSON.parse(e.data);
           const version = Number(eventData.version);
-          if (version && version > Number(currentVersion)) {
-            const dataRes = await fetch('/api/cms');
-            if (dataRes.ok) {
-              const data = await dataRes.json();
-              if (data && data.modules) {
-                const migrated = migrateData(data);
-                setRawLiveData(migrated);
-                setCurrentVersion(version);
-                console.log(`[CMS-SSE] Vista actualizada a la versión: ${version}`);
-              }
-            }
+
+          if (eventData.config) {
+            setRawLiveData(migrateData(eventData.config));
+            setCurrentVersion(version);
+            console.log(`[CMS-SSE] Renderizado instantáneo aplicado. Versión: ${version}`);
           }
         } catch (err) {
-          console.warn("[CMS-SSE] Error procesando evento update:", err);
+          console.warn("[CMS-SSE] Error en actualización directa:", err);
         }
       });
 
@@ -375,7 +369,7 @@ export function CMSProvider({ children }) {
   }, [fetchWorldCupTeams]);
 
   const role = currentUser ? (currentUser.username === 'admin' ? 'admin' : currentUser.username) : null;
-  const setRole = useCallback(() => {}, []);
+  const setRole = useCallback(() => { }, []);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -575,7 +569,7 @@ export function CMSProvider({ children }) {
       content: defaultContentForType(type),
       visible: true,
     };
-    
+
     setLocalDraftData((prev) => {
       const updatedLayouts = { ...prev.layouts };
       Object.keys(updatedLayouts).forEach(layKey => {
@@ -622,7 +616,7 @@ export function CMSProvider({ children }) {
   const updateModule = useCallback((id, updates) => {
     setLocalDraftData((prev) => {
       const activeLay = prev.activeLayout || '12x6';
-      
+
       if (updates.gridPosition) {
         const updatedLayouts = { ...prev.layouts };
         updatedLayouts[activeLay] = {
@@ -791,8 +785,8 @@ export function CMSProvider({ children }) {
     if (!currentUser) return false;
     if (currentUser.allowedTypes.includes('readonly_media_add')) return false;
     if (
-      currentUser.username === 'admin' || 
-      currentUser.allowedTypes.includes('*') || 
+      currentUser.username === 'admin' ||
+      currentUser.allowedTypes.includes('*') ||
       currentUser.allowedTypes.includes('approve')
     ) return true;
     return currentUser.allowedTypes.includes(type);

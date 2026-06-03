@@ -1,6 +1,9 @@
 import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover, getDbWorldCupTeams } from '../../db.js';
 import { readJsonBody, sendJson } from '../utils.js';
 import { broadcastEvent } from './sseController.js';
+let cachedLiveConfig = null;
+let cachedDraftConfig = null;
+let cachedTeams = null;
 
 function parseTeamString(teamStr) {
   if (!teamStr) return '';
@@ -98,11 +101,21 @@ async function populateFlagsInConfig(config) {
   return config;
 }
 
+export function invalidateCmsCache(type = 'all') {
+  if (type === 'live' || type === 'all') cachedLiveConfig = null;
+  if (type === 'draft' || type === 'all') cachedDraftConfig = null;
+  if (type === 'teams' || type === 'all') cachedTeams = null;
+}
+
 export async function handleGetCms(req, res) {
   try {
+    if (cachedLiveConfig) {
+      return sendJson(res, 200, cachedLiveConfig);
+    }
     const config = await getConfig('live');
     const processedConfig = await populateFlagsInConfig(config);
-    sendJson(res, 200, processedConfig || {});
+    cachedLiveConfig = processedConfig || {};
+    sendJson(res, 200, cachedLiveConfig);
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }
@@ -122,7 +135,11 @@ export async function handlePostCms(req, res) {
     const { config, approvedBy, modifiedBy } = await readJsonBody(req);
     const version = Date.now();
     await saveConfig('live', config, version, approvedBy, modifiedBy);
-    broadcastEvent('update', { version });
+    invalidateCmsCache('live');
+    const processedConfig = await populateFlagsInConfig(config);
+    cachedLiveConfig = processedConfig;
+
+    broadcastEvent('update', { version, config: processedConfig });
     sendJson(res, 200, { success: true, version });
   } catch (err) {
     sendJson(res, 500, { error: err.message });
@@ -170,13 +187,10 @@ export async function handlePostCmsDraft(req, res) {
   }
 }
 
-let cachedTeams = null;
-
 export async function handleGetWorldCupTeams(req, res) {
   try {
     if (cachedTeams) {
-      sendJson(res, 200, cachedTeams);
-      return;
+      return sendJson(res, 200, cachedTeams);
     }
     const teams = await getDbWorldCupTeams();
     cachedTeams = teams;
