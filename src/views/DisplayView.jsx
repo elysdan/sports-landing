@@ -203,16 +203,47 @@ export function emojiToCountryCode(emoji) {
   return null;
 }
 
-export function TeamFlag({ flag }) {
-  if (!flag) return null;
-  const isUrl = flag.startsWith('/') || flag.startsWith('http') || flag.includes('.') || flag.startsWith('data:image');
+export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = []) {
+  if (explicitFlag) return explicitFlag;
+  if (parsedFlag) return parsedFlag;
+  if (!teamName) return null;
+  const found = worldCupTeams.find(t => t.name.toUpperCase() === teamName.trim().toUpperCase());
+  // If found in DB, return its internal database ID or flag
+  return found ? found : null;
+}
+
+export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
+  if (!flag && !teamName) return null;
+
   let flagUrl = null;
-  if (isUrl) {
-    flagUrl = flag;
-  } else {
-    const countryCode = emojiToCountryCode(flag);
-    if (countryCode) {
-      flagUrl = `https://flagcdn.com/w160/${countryCode}.png`;
+
+  // 1. Try to find the team in the database to get its ID and load the local SVG flag
+  const targetName = teamName || (typeof flag === 'string' && flag.length > 4 ? flag : null);
+  if (targetName && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
+    const found = worldCupTeams.find(
+      t => t.name.toUpperCase() === targetName.trim().toUpperCase() || 
+           t.flag === flag
+    );
+    if (found && found.id) {
+      flagUrl = `/paises/${found.id}.svg`;
+    }
+  }
+
+  // 2. If the flag property itself is a number/ID
+  if (!flagUrl && flag && !isNaN(flag)) {
+    flagUrl = `/paises/${flag}.svg`;
+  }
+
+  // 3. Fallbacks for URLs or emojis
+  if (!flagUrl && typeof flag === 'string') {
+    const isUrl = flag.startsWith('/') || flag.startsWith('http') || flag.includes('.') || flag.startsWith('data:image');
+    if (isUrl) {
+      flagUrl = flag;
+    } else {
+      const countryCode = emojiToCountryCode(flag);
+      if (countryCode) {
+        flagUrl = `https://flagcdn.com/w160/${countryCode}.png`;
+      }
     }
   }
 
@@ -220,7 +251,7 @@ export function TeamFlag({ flag }) {
     return (
       <img
         src={flagUrl}
-        alt="Flag"
+        alt={teamName || "Flag"}
         className="sb-team-flag sb-team-flag-img"
         style={{
           width: '42px',
@@ -231,14 +262,20 @@ export function TeamFlag({ flag }) {
           background: 'none',
           padding: 0
         }}
+        onError={(e) => {
+          // If local SVG fails, remove fallback flagUrl to let emoji print
+          e.target.style.display = 'none';
+        }}
       />
     );
   }
-  return <span className="sb-team-flag">{flag}</span>;
+  
+  return <span className="sb-team-flag">{flag || '🏳️'}</span>;
 }
 
 /* ─── SCOREBOARD MODULE ─── */
 function ScoreboardModule({ content }) {
+  const { worldCupTeams = [] } = useCMS();
   return (
     <div className="module-scoreboard-display">
       <div className="sb-cards-container">
@@ -246,7 +283,7 @@ function ScoreboardModule({ content }) {
         <div className="sb-team-card">
           <div className="sb-card-score">{content.teamA.score}</div>
           <div className="sb-card-info">
-            <TeamFlag flag={content.teamA.flag} />
+            <TeamFlag flag={content.teamA.flag} teamName={content.teamA.name} worldCupTeams={worldCupTeams} />
             <span className="sb-card-code">{content.teamA.code || content.teamA.name?.slice(0, 3)}</span>
           </div>
         </div>
@@ -258,7 +295,7 @@ function ScoreboardModule({ content }) {
         <div className="sb-team-card">
           <div className="sb-card-score">{content.teamB.score}</div>
           <div className="sb-card-info">
-            <TeamFlag flag={content.teamB.flag} />
+            <TeamFlag flag={content.teamB.flag} teamName={content.teamB.name} worldCupTeams={worldCupTeams} />
             <span className="sb-card-code">{content.teamB.code || content.teamB.name?.slice(0, 3)}</span>
           </div>
         </div>
@@ -281,14 +318,6 @@ export function parseTeamString(teamStr) {
   return { flag: null, name: trimmed };
 }
 
-export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = []) {
-  if (explicitFlag) return explicitFlag;
-  if (parsedFlag) return parsedFlag;
-  if (!teamName) return null;
-  const found = worldCupTeams.find(t => t.name.toUpperCase() === teamName.trim().toUpperCase());
-  return found ? found.flag : null;
-}
-
 /* ─── UPCOMING MODULE ─── */
 function UpcomingModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
@@ -305,9 +334,9 @@ function UpcomingModule({ content }) {
         <div className="upcoming-time-display">{content.time}</div>
       </div>
       <div className="upcoming-vs-card">
-        {flagA ? <TeamFlag flag={flagA} /> : <span className="upcoming-team">{teamAInfo.name || 'EQUIPO A'}</span>}
+        {flagA ? <TeamFlag flag={flagA.flag || flagA} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} /> : <span className="upcoming-team">{teamAInfo.name || 'EQUIPO A'}</span>}
         <div className="upcoming-vs-badge">VS</div>
-        {flagB ? <TeamFlag flag={flagB} /> : <span className="upcoming-team">{teamBInfo.name || 'EQUIPO B'}</span>}
+        {flagB ? <TeamFlag flag={flagB.flag || flagB} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} /> : <span className="upcoming-team">{teamBInfo.name || 'EQUIPO B'}</span>}
       </div>
     </div>
   );
@@ -315,6 +344,7 @@ function UpcomingModule({ content }) {
 
 /* ─── APUESTA MODULE ─── */
 function ApuestaModule({ content, isVerticalLayout, isShort }) {
+  const { worldCupTeams = [] } = useCMS();
   const mode = content.mode || '3-way';
   return (
     <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`}>
@@ -327,7 +357,7 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div className="apuesta-odd-box box-left">
             <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} />}
+              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} teamName={content.teamA?.name} worldCupTeams={worldCupTeams} />}
               <span className="apuesta-team-name">{content.teamA?.code || content.teamA?.name?.slice(0, 3).toUpperCase() || 'LOC'}</span>
             </div>
             <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
@@ -345,7 +375,7 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
           <div className="apuesta-odd-box box-right">
             <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
             <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} />}
+              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} teamName={content.teamB?.name} worldCupTeams={worldCupTeams} />}
               <span className="apuesta-team-name">{content.teamB?.code || content.teamB?.name?.slice(0, 3).toUpperCase() || 'VIS'}</span>
             </div>
           </div>
