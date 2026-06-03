@@ -114,8 +114,10 @@ const server = http.createServer(async (req, res) => {
         };
         
         // Cache control headers for static assets
-        if (resolvedPath.includes(path.join(process.cwd(), 'dist', 'assets')) || ext === '.woff2') {
+        if (resolvedPath.includes(path.join(process.cwd(), 'dist', 'assets')) || ext === '.woff2' || ext === '.woff') {
           headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+        } else if (ext === '.html') {
+          headers['Cache-Control'] = 'public, max-age=0, must-revalidate';
         } else if (pathname.startsWith('/update/')) {
           headers['Cache-Control'] = 'public, max-age=86400'; // 1 day cache for uploads
         }
