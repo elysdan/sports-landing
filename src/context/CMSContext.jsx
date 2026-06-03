@@ -182,17 +182,23 @@ export function CMSProvider({ children }) {
   useEffect(() => {
     async function loadServerData() {
       try {
-        const [resLive, resDraft] = await Promise.all([
-          fetch('/api/cms'),
-          fetch('/api/cms/draft')
-        ]);
+        const fetchPromises = [fetch('/api/cms')];
+        // Only fetch draft database configuration if we are in admin panel or draft mode
+        if (isEditor || isDraftMode) {
+          fetchPromises.push(fetch('/api/cms/draft'));
+        }
+
+        const responses = await Promise.all(fetchPromises);
+        const resLive = responses[0];
+        const resDraft = responses[1];
+
         let serverLive = null;
         if (resLive.ok) {
           serverLive = await resLive.json();
         }
 
         let serverDraft = null;
-        if (resDraft.ok) {
+        if (resDraft && resDraft.ok) {
           serverDraft = await resDraft.json();
         }
 
@@ -224,7 +230,7 @@ export function CMSProvider({ children }) {
       }
     }
     loadServerData();
-  }, []);
+  }, [isEditor, isDraftMode]);
 
   // Real-time EventSource listener to sync both liveData and draftData
   useEffect(() => {

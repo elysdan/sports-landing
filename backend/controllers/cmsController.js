@@ -72,9 +72,16 @@ export async function handlePostCmsDraft(req, res) {
   }
 }
 
+let cachedTeams = null;
+
 export async function handleGetWorldCupTeams(req, res) {
   try {
+    if (cachedTeams) {
+      sendJson(res, 200, cachedTeams);
+      return;
+    }
     const teams = await getDbWorldCupTeams();
+    cachedTeams = teams;
     sendJson(res, 200, teams);
   } catch (err) {
     sendJson(res, 500, { error: err.message });
