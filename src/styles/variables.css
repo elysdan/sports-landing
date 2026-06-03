@@ -32,8 +32,8 @@
   --color-danger: #e53e3e;
   --color-info: #4299e1;
 
-  --font-display: 'Montserrat', sans-serif;
-  --font-body: 'Montserrat', sans-serif;
+  --font-display: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-body: 'Montserrat', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   --gap-xs: 4px;
   --gap-sm: 8px;
