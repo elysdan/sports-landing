@@ -711,14 +711,12 @@ export function CMSProvider({ children }) {
         if (resData.version) {
           setCurrentVersion(Number(resData.version));
         }
-        alert('¡Configuración publicada exitosamente!');
       } else {
         const errData = await res.json();
-        alert('Error al publicar: ' + (errData.error || 'Error desconocido del servidor.'));
+        console.warn('Error al publicar:', errData.error || 'Error desconocido del servidor.');
       }
     } catch (e) {
       console.error("[CMS] Error al guardar en base de datos:", e);
-      alert('Error de red al intentar guardar en base de datos: ' + e.message);
     }
   }, [rawDraftData, currentUser]);
 

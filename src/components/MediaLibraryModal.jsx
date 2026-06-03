@@ -311,7 +311,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect }) {
               <div className="media-library-grid">
                 {filteredMedia.map((item) => {
                   const isSelected = selectedItem?.url === item.url;
-                  const isUploaded = item.url.startsWith('/update/');
+                  const isUploaded = item.url.startsWith('/update/') || item.url.startsWith('/api/media/file');
                   
                   return (
                     <div 

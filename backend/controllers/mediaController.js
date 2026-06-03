@@ -94,6 +94,12 @@ export async function handleGetMedia(req, res) {
           const ext = path.extname(asset.filename).toLowerCase();
           const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
           
+          // Deduplicate: remove filesystem fallback URL if it exists
+          const fsUrl = `/update/${asset.filename}`;
+          if (mediaMap.has(fsUrl)) {
+            mediaMap.delete(fsUrl);
+          }
+          
           mediaMap.set(url, {
             url,
             filename: asset.filename,
