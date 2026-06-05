@@ -1335,12 +1335,20 @@
   gap: clamp(4px, calc(8px * var(--scale, 1)), 24px) !important;
 }
 
+/* If layout-horizontal is selected, force flex-direction to row even in narrow columns */
+[class*="narrow-col-"] .pregunta-option-box.layout-horizontal {
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  gap: clamp(6px, calc(12px * var(--scale, 1)), 32px) !important;
+}
+
 [class*="narrow-col-"] .pregunta-option-label {
-  font-size: clamp(10px, calc(16px * var(--font-scale, 1)), 28px) !important;
+  font-size: calc(clamp(10px, calc(16px * var(--font-scale, 1)), 28px) * var(--pregunta-option-scale, 1)) !important;
 }
 
 [class*="narrow-col-"] .pregunta-option-value {
-  font-size: clamp(12px, calc(24px * var(--font-scale, 1)), 38px) !important;
+  font-size: calc(clamp(12px, calc(24px * var(--font-scale, 1)), 38px) * var(--pregunta-option-scale, 1)) !important;
 }
 
 /* ─── OVERFLOW PREVENTION & BOUNDS ADAPTABILITY ─── */
