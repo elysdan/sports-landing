@@ -934,11 +934,12 @@
 
 .pregunta-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
   margin-bottom: calc(8px * var(--scale, 1));
   gap: 12px;
+  text-align: center;
 }
 
 .pregunta-title {
@@ -956,6 +957,7 @@
   text-overflow: clip !important;
   flex: 1;
   min-width: 0;
+  text-align: center;
 }
 
 .pregunta-tag {
@@ -1073,6 +1075,7 @@
   word-break: normal !important;
   overflow: visible !important;
   text-overflow: clip !important;
+  text-align: center !important;
 }
 
 [class*="narrow-col-"] .pregunta-tag {
@@ -1277,33 +1280,29 @@
 }
 
 [class*="narrow-col-"] .pregunta-options-row {
-  flex-direction: column !important;
-  flex: none !important;
-  /* Do not stretch the options row vertically */
-  margin-top: calc(10px * var(--scale, 1)) !important;
-  /* Same gap as between SI and NO */
-  gap: calc(10px * var(--scale, 1)) !important;
-  /* Same gap as between SI and NO */
+  flex-direction: row !important;
+  gap: calc(8px * var(--scale, 1)) !important;
   width: 100% !important;
+  align-items: stretch !important;
 }
 
 [class*="narrow-col-"] .pregunta-option-box {
-  width: 100% !important;
-  height: auto !important;
-  /* Prevent 100% height from pushing the second box out */
-  flex: none !important;
-  /* Do not stretch the option boxes vertically */
-  flex-direction: row !important;
-  justify-content: space-between !important;
-  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
+  width: auto !important;
+  height: 100% !important;
+  flex: 1 !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-evenly !important;
+  padding: clamp(4px, calc(8px * var(--scale, 1)), 16px) !important;
+  gap: clamp(4px, calc(8px * var(--scale, 1)), 24px) !important;
 }
 
 [class*="narrow-col-"] .pregunta-option-label {
-  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 36px) !important;
+  font-size: clamp(10px, calc(16px * var(--font-scale, 1)), 28px) !important;
 }
 
 [class*="narrow-col-"] .pregunta-option-value {
-  font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 44px) !important;
+  font-size: clamp(12px, calc(24px * var(--font-scale, 1)), 38px) !important;
 }
 
 /* ─── OVERFLOW PREVENTION & BOUNDS ADAPTABILITY ─── */
