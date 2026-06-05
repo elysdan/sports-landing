@@ -1011,6 +1011,19 @@
   text-shadow: 0 0 8px rgba(255, 255, 255, 0.15);
 }
 
+.pregunta-option-sticker {
+  height: clamp(30px, calc(65px * var(--scale, 1)), 150px);
+  width: auto;
+  max-width: 80%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.15));
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.pregunta-option-box:hover .pregunta-option-sticker {
+  transform: scale(1.1) rotate(3deg);
+}
+
 .pregunta-option-value {
   font-family: var(--font-display);
   font-size: clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) !important;

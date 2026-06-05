@@ -954,6 +954,15 @@ function ApuestaEditor({ content, onChange, updateModuleContent, moduleId, onOpe
 
 /* ─── Pregunta Editor ─── */
 function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
+  const yesType = content.yesType || 'text';
+  const noType = content.noType || 'text';
+
+  const stickerOptions = [
+    { value: 'sticker1.png', label: 'Sticker 1' },
+    { value: 'sticker2.png', label: 'Sticker 2' },
+    { value: 'sticker3.png', label: 'Sticker 3' }
+  ];
+
   return (
     <>
       <div className="field">
@@ -967,23 +976,156 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
 
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
 
-      <div className="field-row">
+      {/* --- Opción Izquierda --- */}
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Opción Izquierda
+      </h3>
+      
+      <div className="field-row" style={{ marginBottom: '16px' }}>
         <div className="field">
-          <label>Cuota para "SÍ" (ej: 1,85)</label>
-          <input
-            type="text"
-            value={content.yesOdd || ''}
-            onChange={(e) => onChange('yesOdd', e.target.value)}
-          />
+          <label>Tipo de Contenido</label>
+          <select
+            value={yesType}
+            onChange={(e) => onChange('yesType', e.target.value)}
+          >
+            <option value="text">Texto personalizado</option>
+            <option value="sticker">Agregar un Sticker</option>
+          </select>
         </div>
+        
+        {yesType === 'text' ? (
+          <div className="field">
+            <label>Texto (ej: SÍ, SE VA, METE GOL)</label>
+            <input
+              type="text"
+              value={content.yesText !== undefined ? content.yesText : 'SI'}
+              onChange={(e) => onChange('yesText', e.target.value)}
+              placeholder="Escribe el texto de la opción"
+            />
+          </div>
+        ) : (
+          <div className="field">
+            <label>Seleccionar Sticker</label>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <select
+                value={content.yesSticker || 'sticker1.png'}
+                onChange={(e) => onChange('yesSticker', e.target.value)}
+                style={{ flex: 1 }}
+              >
+                {stickerOptions.map(opt => (
+                  <option key={`yes-st-${opt.value}`} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <div style={{ 
+                width: '42px', 
+                height: '42px', 
+                background: 'rgba(255,255,255,0.05)', 
+                borderRadius: '4px', 
+                border: '1px solid var(--color-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                flexShrink: 0
+              }}>
+                <img 
+                  src={`/${content.yesSticker || 'sticker1.png'}`} 
+                  alt="Preview" 
+                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="field" style={{ marginBottom: '20px' }}>
+        <label>Cuota para Opción Izquierda (ej: 1,85)</label>
+        <input
+          type="text"
+          value={content.yesOdd || ''}
+          onChange={(e) => onChange('yesOdd', e.target.value)}
+          placeholder="ej: 1.85"
+        />
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
+      {/* --- Opción Derecha --- */}
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Opción Derecha
+      </h3>
+
+      <div className="field-row" style={{ marginBottom: '16px' }}>
         <div className="field">
-          <label>Cuota para "NO" (ej: 1,95)</label>
-          <input
-            type="text"
-            value={content.noOdd || ''}
-            onChange={(e) => onChange('noOdd', e.target.value)}
-          />
+          <label>Tipo de Contenido</label>
+          <select
+            value={noType}
+            onChange={(e) => onChange('noType', e.target.value)}
+          >
+            <option value="text">Texto personalizado</option>
+            <option value="sticker">Agregar un Sticker</option>
+          </select>
         </div>
+        
+        {noType === 'text' ? (
+          <div className="field">
+            <label>Texto (ej: NO, SE QUEDA, ROJA)</label>
+            <input
+              type="text"
+              value={content.noText !== undefined ? content.noText : 'NO'}
+              onChange={(e) => onChange('noText', e.target.value)}
+              placeholder="Escribe el texto de la opción"
+            />
+          </div>
+        ) : (
+          <div className="field">
+            <label>Seleccionar Sticker</label>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <select
+                value={content.noSticker || 'sticker1.png'}
+                onChange={(e) => onChange('noSticker', e.target.value)}
+                style={{ flex: 1 }}
+              >
+                {stickerOptions.map(opt => (
+                  <option key={`no-st-${opt.value}`} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <div style={{ 
+                width: '42px', 
+                height: '42px', 
+                background: 'rgba(255,255,255,0.05)', 
+                borderRadius: '4px', 
+                border: '1px solid var(--color-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '4px',
+                flexShrink: 0
+              }}>
+                <img 
+                  src={`/${content.noSticker || 'sticker1.png'}`} 
+                  alt="Preview" 
+                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="field" style={{ marginBottom: '20px' }}>
+        <label>Cuota para Opción Derecha (ej: 1,95)</label>
+        <input
+          type="text"
+          value={content.noOdd || ''}
+          onChange={(e) => onChange('noOdd', e.target.value)}
+          placeholder="ej: 1.95"
+        />
       </div>
     </>
   );

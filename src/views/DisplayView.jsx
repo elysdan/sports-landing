@@ -387,6 +387,9 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
 
 /* ─── PREGUNTA MODULE (SÍ/NO) ─── */
 function PreguntaModule({ content }) {
+  const yesType = content.yesType || 'text';
+  const noType = content.noType || 'text';
+
   return (
     <div className="module-pregunta-display">
       <div className="pregunta-header">
@@ -394,12 +397,36 @@ function PreguntaModule({ content }) {
       </div>
       <div className="pregunta-options-row">
         <div className="pregunta-option-box box-yes">
-          <span className="pregunta-option-label">SI</span>
-          <span className="pregunta-option-value" style={{ '--char-count': (content.yesOdd || '—').length }}>{content.yesOdd || '—'}</span>
+          {yesType === 'sticker' ? (
+            <img 
+              src={`/${content.yesSticker || 'sticker1.png'}`} 
+              alt="Sticker" 
+              className="pregunta-option-sticker" 
+            />
+          ) : (
+            <span className="pregunta-option-label">
+              {content.yesText !== undefined ? content.yesText : 'SI'}
+            </span>
+          )}
+          <span className="pregunta-option-value" style={{ '--char-count': (content.yesOdd || '—').length }}>
+            {content.yesOdd || '—'}
+          </span>
         </div>
         <div className="pregunta-option-box box-no">
-          <span className="pregunta-option-label">NO</span>
-          <span className="pregunta-option-value" style={{ '--char-count': (content.noOdd || '—').length }}>{content.noOdd || '—'}</span>
+          {noType === 'sticker' ? (
+            <img 
+              src={`/${content.noSticker || 'sticker1.png'}`} 
+              alt="Sticker" 
+              className="pregunta-option-sticker" 
+            />
+          ) : (
+            <span className="pregunta-option-label">
+              {content.noText !== undefined ? content.noText : 'NO'}
+            </span>
+          )}
+          <span className="pregunta-option-value" style={{ '--char-count': (content.noOdd || '—').length }}>
+            {content.noOdd || '—'}
+          </span>
         </div>
       </div>
     </div>

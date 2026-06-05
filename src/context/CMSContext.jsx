@@ -42,7 +42,13 @@ function defaultContentForType(type) {
       return {
         title: '¿AMBOS EQUIPOS ANOTARÁN?',
         tag: 'Especiales de fútbol',
+        yesType: 'text',
+        yesText: 'SÍ',
+        yesSticker: 'sticker1.png',
         yesOdd: '1,85',
+        noType: 'text',
+        noText: 'NO',
+        noSticker: 'sticker1.png',
         noOdd: '1,95',
       };
     default:
