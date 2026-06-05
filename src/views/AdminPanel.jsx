@@ -91,6 +91,44 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
     updateModuleContent(module.id, { src: url, mediaType: type, teamFlagId: '' });
   };
 
+  const handleBgMediaUpload = (e, type) => {
+    if (!canEdit) return;
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const base64 = ev.target.result;
+      fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filename: file.name,
+          base64: base64,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.url) {
+            if (type === 'image') {
+              updateModuleContent(module.id, { moduleBgImage: data.url });
+            } else if (type === 'video') {
+              updateModuleContent(module.id, { moduleBgVideo: data.url });
+            }
+          } else {
+            console.error('Error al subir archivo de fondo:', data.error);
+            alert('Error al subir el archivo de fondo: ' + (data.error || 'Desconocido'));
+          }
+        })
+        .catch((err) => {
+          console.error('Error de red al subir archivo de fondo:', err);
+          alert('Error de red al intentar subir el archivo de fondo.');
+        });
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="admin-main-scroll">
       {/* Warning Badge if read-only */}
@@ -172,14 +210,21 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
             <div className="field" style={{ marginBottom: 0 }}>
               <label>Estilo de Fondo del Módulo</label>
               <select
-                value={module.content.moduleBgTransparent === true ? 'transparent' : 'solid'}
-                onChange={(e) => handleContentChange('moduleBgTransparent', e.target.value === 'transparent')}
+                value={module.content.moduleBgType || (module.content.moduleBgTransparent === true ? 'transparent' : 'color')}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleContentChange('moduleBgType', val);
+                  handleContentChange('moduleBgTransparent', val === 'transparent');
+                }}
                 style={{ marginTop: '6px' }}
               >
-                <option value="transparent">Fondo Transparente (Elementos con fondo propio)</option>
-                <option value="solid">Fondo con Color Sólido (Módulo completo)</option>
+                <option value="transparent">Fondo Transparente</option>
+                <option value="color">Color Sólido</option>
+                <option value="image">Imagen de Fondo</option>
+                <option value="video">Video de Fondo</option>
               </select>
-              {module.content.moduleBgTransparent !== true && (
+
+              {(module.content.moduleBgType === 'color' || (!module.content.moduleBgType && module.content.moduleBgTransparent !== true)) && (
                 <div style={{ marginTop: '12px' }}>
                   <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Color de Fondo del Módulo Completo</label>
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
@@ -205,6 +250,138 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
                       placeholder="Ej: #0a0a0a o rgba(10,10,10,0.5)"
                       style={{ flex: 1 }}
                     />
+                  </div>
+                </div>
+              )}
+
+              {module.content.moduleBgType === 'image' && (
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Imagen de Fondo</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
+                      onClick={() => onOpenLibrary((url) => handleContentChange('moduleBgImage', url))}
+                    >
+                      🖼️ Elegir de Biblioteca
+                    </button>
+                    <label className="admin-btn admin-btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '13px', padding: '8px 12px', cursor: 'pointer', margin: 0 }}>
+                      📤 Subir Imagen
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleBgMediaUpload(e, 'image')}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={module.content.moduleBgImage || ''}
+                    onChange={(e) => handleContentChange('moduleBgImage', e.target.value)}
+                    placeholder="URL de la imagen de fondo"
+                    style={{ fontSize: '12px' }}
+                  />
+                  {module.content.moduleBgImage && (
+                    <div style={{ position: 'relative', border: '1px solid var(--color-border)', borderRadius: '4px', overflow: 'hidden', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050505' }}>
+                      <img
+                        src={module.content.moduleBgImage}
+                        alt="Preview"
+                        style={{ width: '100%', height: '100%', objectFit: module.content.moduleBgObjectFit || 'cover', opacity: module.content.moduleBgOpacity !== undefined ? module.content.moduleBgOpacity : 1.0 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleContentChange('moduleBgImage', '')}
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: '#fff', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {module.content.moduleBgType === 'video' && (
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <label style={{ fontSize: '12px', color: 'var(--color-text-secondary)' }}>Video de Fondo</label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn-secondary"
+                      style={{ flex: 1, justifyContent: 'center', fontSize: '13px', padding: '8px 12px' }}
+                      onClick={() => onOpenLibrary((url) => handleContentChange('moduleBgVideo', url))}
+                    >
+                      🎥 Elegir de Biblioteca
+                    </button>
+                    <label className="admin-btn admin-btn-secondary" style={{ flex: 1, justifyContent: 'center', fontSize: '13px', padding: '8px 12px', cursor: 'pointer', margin: 0 }}>
+                      📤 Subir Video
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm"
+                        onChange={(e) => handleBgMediaUpload(e, 'video')}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={module.content.moduleBgVideo || ''}
+                    onChange={(e) => handleContentChange('moduleBgVideo', e.target.value)}
+                    placeholder="URL del video de fondo"
+                    style={{ fontSize: '12px' }}
+                  />
+                  {module.content.moduleBgVideo && (
+                    <div style={{ position: 'relative', border: '1px solid var(--color-border)', borderRadius: '4px', overflow: 'hidden', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050505' }}>
+                      <video
+                        src={module.content.moduleBgVideo}
+                        muted
+                        loop
+                        autoPlay
+                        style={{ width: '100%', height: '100%', objectFit: module.content.moduleBgObjectFit || 'cover', opacity: module.content.moduleBgOpacity !== undefined ? module.content.moduleBgOpacity : 1.0 }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleContentChange('moduleBgVideo', '')}
+                        style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', color: '#fff', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {(module.content.moduleBgType === 'image' || module.content.moduleBgType === 'video') && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
+                  <div>
+                    <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Ajuste de Fondo</label>
+                    <select
+                      value={module.content.moduleBgObjectFit || 'cover'}
+                      onChange={(e) => handleContentChange('moduleBgObjectFit', e.target.value)}
+                      style={{ marginTop: '4px', fontSize: '12px', padding: '6px' }}
+                    >
+                      <option value="cover">Cubrir (cover)</option>
+                      <option value="contain">Contener (contain)</option>
+                      <option value="fill">Rellenar (fill)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '11px', color: 'var(--color-text-secondary)' }}>Opacidad de Fondo</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '4px' }}>
+                      <input
+                        type="range"
+                        min="0.0"
+                        max="1.0"
+                        step="0.05"
+                        value={module.content.moduleBgOpacity !== undefined ? module.content.moduleBgOpacity : 1.0}
+                        onChange={(e) => handleContentChange('moduleBgOpacity', parseFloat(e.target.value))}
+                        style={{ flex: 1, height: '4px', accentColor: 'var(--color-primary)' }}
+                      />
+                      <span style={{ fontSize: '11px', fontFamily: 'monospace', minWidth: '30px', textAlign: 'right' }}>
+                        {Math.round((module.content.moduleBgOpacity !== undefined ? module.content.moduleBgOpacity : 1.0) * 100)}%
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1698,9 +1875,10 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                   const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
                   const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
   
+                  const isBgTransparent = mod.content?.moduleBgType === 'transparent' || mod.content?.moduleBgType === 'image' || mod.content?.moduleBgType === 'video' || mod.content?.moduleBgTransparent === true;
                   const cellBg = isSelected 
                     ? 'rgba(212, 168, 67, 0.12)' 
-                    : (mod.content?.moduleBgTransparent === true ? 'rgba(22,22,22,0.85)' : (mod.content?.moduleBgColor || mod.content?.cardBgColor || '#0a0a0a'));
+                    : (isBgTransparent ? 'rgba(22,22,22,0.85)' : (mod.content?.moduleBgColor || mod.content?.cardBgColor || '#0a0a0a'));
 
                   const cellBorder = isSelected 
                     ? 'var(--color-gold)' 
@@ -1722,6 +1900,31 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                       onMouseDown={(e) => handleMoveMouseDown(e, mod)}
                       onTouchStart={(e) => handleMoveTouchStart(e, mod)}
                     >
+                      {/* Fondo de Imagen o Video del módulo en el LayoutPreview */}
+                      {!isSelected && mod.content?.moduleBgType === 'image' && mod.content?.moduleBgImage && (
+                        <div className="layout-preview-cell-media-bg" style={{ opacity: (mod.content.moduleBgOpacity !== undefined ? mod.content.moduleBgOpacity : 1.0) * 0.35 }}>
+                          <img
+                            src={mod.content.moduleBgImage}
+                            alt=""
+                            className={`preview-media-content ${mod.content.moduleBgObjectFit || 'cover'}`}
+                            style={{ objectFit: mod.content.moduleBgObjectFit || 'cover' }}
+                          />
+                        </div>
+                      )}
+                      {!isSelected && mod.content?.moduleBgType === 'video' && mod.content?.moduleBgVideo && (
+                        <div className="layout-preview-cell-media-bg" style={{ opacity: (mod.content.moduleBgOpacity !== undefined ? mod.content.moduleBgOpacity : 1.0) * 0.35 }}>
+                          <video
+                            src={mod.content.moduleBgVideo}
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                            className={`preview-media-content ${mod.content.moduleBgObjectFit || 'cover'}`}
+                            style={{ objectFit: mod.content.moduleBgObjectFit || 'cover' }}
+                          />
+                        </div>
+                      )}
+
                       {mod.type === 'media' && mod.content?.src && (
                         <div className="layout-preview-cell-media-bg">
                           {isVideo(mod.content.src, mod.content.mediaType) ? (
