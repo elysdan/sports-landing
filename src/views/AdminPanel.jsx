@@ -1401,12 +1401,19 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
   return (
     <>
       <div className="field">
-        <label>Etiqueta</label>
-        <input type="text" value={content.label || ''} onChange={(e) => onChange('label', e.target.value)} />
-      </div>
-      <div className="field">
         <label>Hora</label>
         <input type="text" value={content.time || ''} onChange={(e) => onChange('time', e.target.value)} />
+      </div>
+      <div className="field" style={{ marginBottom: '12px' }}>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
+          <input
+            type="checkbox"
+            checked={content.showVS !== false}
+            onChange={(e) => onChange('showVS', e.target.checked)}
+            style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
+          />
+          Mostrar separador "VS" en el centro
+        </label>
       </div>
       <div className="field-row">
         <div className="field">
@@ -1425,6 +1432,9 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
           </select>
           <label>Equipo A — Nombre</label>
           <input type="text" value={content.teamA || ''} onChange={(e) => onChange('teamA', e.target.value)} />
+          
+          <label style={{ marginTop: '6px' }}>Equipo A — Número (a su lado al centro)</label>
+          <input type="text" value={content.numA || ''} onChange={(e) => onChange('numA', e.target.value)} placeholder="Número / Cuota" />
           
           <label style={{ marginTop: '6px' }}>Equipo A — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>
@@ -1466,6 +1476,9 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
           </select>
           <label>Equipo B — Nombre</label>
           <input type="text" value={content.teamB || ''} onChange={(e) => onChange('teamB', e.target.value)} />
+          
+          <label style={{ marginTop: '6px' }}>Equipo B — Número (a su lado al centro)</label>
+          <input type="text" value={content.numB || ''} onChange={(e) => onChange('numB', e.target.value)} placeholder="Número / Cuota" />
           
           <label style={{ marginTop: '6px' }}>Equipo B — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>

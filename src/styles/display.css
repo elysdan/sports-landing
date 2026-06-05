@@ -408,26 +408,26 @@
   padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) clamp(12px, 2vw, 32px) !important;
   background: var(--module-bg-color, transparent) !important;
   display: flex;
-  flex-direction: row;
-  /* Side-by-side by default */
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: space-evenly !important;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
-  gap: calc(16px * var(--scale, 1));
+  gap: calc(10px * var(--scale, 1)) !important;
 }
 
 .upcoming-header-box {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: flex-start;
-  width: auto !important;
+  align-items: center !important;
+  width: 100% !important;
   flex-shrink: 0;
   padding: 0 !important;
   border: none !important;
   background: transparent !important;
+  text-align: center !important;
 }
 
 .upcoming-label-display {
@@ -451,41 +451,60 @@
 
 .upcoming-vs-card {
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  align-items: center;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
   flex: 1;
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
-  gap: calc(10px * var(--scale, 1));
+  gap: calc(12px * var(--scale, 1)) !important;
 }
 
-.upcoming-team {
-  font-family: var(--font-display);
-  font-size: clamp(14px, calc(32px * var(--font-scale, 1)), 48px);
-  font-weight: 700;
-  color: var(--color-white);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  white-space: nowrap !important;
-  overflow: hidden;
-  text-overflow: clip;
-  word-wrap: normal;
-  word-break: normal;
+.upcoming-team-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: clamp(8px, calc(16px * var(--scale, 1)), 24px);
   flex: 1;
   min-width: 0;
-  line-height: 1.3;
 }
 
-.upcoming-vs-card .upcoming-team:first-child {
-  text-align: right;
-  padding-right: calc(6px * var(--scale, 1));
+.upcoming-team-box.box-left {
+  justify-content: flex-start !important;
 }
 
-.upcoming-vs-card .upcoming-team:last-child {
-  text-align: left;
-  padding-left: calc(6px * var(--scale, 1));
+.upcoming-team-box.box-right {
+  justify-content: flex-end !important;
+  flex-direction: row !important;
+}
+
+.upcoming-number {
+  font-family: var(--font-display);
+  font-size: clamp(20px, calc(42px * var(--font-scale, 1)), 80px) !important;
+  font-weight: 800;
+  color: var(--color-gold);
+  text-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.upcoming-vs-card.no-vs {
+  justify-content: center !important;
+  gap: clamp(16px, calc(32px * var(--scale, 1)), 64px) !important;
+}
+
+.upcoming-vs-card.no-vs .upcoming-team-box {
+  flex: none !important;
+}
+
+.upcoming-vs-card.no-vs .upcoming-team-box.box-left {
+  justify-content: flex-end !important;
+}
+
+.upcoming-vs-card.no-vs .upcoming-team-box.box-right {
+  justify-content: flex-start !important;
 }
 
 .module-wrapper .module-upcoming-display img.sb-team-flag {
@@ -566,13 +585,12 @@
   width: 100% !important;
 }
 
-.narrow-col-2 .upcoming-team,
-.narrow-col-1 .upcoming-team,
-.span-w-1 .upcoming-team,
-.span-w-2 .upcoming-team,
-.vertical .upcoming-team {
-  text-align: center !important;
-  padding: 0 !important;
+.narrow-col-2 .upcoming-team-box,
+.narrow-col-1 .upcoming-team-box,
+.span-w-1 .upcoming-team-box,
+.span-w-2 .upcoming-team-box,
+.vertical .upcoming-team-box {
+  justify-content: center !important;
 }
 
 /* ─── MODULE TYPE: APUESTA ─── */
@@ -1224,8 +1242,8 @@
 
 
 .short-row-1 .upcoming-header-box {
-  flex-direction: row !important;
-  justify-content: space-between !important;
+  flex-direction: column !important;
+  justify-content: center !important;
   align-items: center !important;
   margin-bottom: 0 !important;
   width: 100% !important;

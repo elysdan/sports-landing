@@ -352,13 +352,18 @@ function UpcomingModule({ content }) {
   return (
     <div className="module-upcoming-display">
       <div className="upcoming-header-box">
-        <div className="upcoming-label-display">{content.label || 'SIGUIENTE PARTIDO'}</div>
         <div className="upcoming-time-display">{content.time}</div>
       </div>
-      <div className="upcoming-vs-card">
-        {flagA ? <TeamFlag flag={flagA.flag || flagA} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} /> : <span className="upcoming-team">{teamAInfo.name || 'EQUIPO A'}</span>}
-        <div className="upcoming-vs-badge">VS</div>
-        {flagB ? <TeamFlag flag={flagB.flag || flagB} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} /> : <span className="upcoming-team">{teamBInfo.name || 'EQUIPO B'}</span>}
+      <div className={`upcoming-vs-card ${content.showVS === false ? 'no-vs' : ''}`}>
+        <div className="upcoming-team-box box-left">
+          <TeamFlag flag={flagA?.flag || flagA || '🏳️'} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} />
+          <span className="upcoming-number">{content.numA || ''}</span>
+        </div>
+        {content.showVS !== false && <div className="upcoming-vs-badge">VS</div>}
+        <div className="upcoming-team-box box-right">
+          <span className="upcoming-number">{content.numB || ''}</span>
+          <TeamFlag flag={flagB?.flag || flagB || '🏳️'} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} />
+        </div>
       </div>
     </div>
   );
