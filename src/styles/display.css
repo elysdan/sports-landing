@@ -593,7 +593,7 @@
 
 .apuesta-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center !important;
   align-items: center;
   width: 100%;
   margin-bottom: calc(8px * var(--scale, 1));
@@ -612,6 +612,7 @@
   /* Keep title strictly in a single line */
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  text-align: center !important;
   flex: 1;
   min-width: 0;
   line-height: 1.25 !important;
@@ -670,6 +671,10 @@
 
 .apuesta-odd-box.box-right {
   justify-content: flex-start;
+}
+
+.apuesta-odd-box.no-team-info {
+  justify-content: center !important;
 }
 
 .module-wrapper .module-apuesta-display img.sb-team-flag {
@@ -740,7 +745,7 @@
 
 .apuesta-odd-value {
   font-family: var(--font-display);
-  font-size: clamp(16px, calc(32px * var(--font-scale, 1)), 64px) !important;
+  font-size: clamp(16px, calc(32px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 120px) !important;
   font-weight: 800;
   color: #ffb300;
   text-shadow: 0 0 10px rgba(255, 179, 0, 0.25);
@@ -802,7 +807,7 @@
 
   /* Odds Value style */
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box .apuesta-odd-value {
-    font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 40px) !important;
+    font-size: clamp(14px, calc(24px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 80px) !important;
     white-space: nowrap !important;
     margin: 0 !important;
     justify-self: center !important;
@@ -849,25 +854,25 @@
 
   .module-apuesta-display .box-left .apuesta-odd-value {
     order: 3 !important;
-    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0)), calc(20px * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0))) !important;
     white-space: nowrap !important;
     text-align: right !important;
     margin-left: auto !important;
   }
-
+ 
   .module-apuesta-display .box-center .apuesta-odd-value {
-    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0)), calc(20px * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0))) !important;
     white-space: nowrap !important;
     text-align: right !important;
     /* Align numbers to the right */
     margin-left: auto !important;
     /* Align numbers to the right */
   }
-
+ 
   .module-apuesta-display .box-right .apuesta-odd-value {
     order: 3 !important;
     /* Align numbers to the right */
-    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1)), calc(20px * var(--text-scale-factor, 1))) !important;
+    font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0)), calc(20px * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0))) !important;
     white-space: nowrap !important;
     text-align: right !important;
     /* Align numbers to the right */
@@ -916,6 +921,15 @@
     height: clamp(14px, calc(18px * var(--scale, 1)), 24px) !important;
     flex-shrink: 0 !important;
   }
+}
+
+.module-apuesta-display .apuesta-odd-box.no-team-info {
+  justify-content: center !important;
+}
+.module-apuesta-display .apuesta-odd-box.no-team-info .apuesta-odd-value {
+  margin: 0 auto !important;
+  text-align: center !important;
+  width: 100% !important;
 }
 
 /* ─── MODULE TYPE: PREGUNTA (SÍ/NO) ─── */

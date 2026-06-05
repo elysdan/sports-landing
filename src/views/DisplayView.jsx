@@ -68,6 +68,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     '--card-bg-color': content.cardBgColor || (module.type === 'apuesta' ? '#161616' : 'rgba(255, 255, 255, 0.03)'),
     '--module-bg-color': (bgType === 'transparent' || bgType === 'image' || bgType === 'video') ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
     '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
+    '--apuesta-odd-scale': content.apuestaOddScale !== undefined ? content.apuestaOddScale : 1.0,
     ...(content.textColor ? { '--text-color': content.textColor } : {}),
     width: '100%',
     height: '100%',
@@ -365,8 +366,12 @@ function UpcomingModule({ content }) {
 
 /* ─── APUESTA MODULE ─── */
 function ApuestaModule({ content, isVerticalLayout, isShort }) {
-  const { worldCupTeams = [] } = useCMS();
   const mode = content.mode || '3-way';
+  const teamAInfo = content.teamA || {};
+  const teamBInfo = content.teamB || {};
+  const hasTeamA = !!(teamAInfo.name?.trim() || teamAInfo.code?.trim());
+  const hasTeamB = !!(teamBInfo.name?.trim() || teamBInfo.code?.trim());
+
   return (
     <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`}>
       <div className="apuesta-header">
@@ -376,12 +381,13 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
       <div className="apuesta-odds-row">
         {/* Box Left: Team A / Selection A (always rendered) */}
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
-          <div className="apuesta-odd-box box-left">
-            <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamA?.flag} teamName={content.teamA?.name} worldCupTeams={worldCupTeams} />}
-              <span className="apuesta-team-name">{content.teamA?.code || content.teamA?.name?.slice(0, 3).toUpperCase() || 'LOC'}</span>
-            </div>
-            <span className="apuesta-odd-value">{content.teamA?.odd || '—'}</span>
+          <div className={`apuesta-odd-box box-left ${!hasTeamA ? 'no-team-info' : ''}`}>
+            {hasTeamA && (
+              <div className="apuesta-team-info">
+                <span className="apuesta-team-name">{teamAInfo.code || teamAInfo.name || ''}</span>
+              </div>
+            )}
+            <span className="apuesta-odd-value">{teamAInfo.odd || '—'}</span>
           </div>
         )}
 
@@ -392,13 +398,15 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
           </div>
         )}
 
+        {/* Box Right: Team B / Selection B */}
         {(mode === '3-way' || mode === '2-way') && (
-          <div className="apuesta-odd-box box-right">
-            <span className="apuesta-odd-value">{content.teamB?.odd || '—'}</span>
-            <div className="apuesta-team-info">
-              {content.showFlags !== false && <TeamFlag flag={content.teamB?.flag} teamName={content.teamB?.name} worldCupTeams={worldCupTeams} />}
-              <span className="apuesta-team-name">{content.teamB?.code || content.teamB?.name?.slice(0, 3).toUpperCase() || 'VIS'}</span>
-            </div>
+          <div className={`apuesta-odd-box box-right ${!hasTeamB ? 'no-team-info' : ''}`}>
+            <span className="apuesta-odd-value">{teamBInfo.odd || '—'}</span>
+            {hasTeamB && (
+              <div className="apuesta-team-info">
+                <span className="apuesta-team-name">{teamBInfo.code || teamBInfo.name || ''}</span>
+              </div>
+            )}
           </div>
         )}
       </div>
