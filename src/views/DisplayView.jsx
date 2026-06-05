@@ -56,11 +56,17 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   const cellHeight = (rowSpan / gridRows) * actualGridHeight;
   const isShort = rowSpan === 1 || cellHeight < 200;
 
+  const bgType = content.moduleBgType || (content.moduleBgTransparent === true ? 'transparent' : 'color');
+  const bgImage = content.moduleBgImage;
+  const bgVideo = content.moduleBgVideo;
+  const bgObjectFit = content.moduleBgObjectFit || 'cover';
+  const bgOpacity = content.moduleBgOpacity !== undefined ? content.moduleBgOpacity : 1.0;
+
   const wrapperStyle = {
     '--scale': scale,
     '--text-scale-factor': layoutTextSizeFactor,
     '--card-bg-color': content.cardBgColor || (module.type === 'apuesta' ? '#161616' : 'rgba(255, 255, 255, 0.03)'),
-    '--module-bg-color': content.moduleBgTransparent === true ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
+    '--module-bg-color': (bgType === 'transparent' || bgType === 'image' || bgType === 'video') ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
     '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
     ...(content.textColor ? { '--text-color': content.textColor } : {}),
     width: '100%',
@@ -72,8 +78,8 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     minWidth: 0
   };
 
-  const isBgTransparent = content.moduleBgTransparent === true;
-  const hasCustomBg = !!content.moduleBgColor;
+  const isBgTransparent = bgType === 'transparent' || bgType === 'image' || bgType === 'video';
+  const hasCustomBg = bgType === 'color' || (!content.moduleBgType && !!content.moduleBgColor);
 
   const wrapperClass = [
     'module-wrapper',
@@ -88,22 +94,37 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
 
   return (
     <div className={wrapperClass} style={wrapperStyle}>
-      {(() => {
-        switch (module.type) {
-          case 'media':
-            return <MediaModule content={module.content} />;
-          case 'scoreboard':
-            return <ScoreboardModule content={module.content} />;
-          case 'upcoming':
-            return <UpcomingModule content={module.content} />;
-          case 'apuesta':
-            return <ApuestaModule content={module.content} isVerticalLayout={isVerticalLayout} isShort={isShort} />;
-          case 'pregunta':
-            return <PreguntaModule content={module.content} />;
-          default:
-            return <div className="module-media"><div className="media-placeholder"><div className="media-placeholder-icon">❓</div>Módulo desconocido</div></div>;
-        }
-      })()}
+      {/* Fondo de Imagen o Video */}
+      {bgType === 'image' && bgImage && (
+        <div className="module-bg-media-container" style={{ opacity: bgOpacity }}>
+          <img src={bgImage} className="module-bg-media" style={{ objectFit: bgObjectFit }} alt="Module Background" />
+        </div>
+      )}
+      {bgType === 'video' && bgVideo && (
+        <div className="module-bg-media-container" style={{ opacity: bgOpacity }}>
+          <video src={bgVideo} className="module-bg-media" style={{ objectFit: bgObjectFit }} autoPlay muted loop playsInline />
+        </div>
+      )}
+
+      {/* Contenido del módulo con zIndex para asegurar que esté sobre el fondo */}
+      <div style={{ zIndex: 1, display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%', minHeight: 0, minWidth: 0 }}>
+        {(() => {
+          switch (module.type) {
+            case 'media':
+              return <MediaModule content={module.content} />;
+            case 'scoreboard':
+              return <ScoreboardModule content={module.content} />;
+            case 'upcoming':
+              return <UpcomingModule content={module.content} />;
+            case 'apuesta':
+              return <ApuestaModule content={module.content} isVerticalLayout={isVerticalLayout} isShort={isShort} />;
+            case 'pregunta':
+              return <PreguntaModule content={module.content} />;
+            default:
+              return <div className="module-media"><div className="media-placeholder"><div className="media-placeholder-icon">❓</div>Módulo desconocido</div></div>;
+          }
+        })()}
+      </div>
     </div>
   );
 }
