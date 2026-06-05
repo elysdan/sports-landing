@@ -1151,6 +1151,115 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
         />
       </div>
 
+      {/* --- Diseño del Título --- */}
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginTop: '20px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Estilos del Título
+      </h3>
+      
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field">
+          <label>Tamaño de Fuente (Título)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="range"
+              min="0.5"
+              max="2.5"
+              step="0.05"
+              value={content.titleFontSize !== undefined ? content.titleFontSize : 1.0}
+              onChange={(e) => onChange('titleFontSize', parseFloat(e.target.value))}
+              style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+            />
+            <span style={{ fontSize: '12px', fontWeight: 'bold', minWidth: '36px', color: 'var(--color-gold)' }}>
+              {(content.titleFontSize !== undefined ? content.titleFontSize : 1.0).toFixed(2)}x
+            </span>
+          </div>
+        </div>
+        <div className="field">
+          <label>Color de Letras (Título)</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.titleTextColor && /^#[0-9A-F]{6}$/i.test(content.titleTextColor) ? content.titleTextColor : '#ffffff'}
+              onChange={(e) => onChange('titleTextColor', e.target.value)}
+              style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+            />
+            <input
+              type="text"
+              value={content.titleTextColor || ''}
+              onChange={(e) => onChange('titleTextColor', e.target.value)}
+              placeholder="Ej: #ffffff"
+              style={{ flex: 1, padding: '8px' }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="field" style={{ marginBottom: '20px' }}>
+        <label>Color de Fondo del Título</label>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+          <input
+            type="color"
+            value={content.titleBgColor && /^#[0-9A-F]{6}$/i.test(content.titleBgColor) ? content.titleBgColor : '#000000'}
+            onChange={(e) => onChange('titleBgColor', e.target.value)}
+            style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+          />
+          <input
+            type="text"
+            value={content.titleBgColor || ''}
+            onChange={(e) => onChange('titleBgColor', e.target.value)}
+            placeholder="Ej: #161616 o dejar vacío para transparente"
+            style={{ flex: 1, padding: '8px' }}
+          />
+          {content.titleBgColor && (
+            <button
+              type="button"
+              onClick={() => onChange('titleBgColor', '')}
+              style={{ padding: '8px 12px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--color-border)', borderRadius: '4px', color: 'var(--color-text)', cursor: 'pointer' }}
+            >
+              Borrar
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+
+      {/* --- Diseño General de las Opciones --- */}
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Estilos Generales de las Opciones
+      </h3>
+
+      <div className="field-row" style={{ marginBottom: '20px' }}>
+        <div className="field">
+          <label>Escala de las Opciones (Sticker / Texto / Cuota)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="range"
+              min="0.5"
+              max="2.5"
+              step="0.05"
+              value={content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0}
+              onChange={(e) => onChange('optionScaleFactor', parseFloat(e.target.value))}
+              style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+            />
+            <span style={{ fontSize: '12px', fontWeight: 'bold', minWidth: '36px', color: 'var(--color-gold)' }}>
+              {(content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0).toFixed(2)}x
+            </span>
+          </div>
+        </div>
+        <div className="field">
+          <label>Dirección del Contenido</label>
+          <select
+            value={content.optionLayout || 'vertical'}
+            onChange={(e) => onChange('optionLayout', e.target.value)}
+            style={{ marginTop: '6px' }}
+          >
+            <option value="vertical">Apilado (Sticker/Texto arriba, Cuota abajo)</option>
+            <option value="horizontal">Lado a Lado (Sticker/Texto a la izquierda, Cuota a la derecha)</option>
+          </select>
+        </div>
+      </div>
+
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
 
       {/* --- Opción Izquierda --- */}

@@ -50,6 +50,11 @@ function defaultContentForType(type) {
         noText: 'NO',
         noSticker: 'sticker1.png',
         noOdd: '1,95',
+        titleFontSize: 1.0,
+        titleTextColor: '',
+        titleBgColor: '',
+        optionScaleFactor: 1.0,
+        optionLayout: 'vertical'
       };
     default:
       return {};

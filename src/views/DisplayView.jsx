@@ -410,15 +410,27 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
 function PreguntaModule({ content }) {
   const yesType = content.yesType || 'text';
   const noType = content.noType || 'text';
+  const optionLayoutClass = content.optionLayout === 'horizontal' ? 'layout-horizontal' : 'layout-vertical';
+
+  const moduleStyle = {
+    '--pregunta-title-size': content.titleFontSize || 1.0,
+    '--pregunta-option-scale': content.optionScaleFactor || 1.0,
+  };
+  if (content.titleTextColor) {
+    moduleStyle['--pregunta-title-color'] = content.titleTextColor;
+  }
+  if (content.titleBgColor) {
+    moduleStyle['--pregunta-title-bg'] = content.titleBgColor;
+  }
 
   return (
-    <div className="module-pregunta-display">
-      <div className="pregunta-header">
-        <div className="pregunta-title">{content.title}</div>
+    <div className="module-pregunta-display" style={moduleStyle}>
+      <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
+        <div className="pregunta-title" style={content.titleTextColor ? { color: 'var(--pregunta-title-color)' } : {}}>{content.title}</div>
       </div>
       <div className="pregunta-divider-horizontal" />
       <div className="pregunta-options-row">
-        <div className="pregunta-option-box box-yes">
+        <div className={`pregunta-option-box box-yes ${optionLayoutClass}`}>
           {yesType === 'sticker' ? (
             <img 
               src={`/${content.yesSticker || 'sticker1.png'}`} 
@@ -435,7 +447,7 @@ function PreguntaModule({ content }) {
           </span>
         </div>
         <div className="pregunta-divider-vertical" />
-        <div className="pregunta-option-box box-no">
+        <div className={`pregunta-option-box box-no ${optionLayoutClass}`}>
           {noType === 'sticker' ? (
             <img 
               src={`/${content.noSticker || 'sticker1.png'}`} 

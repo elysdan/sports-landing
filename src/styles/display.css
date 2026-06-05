@@ -946,7 +946,7 @@
 
 .pregunta-title {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 72px);
+  font-size: calc(clamp(14px, calc(24px * var(--font-scale, 1)), 72px) * var(--pregunta-title-size, 1)) !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
@@ -1019,9 +1019,17 @@
   box-shadow: none !important;
 }
 
+.pregunta-option-box.layout-horizontal,
+[class*="narrow-col-"] .pregunta-option-box.layout-horizontal {
+  flex-direction: row !important;
+  justify-content: space-evenly !important;
+  align-items: center !important;
+  gap: clamp(6px, calc(12px * var(--scale, 1)), 32px) !important;
+}
+
 .pregunta-option-label {
   font-family: var(--font-display);
-  font-size: clamp(9px, calc(14cqi * var(--text-scale-factor, 1)), 24cqi) !important;
+  font-size: calc(clamp(9px, calc(14cqi * var(--text-scale-factor, 1)), 24cqi) * var(--pregunta-option-scale, 1)) !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
@@ -1030,7 +1038,7 @@
 }
 
 .pregunta-option-sticker {
-  height: clamp(30px, calc(65px * var(--scale, 1)), 150px);
+  height: calc(clamp(30px, calc(65px * var(--scale, 1)), 150px) * var(--pregunta-option-scale, 1)) !important;
   width: auto;
   max-width: 80%;
   object-fit: contain;
@@ -1044,7 +1052,7 @@
 
 .pregunta-option-value {
   font-family: var(--font-display);
-  font-size: clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) !important;
+  font-size: calc(clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) * var(--pregunta-option-scale, 1)) !important;
   font-weight: 800;
   color: var(--color-gold);
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
