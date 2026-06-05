@@ -922,11 +922,12 @@
 .module-pregunta-display {
   width: 100%;
   height: 100%;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 32px);
-  background: var(--color-bg-primary);
+  padding: 0 !important;
+  background: var(--module-bg-color, transparent);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  align-items: stretch;
+  justify-content: stretch;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
@@ -937,8 +938,9 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-bottom: calc(8px * var(--scale, 1));
-  gap: 12px;
+  margin: 0 !important;
+  padding: clamp(8px, calc(14px * var(--scale, 1)), 24px) !important;
+  box-sizing: border-box !important;
   text-align: center;
 }
 
@@ -969,18 +971,33 @@
   letter-spacing: 1px;
 }
 
+.pregunta-divider-horizontal {
+  height: 1px;
+  width: 100%;
+  background-color: var(--module-border-color, var(--color-border));
+  flex-shrink: 0;
+}
+
+.pregunta-divider-vertical {
+  width: 1px;
+  background-color: var(--module-border-color, var(--color-border));
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
 .pregunta-options-row {
   display: flex;
-  gap: calc(12px * var(--scale, 1));
+  flex-direction: row;
+  gap: 0 !important;
   width: 100%;
   flex: 1;
   align-items: stretch;
 }
 
 .pregunta-option-box {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   padding: clamp(8px, calc(20px * var(--scale, 1)), 64px);
   flex: 1;
   display: flex;
@@ -993,14 +1010,13 @@
   min-width: 0;
   gap: clamp(8px, calc(14px * var(--scale, 1)), 48px);
   box-sizing: border-box;
-  transition: all 0.25s ease;
+  transition: background-color 0.25s ease;
   container-type: inline-size;
 }
 
 .pregunta-option-box:hover {
-  background: rgba(212, 168, 67, 0.03);
-  border-color: rgba(212, 168, 67, 0.3);
-  box-shadow: 0 0 12px rgba(212, 168, 67, 0.1);
+  background: rgba(255, 255, 255, 0.02) !important;
+  box-shadow: none !important;
 }
 
 .pregunta-option-label {
@@ -1394,9 +1410,7 @@ img.sb-team-flag,
 }
 
 /* ─── CARD/ELEMENT STYLING WITH CUSTOMIZABLE BACKGROUND COLOR ─── */
-.pregunta-header,
 .apuesta-header,
-.pregunta-option-box,
 .apuesta-odd-box,
 .sb-main,
 .sb-status,
@@ -1408,7 +1422,6 @@ img.sb-team-flag,
 }
 
 /* Styled elements configuration (borders, paddings, margins) */
-.pregunta-header,
 .apuesta-header {
   border: 1px solid var(--module-border-color, var(--color-border)) !important;
   border-radius: var(--radius-md) !important;
@@ -1417,7 +1430,6 @@ img.sb-team-flag,
   box-sizing: border-box !important;
 }
 
-.pregunta-option-box,
 .apuesta-odd-box,
 .sb-main,
 .media-text-container {

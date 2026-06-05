@@ -416,6 +416,7 @@ function PreguntaModule({ content }) {
       <div className="pregunta-header">
         <div className="pregunta-title">{content.title}</div>
       </div>
+      <div className="pregunta-divider-horizontal" />
       <div className="pregunta-options-row">
         <div className="pregunta-option-box box-yes">
           {yesType === 'sticker' ? (
@@ -433,6 +434,7 @@ function PreguntaModule({ content }) {
             {content.yesOdd || '—'}
           </span>
         </div>
+        <div className="pregunta-divider-vertical" />
         <div className="pregunta-option-box box-no">
           {noType === 'sticker' ? (
             <img 
