@@ -19,7 +19,6 @@ export async function handlePostUpload(req, res) {
     const safeName = `${timestamp}_${filename.replace(/[^a-zA-Z0-9.\-_]/g, '_')}`;
     const mimeType = base64.match(/^data:([^;]+);base64,/)?.[1] || 'application/octet-stream';
 
-    // 1. Guardar físicamente el archivo en el sistema de archivos
     const uploadDir = path.resolve(process.cwd(), 'public/update');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -27,13 +26,11 @@ export async function handlePostUpload(req, res) {
     const filePath = path.join(uploadDir, safeName);
     fs.writeFileSync(filePath, buffer);
 
-    // 2. Guardar únicamente los metadatos en la base de datos
     try {
       await saveMediaAsset(safeName, mimeType, buffer.length);
       sendJson(res, 200, { url: `/api/media/file?name=${safeName}` });
     } catch (dbErr) {
       console.warn("[MediaController] Error al guardar en base de datos, usando solo filesystem:", dbErr.message);
-      // fallback url en disco directo
       sendJson(res, 200, { url: `/update/${safeName}` });
     }
   } catch (err) {
@@ -70,22 +67,18 @@ export async function handleGetMedia(req, res) {
               }
             }
           } catch (statErr) {
-            // Ignore stat errors for individual files
           }
         }));
       } catch (dirErr) {
-        // Ignore directory read errors (e.g. if folder doesn't exist)
       }
     };
 
-    // Scan local directories in parallel
     await Promise.all([
       scanDir(path.resolve(process.cwd(), 'public/update'), '/update/'),
       scanDir(path.resolve(process.cwd(), 'public'), '/'),
       scanDir(path.resolve(process.cwd(), 'dist'), '/')
     ]);
 
-    // Merge database assets
     try {
       const dbAssets = await listMediaAssets();
       if (Array.isArray(dbAssets)) {
@@ -93,13 +86,11 @@ export async function handleGetMedia(req, res) {
           const url = `/api/media/file?name=${asset.filename}`;
           const ext = path.extname(asset.filename).toLowerCase();
           const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
-          
-          // Deduplicate: remove filesystem fallback URL if it exists
           const fsUrl = `/update/${asset.filename}`;
           if (mediaMap.has(fsUrl)) {
             mediaMap.delete(fsUrl);
           }
-          
+
           mediaMap.set(url, {
             url,
             filename: asset.filename,
@@ -138,7 +129,6 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
       return;
     }
 
-    // Handle database assets
     if (mediaUrl.startsWith('/api/media/file')) {
       const filename = new URL(mediaUrl, 'http://localhost').searchParams.get('name');
       if (!filename) {
@@ -147,7 +137,6 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
       }
       await deleteMediaAsset(filename);
 
-      // Eliminar archivo físico
       const safeName = filename.replace(/[^a-zA-Z0-9.\-_]/g, '_');
       const uploadDir = path.resolve(process.cwd(), 'public/update');
       const filePath = path.join(uploadDir, safeName);
@@ -159,7 +148,6 @@ export async function handleDeleteMedia(req, res, parsedUrl) {
       return;
     }
 
-    // Handle filesystem assets
     if (!mediaUrl.startsWith('/update/')) {
       sendJson(res, 403, { error: 'Solo se pueden eliminar archivos subidos dinámicamente (/update/).' });
       return;
@@ -205,7 +193,6 @@ export async function handleGetMediaFile(req, res, parsedUrl) {
     const uploadDir = path.resolve(process.cwd(), 'public/update');
     const filePath = path.join(uploadDir, safeName);
 
-    // Prevent path traversal
     const relativeResolved = path.relative(uploadDir, filePath);
     if (relativeResolved.startsWith('..') || path.isAbsolute(relativeResolved)) {
       sendJson(res, 403, { error: 'Acceso denegado.' });
@@ -224,7 +211,7 @@ export async function handleGetMediaFile(req, res, parsedUrl) {
       'Content-Length': stat.size,
       'Cache-Control': 'public, max-age=31536000, immutable'
     });
-    
+
     const stream = fs.createReadStream(filePath);
     stream.pipe(res);
   } catch (err) {

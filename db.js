@@ -6,7 +6,6 @@ dotenv.config();
 
 let pool = null;
 
-// Initialize DB connection
 async function initDb() {
   const host = process.env.DB_HOST || 'localhost';
   const port = parseInt(process.env.DB_PORT || '3306');
@@ -16,7 +15,6 @@ async function initDb() {
 
   let connected = false;
 
-  // 1. Try to connect without database to create it if it doesn't exist
   try {
     console.log(`[DB] Verificando/Creando base de datos '${database}' en MySQL con soporte utf8mb4...`);
     const adminConnection = await mysql.createConnection({
@@ -34,7 +32,6 @@ async function initDb() {
     console.warn(`[DB] Error o advertencia al verificar base de datos MySQL: ${err.message}`);
   }
 
-  // 2. Initialize connection pool with selected database
   try {
     pool = mysql.createPool({
       host,
@@ -47,8 +44,7 @@ async function initDb() {
       queueLimit: 0,
       charset: 'utf8mb4'
     });
-    
-    // Test pool connection
+
     const connection = await pool.getConnection();
     await connection.query('SET NAMES utf8mb4');
     console.log(`[DB] Conectado exitosamente a la base de datos MySQL '${database}' con charset utf8mb4.`);
@@ -59,14 +55,12 @@ async function initDb() {
     throw new Error('No se pudo establecer conexión con la base de datos MySQL.');
   }
 
-  // Convert database and set default collation
   try {
     await pool.query(`ALTER DATABASE \`${database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`);
   } catch (err) {
     console.warn(`[DB] No se pudo alterar el conjunto de caracteres de la base de datos: ${err.message}`);
   }
 
-  // Create tables in parallel with explicit utf8mb4 charset
   await Promise.all([
     pool.query(`
       CREATE TABLE IF NOT EXISTS billboard_config (
@@ -126,7 +120,6 @@ async function initDb() {
     `)
   ]);
 
-  // Convert existing tables to utf8mb4 in case they were created with standard utf8 or latin1 in production
   try {
     console.log("[DB] Convirtiendo tablas existentes a charset utf8mb4...");
     await pool.query("ALTER TABLE billboard_config CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
@@ -137,7 +130,6 @@ async function initDb() {
     console.warn(`[DB] No se pudo convertir las tablas a utf8mb4: ${convErr.message}`);
   }
 
-  // Safe migration to drop file_data from media_assets if it still exists
   try {
     const [columns] = await pool.query("SHOW COLUMNS FROM media_assets LIKE 'file_data'");
     if (columns.length > 0) {
@@ -151,11 +143,9 @@ async function initDb() {
 
   console.log('[DB] Todas las tablas han sido verificadas/creadas en paralelo.');
 
-  // Seed default World Cup teams - only seed if table does not have exactly 48 teams OR has corrupted emoji flags (e.g. "??" due to previous encoding issue)
   const [teamsCountRes] = await pool.query('SELECT COUNT(*) as count FROM world_cup_teams');
   const teamsCount = parseInt(teamsCountRes[0].count) || 0;
-  
-  // Test if any team has a '?' in their flag, indicating encoding corruption
+
   let hasCorruptedFlags = false;
   try {
     const [testRows] = await pool.query("SELECT id FROM world_cup_teams WHERE flag LIKE '%?%' LIMIT 1");
@@ -167,7 +157,6 @@ async function initDb() {
     console.warn("[DB] Error al buscar banderas corruptas:", testErr.message);
   }
 
-  // Test if any team has an ID greater than 48, indicating the auto_increment is too high
   let hasIncorrectIds = false;
   try {
     const [idRows] = await pool.query("SELECT id FROM world_cup_teams WHERE id > 48 LIMIT 1");
@@ -182,7 +171,6 @@ async function initDb() {
   if (teamsCount !== 48 || hasCorruptedFlags || hasIncorrectIds) {
     console.log(`[DB] Sembrando selecciones oficiales del mundial (Equipos actuales: ${teamsCount}/48)...`);
     await pool.query('DELETE FROM world_cup_teams');
-    // Reset auto-increment counter to 1 so the IDs are strictly 1 to 48
     try {
       await pool.query('ALTER TABLE world_cup_teams AUTO_INCREMENT = 1');
       console.log("[DB] Contador AUTO_INCREMENT reiniciado a 1.");
@@ -250,7 +238,6 @@ async function initDb() {
     console.log('[DB] Se han sembrado exactamente las 48 selecciones oficiales del mundial 2026 de la FIFA en un único lote.');
   }
 
-  // Seed default users if they do not exist
   const defaultUsers = [
     { username: 'admin', password: 'admin1234', name: 'Administrador', allowedTypes: ['*'] },
     { username: 'aprobador', password: 'aprobador1234', name: 'Usuario Aprobador', allowedTypes: ['*', 'approve'] },
@@ -278,7 +265,6 @@ async function initDb() {
     console.log(`[DB] Se crearon los usuarios por defecto faltantes en lote.`);
   }
 
-  // Seed default billboard config if empty
   const [configRows] = await pool.query("SELECT COUNT(*) as count FROM billboard_config WHERE key_name = 'live'");
   if (parseInt(configRows[0].count) === 0) {
     const defaultDataStr = JSON.stringify(defaultBillboardData);
@@ -289,7 +275,6 @@ async function initDb() {
     console.log('[DB] Configuración por defecto de la valla creada en la base de datos.');
   }
 
-  // Clean existing configs and templates from deleted module types (news, results, ticker)
   try {
     const [existingConfigs] = await pool.query("SELECT key_name, config_data FROM billboard_config");
     for (const row of existingConfigs) {
@@ -329,7 +314,7 @@ function cleanConfigData(config) {
   if (!config || !Array.isArray(config.modules)) return config;
   const typesToRemove = ['news', 'results', 'ticker'];
   const removedIds = new Set();
-  
+
   config.modules = config.modules.filter(m => {
     if (typesToRemove.includes(m.type)) {
       removedIds.add(m.id);
@@ -337,7 +322,7 @@ function cleanConfigData(config) {
     }
     return true;
   });
-  
+
   if (config.layouts) {
     Object.keys(config.layouts).forEach(layoutKey => {
       const layout = config.layouts[layoutKey];
@@ -353,19 +338,17 @@ function cleanConfigData(config) {
   return config;
 }
 
-// Lazy database initialization helper
 let initPromise = null;
 export async function ensureDb() {
   if (!initPromise) {
     initPromise = initDb().catch(err => {
-      initPromise = null; // Clear promise on error so we retry on next call
+      initPromise = null;
       throw err;
     });
   }
   return initPromise;
 }
 
-// --- Layout configuration functions ---
 
 export async function getConfig(keyName) {
   await ensureDb();
@@ -411,8 +394,6 @@ export async function getVersion(keyName) {
   }
   return null;
 }
-
-// --- User management functions ---
 
 export async function authenticateDbUser(username, password) {
   await ensureDb();
@@ -504,7 +485,6 @@ export async function deleteDbTemplate(id) {
   return true;
 }
 
-// --- Media Assets Storage Functions ---
 
 export async function saveMediaAsset(filename, mimeType, sizeBytes) {
   await ensureDb();

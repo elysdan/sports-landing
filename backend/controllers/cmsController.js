@@ -165,7 +165,6 @@ export async function handleGetCmsDraft(req, res) {
   try {
     let config = await getConfig('draft');
     if (!config || !config.modules) {
-      // Fallback to live config if draft is empty
       config = await getConfig('live');
     }
     const processedConfig = await populateFlagsInConfig(config);

@@ -2,7 +2,7 @@ export function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     let body = '';
     let bytesReceived = 0;
-    const MAX_SIZE = 20 * 1024 * 1024; // Límite de 20 MB
+    const MAX_SIZE = 20 * 1024 * 1024;
 
     req.on('data', chunk => {
       bytesReceived += chunk.length;

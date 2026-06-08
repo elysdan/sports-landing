@@ -4,7 +4,6 @@ import { CMSProvider } from './context/CMSContext';
 import DisplayView from './views/DisplayView';
 import './App.css';
 
-// Lazy load the admin panel to exclude its large size from the main bundle
 const AdminPanel = lazy(() => import('./views/AdminPanel'));
 
 function App() {
@@ -13,13 +12,13 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<DisplayView />} />
-          <Route 
-            path="/admin" 
+          <Route
+            path="/admin"
             element={
               <Suspense fallback={<div style={{ background: '#0a0a0a', color: '#fff', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'sans-serif' }}>Cargando Panel...</div>}>
                 <AdminPanel />
               </Suspense>
-            } 
+            }
           />
         </Routes>
       </BrowserRouter>

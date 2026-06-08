@@ -7,9 +7,7 @@ import TemplateManager from '../components/admin/TemplateManager';
 import HistoryPanel from '../components/admin/HistoryPanel';
 import UserManager from '../components/admin/UserManager';
 
-/* ═══════════════════════════════════════════
-   MODULE EDITOR — Dynamic form per module type
-   ═══════════════════════════════════════════ */
+
 function ModuleEditor({ module, updateModule, updateModuleContent, removeModule, onOpenLibrary, canEdit }) {
   const handleContentChange = (field, value) => {
     if (!canEdit) return;
@@ -131,7 +129,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
 
   return (
     <div className="admin-main-scroll">
-      {/* Warning Badge if read-only */}
       {!canEdit && (
         <div style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', padding: '10px 14px', borderRadius: 'var(--radius-sm)', marginBottom: '16px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span>🔒</span>
@@ -140,7 +137,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
       )}
 
       <fieldset disabled={!canEdit} style={{ border: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '24px', opacity: canEdit ? 1 : 0.85 }}>
-        {/* Editor Header */}
         <div className="editor-header">
           <div>
             <div className="editor-title">{module.label}</div>
@@ -151,7 +147,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           </div>
         </div>
 
-        {/* General Config with Visibility */}
         <div className="editor-section">
           <div className="editor-section-title">Configuración General</div>
           <div className="field-row" style={{ gridTemplateColumns: '2fr 1fr', alignItems: 'center', gap: '24px' }}>
@@ -178,7 +173,6 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           </div>
         </div>
 
-        {/* Grid Position */}
         <div className="editor-section">
           <div className="editor-section-title">Posición en Grid</div>
           <div className="grid-position-editor">
@@ -204,7 +198,7 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
         {/* Estilo del Módulo */}
         <div className="editor-section">
           <div className="editor-section-title">Estilo del Módulo</div>
-          
+
           <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '16px' }}>
             {/* Fondo del Módulo */}
             <div className="field" style={{ marginBottom: 0 }}>
@@ -473,11 +467,11 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
                   onChange={(e) => handleLayoutTextSizeChange(e.target.value)}
                   style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
                 />
-                <span style={{ 
-                  fontSize: '14px', 
-                  fontWeight: '600', 
-                  color: 'var(--color-primary)', 
-                  minWidth: '40px', 
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--color-primary)',
+                  minWidth: '40px',
                   textAlign: 'right',
                   fontFamily: 'monospace'
                 }}>
@@ -537,42 +531,42 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
               </div>
               <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
                 Deja el campo vacío para usar los colores predeterminados del módulo.
-          </div>
-        </div>
-      </div>
-
-            <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
-              <div className="field" style={{ marginBottom: 0 }}>
-                <label>Proporciones del Módulo (Escala de Elementos)</label>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2.5"
-                    step="0.05"
-                    value={currentScaleFactor}
-                    onChange={(e) => handleLayoutScaleChange(e.target.value)}
-                    style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
-                  />
-                  <span style={{ 
-                    fontSize: '14px', 
-                    fontWeight: '600', 
-                    color: 'var(--color-primary)', 
-                    minWidth: '40px', 
-                    textAlign: 'right',
-                    fontFamily: 'monospace'
-                  }}>
-                    {currentScaleFactor.toFixed(2)}x
-                  </span>
-                </div>
-                <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                  Ajusta las proporciones, espacios y tamaño de las tarjetas/elementos dentro de este módulo.
-                </div>
-              </div>
-              <div className="field" style={{ marginBottom: 0, opacity: 0, pointerEvents: 'none' }}>
-                {/* Spacer */}
               </div>
             </div>
+          </div>
+
+          <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
+            <div className="field" style={{ marginBottom: 0 }}>
+              <label>Proporciones del Módulo (Escala de Elementos)</label>
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2.5"
+                  step="0.05"
+                  value={currentScaleFactor}
+                  onChange={(e) => handleLayoutScaleChange(e.target.value)}
+                  style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+                />
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: 'var(--color-primary)',
+                  minWidth: '40px',
+                  textAlign: 'right',
+                  fontFamily: 'monospace'
+                }}>
+                  {currentScaleFactor.toFixed(2)}x
+                </span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                Ajusta las proporciones, espacios y tamaño de las tarjetas/elementos dentro de este módulo.
+              </div>
+            </div>
+            <div className="field" style={{ marginBottom: 0, opacity: 0, pointerEvents: 'none' }}>
+              {/* Spacer */}
+            </div>
+          </div>
 
         </div>
 
@@ -592,9 +586,9 @@ function ModuleEditor({ module, updateModule, updateModuleContent, removeModule,
           )}
 
           {module.type === 'upcoming' && (
-            <UpcomingEditor 
-              content={module.content} 
-              onChange={handleContentChange} 
+            <UpcomingEditor
+              content={module.content}
+              onChange={handleContentChange}
               updateModuleContent={updateModuleContent}
               moduleId={module.id}
               onOpenLibrary={onOpenLibrary}
@@ -805,10 +799,10 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId, onOpenLibrar
         <div className="field">
           <label>Equipo A — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <input 
-              type="text" 
-              value={content.teamA.flag} 
-              onChange={(e) => update('teamA', 'flag', e.target.value)} 
+            <input
+              type="text"
+              value={content.teamA.flag}
+              onChange={(e) => update('teamA', 'flag', e.target.value)}
               placeholder="Emoji o URL de imagen"
               style={{ flex: 1 }}
             />
@@ -848,10 +842,10 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId, onOpenLibrar
         <div className="field">
           <label>Equipo B — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <input 
-              type="text" 
-              value={content.teamB.flag} 
-              onChange={(e) => update('teamB', 'flag', e.target.value)} 
+            <input
+              type="text"
+              value={content.teamB.flag}
+              onChange={(e) => update('teamB', 'flag', e.target.value)}
               placeholder="Emoji o URL de imagen"
               style={{ flex: 1 }}
             />
@@ -1121,7 +1115,7 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginTop: '20px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
         Estilos del Título
       </h3>
-      
+
       <div className="field-row" style={{ marginBottom: '16px' }}>
         <div className="field">
           <label>Tamaño de Fuente (Título)</label>
@@ -1232,7 +1226,7 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
         Opción Izquierda
       </h3>
-      
+
       <div className="field-row" style={{ marginBottom: '16px' }}>
         <div className="field">
           <label>Tipo de Contenido</label>
@@ -1244,7 +1238,7 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
             <option value="sticker">Agregar un Sticker</option>
           </select>
         </div>
-        
+
         {yesType === 'text' ? (
           <div className="field">
             <label>Texto (ej: SÍ, SE VA, METE GOL)</label>
@@ -1270,11 +1264,11 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
                   </option>
                 ))}
               </select>
-              <div style={{ 
-                width: '42px', 
-                height: '42px', 
-                background: 'rgba(255,255,255,0.05)', 
-                borderRadius: '4px', 
+              <div style={{
+                width: '42px',
+                height: '42px',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '4px',
                 border: '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: 'center',
@@ -1282,9 +1276,9 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
                 padding: '4px',
                 flexShrink: 0
               }}>
-                <img 
-                  src={`/${content.yesSticker || 'sticker1.png'}`} 
-                  alt="Preview" 
+                <img
+                  src={`/${content.yesSticker || 'sticker1.png'}`}
+                  alt="Preview"
                   style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                 />
               </div>
@@ -1321,7 +1315,7 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
             <option value="sticker">Agregar un Sticker</option>
           </select>
         </div>
-        
+
         {noType === 'text' ? (
           <div className="field">
             <label>Texto (ej: NO, SE QUEDA, ROJA)</label>
@@ -1347,11 +1341,11 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
                   </option>
                 ))}
               </select>
-              <div style={{ 
-                width: '42px', 
-                height: '42px', 
-                background: 'rgba(255,255,255,0.05)', 
-                borderRadius: '4px', 
+              <div style={{
+                width: '42px',
+                height: '42px',
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '4px',
                 border: '1px solid var(--color-border)',
                 display: 'flex',
                 alignItems: 'center',
@@ -1359,9 +1353,9 @@ function PreguntaEditor({ content, onChange, updateModuleContent, moduleId }) {
                 padding: '4px',
                 flexShrink: 0
               }}>
-                <img 
-                  src={`/${content.noSticker || 'sticker1.png'}`} 
-                  alt="Preview" 
+                <img
+                  src={`/${content.noSticker || 'sticker1.png'}`}
+                  alt="Preview"
                   style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
                 />
               </div>
@@ -1432,16 +1426,16 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
           </select>
           <label>Equipo A — Nombre</label>
           <input type="text" value={content.teamA || ''} onChange={(e) => onChange('teamA', e.target.value)} />
-          
+
           <label style={{ marginTop: '6px' }}>Equipo A — Número (a su lado al centro)</label>
           <input type="text" value={content.numA || ''} onChange={(e) => onChange('numA', e.target.value)} placeholder="Número / Cuota" />
-          
+
           <label style={{ marginTop: '6px' }}>Equipo A — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <input 
-              type="text" 
-              value={content.flagA || ''} 
-              onChange={(e) => onChange('flagA', e.target.value)} 
+            <input
+              type="text"
+              value={content.flagA || ''}
+              onChange={(e) => onChange('flagA', e.target.value)}
               placeholder="Emoji o URL de imagen"
               style={{ flex: 1 }}
             />
@@ -1476,16 +1470,16 @@ function UpcomingEditor({ content, onChange, updateModuleContent, moduleId, onOp
           </select>
           <label>Equipo B — Nombre</label>
           <input type="text" value={content.teamB || ''} onChange={(e) => onChange('teamB', e.target.value)} />
-          
+
           <label style={{ marginTop: '6px' }}>Equipo B — Número (a su lado al centro)</label>
           <input type="text" value={content.numB || ''} onChange={(e) => onChange('numB', e.target.value)} placeholder="Número / Cuota" />
-          
+
           <label style={{ marginTop: '6px' }}>Equipo B — Bandera (emoji o imagen)</label>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <input 
-              type="text" 
-              value={content.flagB || ''} 
-              onChange={(e) => onChange('flagB', e.target.value)} 
+            <input
+              type="text"
+              value={content.flagB || ''}
+              onChange={(e) => onChange('flagB', e.target.value)}
               placeholder="Emoji o URL de imagen"
               style={{ flex: 1 }}
             />
@@ -1553,15 +1547,15 @@ export function LivePreview({ modules, grid, screenType }) {
   const layout = isVerticalPreview ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid };
 
   return (
-    <div 
-      ref={containerRef} 
-      style={{ 
-        width: '100%', 
-        height: '100%', 
-        position: 'relative', 
-        overflow: 'hidden', 
-        display: 'flex', 
-        alignItems: 'center', 
+    <div
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#121212',
         backgroundImage: 'radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px)',
@@ -1580,23 +1574,23 @@ export function LivePreview({ modules, grid, screenType }) {
           gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
           gridTemplateRows: isVerticalPreview
             ? Array.from({ length: layout.grid.rows }).map((_, i) => {
-                const rowNum = i + 1;
-                const mod = layout.modules.find(m => {
-                  const r = m.gridPosition?.row || 1;
-                  const rs = m.gridPosition?.rowSpan || 1;
-                  return r <= rowNum && rowNum < r + rs;
-                });
-                if (!mod) return '1fr';
-                const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
-                if (isBrand) return '80px';
-                
-                let baseWeight = 1.5;
-                if (mod.type === 'media') baseWeight = 2.5;
-                else if (mod.type === 'scoreboard') baseWeight = 1.8;
-                else if (mod.type === 'upcoming') baseWeight = 1.5;
-                
-                return `${baseWeight / (mod.gridPosition?.rowSpan || 1)}fr`;
-              }).join(' ')
+              const rowNum = i + 1;
+              const mod = layout.modules.find(m => {
+                const r = m.gridPosition?.row || 1;
+                const rs = m.gridPosition?.rowSpan || 1;
+                return r <= rowNum && rowNum < r + rs;
+              });
+              if (!mod) return '1fr';
+              const isBrand = mod.id === 'default_brand' || (mod.type === 'media' && mod.label?.toLowerCase().includes('logo'));
+              if (isBrand) return '80px';
+
+              let baseWeight = 1.5;
+              if (mod.type === 'media') baseWeight = 2.5;
+              else if (mod.type === 'scoreboard') baseWeight = 1.8;
+              else if (mod.type === 'upcoming') baseWeight = 1.5;
+
+              return `${baseWeight / (mod.gridPosition?.rowSpan || 1)}fr`;
+            }).join(' ')
             : `repeat(${layout.grid.rows}, 1fr)`,
           background: 'var(--color-border)',
           gap: '2px',
@@ -1619,11 +1613,11 @@ export function LivePreview({ modules, grid, screenType }) {
                 zIndex: modules.length - indexInMaster
               }}
             >
-              <RenderModule 
-                module={mod} 
-                gridPosition={mod.gridPosition || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }} 
-                gridCols={layout.grid.cols} 
-                gridRows={layout.grid.rows} 
+              <RenderModule
+                module={mod}
+                gridPosition={mod.gridPosition || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }}
+                gridCols={layout.grid.cols}
+                gridRows={layout.grid.rows}
                 isLivePreview={true}
                 overrideWidth={isVerticalPreview ? 1080 : canvasWidth}
                 screenType={screenType}
@@ -1669,14 +1663,14 @@ const compareConfigs = (before, after) => {
     } else {
       const oldMod = beforeMap.get(mod.id);
       const modDiffs = [];
-      
+
       if (oldMod.label !== mod.label) {
         modDiffs.push(`nombre cambiado de "${oldMod.label}" a "${mod.label}"`);
       }
       if (oldMod.visible !== mod.visible) {
         modDiffs.push(`visibilidad cambiada a ${mod.visible === false ? 'Oculto' : 'Visible'}`);
       }
-      
+
       const oldGP = oldMod.gridPosition || {};
       const newGP = mod.gridPosition || {};
       if (oldGP.col !== newGP.col || oldGP.row !== newGP.row || oldGP.colSpan !== newGP.colSpan || oldGP.rowSpan !== newGP.rowSpan) {
@@ -1992,7 +1986,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
   }, [dragState, grid.cols, grid.rows, modules, updateModule]);
 
   return (
-    <div 
+    <div
       className="layout-preview-container"
       style={{
         height: isMinimized ? '54px' : '420px',
@@ -2028,7 +2022,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
             {isMinimized ? '↕️ Mostrar Diseño (Maximizar)' : '↕️ Ocultar Diseño (Minimizar)'}
           </button>
         </div>
-        
+
         {/* Selector de Pantalla en Vivo para la previsualización */}
         {!isMinimized && (
           <div className="layout-preview-screen-select" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto', marginRight: '16px' }}>
@@ -2053,18 +2047,18 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
             </span>
           </div>
         )}
- 
+
         {/* Tab Selector for mobile */}
         {!isMinimized && (
           <div className="layout-preview-tabs">
-            <button 
+            <button
               type="button"
               className={`layout-preview-tab-btn ${activeTab === 'blueprint' ? 'active' : ''}`}
               onClick={() => setActiveTab('blueprint')}
             >
               📐 Recuadros
             </button>
-            <button 
+            <button
               type="button"
               className={`layout-preview-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
               onClick={() => setActiveTab('live')}
@@ -2074,7 +2068,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
           </div>
         )}
       </div>
-      
+
       {!isMinimized && (
         <div className="layout-preview-panels">
           {/* Panel Izquierdo: Recuadros Editor */}
@@ -2089,31 +2083,31 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                 style={{
                   gridTemplateColumns: `repeat(${targetGrid.cols}, 1fr)`,
                   gridTemplateRows: `repeat(${targetGrid.rows}, 1fr)`,
-                  aspectRatio: 
+                  aspectRatio:
                     previewType === 'horizontal' ? '16/9' :
-                    previewType === 'vertical' ? '9/16' :
-                    previewType === '12x6' ? '2/1' : '1/1'
+                      previewType === 'vertical' ? '9/16' :
+                        previewType === '12x6' ? '2/1' : '1/1'
                 }}
               >
                 {/* Cuadrícula de diseño blueprint de fondo */}
                 {bgCells}
-  
+
                 {/* Celdas interactivas de módulos */}
-                 {targetModules.map((mod) => {
+                {targetModules.map((mod) => {
                   const isSelected = selectedId === mod.id;
                   const isHidden = mod.visible === false;
                   const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
                   const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
-  
+
                   const isBgTransparent = mod.content?.moduleBgType === 'transparent' || mod.content?.moduleBgType === 'image' || mod.content?.moduleBgType === 'video' || mod.content?.moduleBgTransparent === true;
-                  const cellBg = isSelected 
-                    ? 'rgba(212, 168, 67, 0.12)' 
+                  const cellBg = isSelected
+                    ? 'rgba(212, 168, 67, 0.12)'
                     : (isBgTransparent ? 'rgba(22,22,22,0.85)' : (mod.content?.moduleBgColor || mod.content?.cardBgColor || '#0a0a0a'));
 
-                  const cellBorder = isSelected 
-                    ? 'var(--color-gold)' 
+                  const cellBorder = isSelected
+                    ? 'var(--color-gold)'
                     : (mod.content?.moduleBorderTransparent === true ? 'transparent' : (mod.content?.moduleBorderColor || 'var(--color-border)'));
-  
+
                   return (
                     <div
                       key={mod.id}
@@ -2177,7 +2171,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                           )}
                         </div>
                       )}
-  
+
                       <div className="layout-preview-cell-content">
                         <span className="layout-preview-cell-icon">
                           {MODULE_TYPES[mod.type]?.icon}
@@ -2187,7 +2181,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                         </span>
                         {isHidden && <span className="layout-preview-cell-hidden-tag">Oculto</span>}
                       </div>
-  
+
                       {/* Acciones rápidas (hover overlay) */}
                       <div className="layout-preview-cell-actions">
                         <button
@@ -2225,7 +2219,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                           ✕
                         </button>
                       </div>
-  
+
                       {/* Manejadores de Redimensionamiento */}
                       {isSelected && canEdit && (
                         <>
@@ -2279,7 +2273,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
               </div>
             </div>
           </div>
-  
+
           {/* Panel Derecho: Vista en Vivo con pestañas de comparación */}
           <div className={`layout-preview-panel horizontal-preview ${activeTab === 'live' ? 'mobile-active' : 'mobile-hidden'}`}>
             <div className="panel-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 12px' }}>
@@ -2312,7 +2306,7 @@ function LayoutPreview({ modules, grid, selectedId, onSelect, updateModule, remo
                   )}
                 </button>
               </div>
-              
+
               <span style={{ fontSize: '10px', color: 'var(--color-text-secondary)', fontWeight: 'bold' }}>
                 PROPORCIÓN: {previewType === 'horizontal' ? '16:9' : previewType === 'vertical' ? '9:16' : previewType === '12x6' ? '2:1' : '1:1'}
               </span>
@@ -2359,7 +2353,7 @@ export default function AdminPanel() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   // Estados para la Biblioteca de Medios
   const [mediaModalOpen, setMediaModalOpen] = useState(false);
   const [mediaSelectCallback, setMediaSelectCallback] = useState(null);
@@ -2629,7 +2623,7 @@ export default function AdminPanel() {
           >
             🖼️ Biblioteca
           </button>
-          
+
           <span style={{ borderLeft: '1px solid var(--color-border)', height: '20px', margin: '0 8px' }} />
 
           {/* Botón Desplegable: En Vivo */}
@@ -2699,10 +2693,10 @@ export default function AdminPanel() {
             <span style={{ fontSize: '10px', background: 'rgba(212, 168, 67, 0.15)', color: 'var(--color-gold)', padding: '2px 6px', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
               {currentUser.username === 'admin' ? 'Admin' : 'Editor'}
             </span>
-            <button 
-              type="button" 
-              onClick={logout} 
-              className="admin-btn admin-btn-sm" 
+            <button
+              type="button"
+              onClick={logout}
+              className="admin-btn admin-btn-sm"
               style={{ background: 'rgba(239, 83, 80, 0.1)', border: '1px solid rgba(239, 83, 80, 0.3)', color: '#ef5350', cursor: 'pointer', padding: '4px 10px', fontSize: '10px', borderRadius: 'var(--radius-sm)', transition: 'var(--transition-fast)' }}
             >
               🚪 Cerrar Sesión
@@ -2993,7 +2987,7 @@ function EditorsManagement_old() {
     setName(u.name);
     setUsernameInput(u.username);
     setPasswordInput(''); // Deja vacío para conservar la clave actual
-    
+
     const hasAll = u.allowedTypes.includes('*');
     setAllSelected(hasAll);
     setCanApprovePermission(u.allowedTypes.includes('approve'));
@@ -3168,7 +3162,7 @@ function EditorsManagement_old() {
                       }}>Sesión Activa</span>
                     )}
                   </div>
-                  
+
                   {/* Badges for allowed module types */}
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {u.allowedTypes.includes('readonly_media_add') && (
@@ -3410,7 +3404,7 @@ function EditorsManagement_old() {
           <label style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--color-text-secondary)', marginBottom: '12px', display: 'block', fontWeight: 'bold' }}>
             Asignar Permisos por Módulo
           </label>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {/* Special toggle for "All Modules" */}
             <div
@@ -3430,7 +3424,7 @@ function EditorsManagement_old() {
               <input
                 type="checkbox"
                 checked={allSelected}
-                onChange={() => {}} // Controlled click on container
+                onChange={() => { }} // Controlled click on container
                 style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
               />
               <div style={{ flex: 1 }}>
@@ -3467,7 +3461,7 @@ function EditorsManagement_old() {
                 type="checkbox"
                 checked={canApprovePermission}
                 disabled={readonlyMediaAddSelected}
-                onChange={() => {}} // Controlled click on container
+                onChange={() => { }} // Controlled click on container
                 style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer' }}
               />
               <div style={{ flex: 1 }}>
@@ -3504,7 +3498,7 @@ function EditorsManagement_old() {
                 type="checkbox"
                 checked={canDeleteMediaPermission}
                 disabled={readonlyMediaAddSelected}
-                onChange={() => {}} // Controlled click on container
+                onChange={() => { }} // Controlled click on container
                 style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: readonlyMediaAddSelected ? 'not-allowed' : 'pointer' }}
               />
               <div style={{ flex: 1 }}>
@@ -3545,7 +3539,7 @@ function EditorsManagement_old() {
               <input
                 type="checkbox"
                 checked={readonlyMediaAddSelected}
-                onChange={() => {}} // Controlled click on container
+                onChange={() => { }} // Controlled click on container
                 style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
               />
               <div style={{ flex: 1 }}>
@@ -3585,7 +3579,7 @@ function EditorsManagement_old() {
                     type="checkbox"
                     checked={isChecked}
                     disabled={allSelected}
-                    onChange={() => {}} // Controlled click on container
+                    onChange={() => { }} // Controlled click on container
                     style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)', cursor: allSelected ? 'not-allowed' : 'pointer' }}
                   />
                   <div style={{ flex: 1 }}>
@@ -3626,13 +3620,7 @@ function EditorsManagement_old() {
   );
 }
 
-/* ═══════════════════════════════════════════
-   TEMPLATES MANAGEMENT — Load, Apply, Delete
-   ═══════════════════════════════════════════ */
 const TemplatesManagement = TemplateManager;
 
-/* ═══════════════════════════════════════════
-   HISTORY AUDIT LOG — Admin Change History Panel
-   ═══════════════════════════════════════════ */
 const HistoryManagement = HistoryPanel;
 

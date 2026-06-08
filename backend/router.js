@@ -9,13 +9,11 @@ export async function dispatchApiRoute(req, res) {
   const pathname = parsedUrl.pathname;
   const method = req.method;
 
-  // Real-time SSE Endpoint
   if (method === 'GET' && pathname === '/api/cms/events') {
     await handleSseConnection(req, res);
     return true;
   }
 
-  // CMS Endpoints
   if (method === 'GET' && pathname === '/api/cms') {
     await handleGetCms(req, res);
     return true;
@@ -45,7 +43,6 @@ export async function dispatchApiRoute(req, res) {
     return true;
   }
 
-  // Auth & Users
   if (method === 'POST' && pathname === '/api/auth/login') {
     await handleLogin(req, res);
     return true;
@@ -63,7 +60,6 @@ export async function dispatchApiRoute(req, res) {
     return true;
   }
 
-  // Templates
   if (method === 'GET' && pathname === '/api/templates') {
     await handleGetTemplates(req, res);
     return true;
@@ -77,7 +73,6 @@ export async function dispatchApiRoute(req, res) {
     return true;
   }
 
-  // Media Endpoints
   if (method === 'POST' && pathname === '/api/upload') {
     await handlePostUpload(req, res);
     return true;
@@ -95,5 +90,5 @@ export async function dispatchApiRoute(req, res) {
     return true;
   }
 
-  return false; // Route not matched
+  return false;
 }

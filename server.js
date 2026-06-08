@@ -6,7 +6,6 @@ import { dispatchApiRoute } from './backend/router.js';
 import { sendJson } from './backend/utils.js';
 import { ensureDb } from './db.js';
 
-// Resolve __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -31,7 +30,6 @@ const MIME_TYPES = {
 
 const server = http.createServer(async (req, res) => {
   try {
-    // 1. API: Centralized clean architecture router dispatcher
     const isHandled = await dispatchApiRoute(req, res);
     if (isHandled) return;
   } catch (err) {
@@ -39,21 +37,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // 2. Static File Server & Client-side routing fallback
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
 
   let filePath = '';
   if (pathname.startsWith('/update/')) {
-    // Dynamic uploads folder
     const relativePath = pathname.replace(/^\/update\//, '');
     filePath = path.join(process.cwd(), 'public/update', relativePath);
   } else {
-    // Dist folder
     filePath = path.join(process.cwd(), 'dist', pathname === '/' ? 'index.html' : pathname);
   }
 
-  // Security: check path traversal
+  // Path Traversal
   const resolvedPath = path.resolve(filePath);
   const distDir = path.resolve(process.cwd(), 'dist');
   const uploadDir = path.resolve(process.cwd(), 'public/update');
@@ -68,7 +63,6 @@ const server = http.createServer(async (req, res) => {
 
   fs.stat(resolvedPath, (err, stats) => {
     if (err || !stats.isFile()) {
-      // If file does not exist under dist, fall back to index.html (for SPA routing)
       const indexPath = path.join(distDir, 'index.html');
       fs.readFile(indexPath, (errIndex, contentIndex) => {
         if (errIndex) {
@@ -80,20 +74,18 @@ const server = http.createServer(async (req, res) => {
         }
       });
     } else {
-      // Serve the file with proper content type
       const ext = path.extname(resolvedPath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-      
-      // Support Range Requests for video streaming (HTTP 206)
+
       const range = req.headers.range;
       const isVideo = ['.mp4', '.webm', '.ogg'].includes(ext);
-      
+
       if (range && isVideo) {
         const parts = range.replace(/bytes=/, "").split("-");
         const start = parseInt(parts[0], 10);
         const end = parts[1] ? parseInt(parts[1], 10) : stats.size - 1;
         const chunksize = (end - start) + 1;
-        
+
         res.writeHead(206, {
           'Content-Range': `bytes ${start}-${end}/${stats.size}`,
           'Accept-Ranges': 'bytes',
@@ -101,27 +93,26 @@ const server = http.createServer(async (req, res) => {
           'Content-Type': contentType,
           'Cache-Control': 'public, max-age=31536000'
         });
-        
+
         const stream = fs.createReadStream(resolvedPath, { start, end });
         stream.on('error', () => {
           if (!res.headersSent) sendJson(res, 500, { error: 'Error streaming file.' });
         });
         stream.pipe(res);
       } else {
-        const headers = { 
+        const headers = {
           'Content-Type': contentType,
           'Content-Length': stats.size
         };
-        
-        // Cache control headers for static assets
+
         if (resolvedPath.includes(path.join(process.cwd(), 'dist', 'assets')) || ext === '.woff2' || ext === '.woff') {
           headers['Cache-Control'] = 'public, max-age=31536000, immutable';
         } else if (ext === '.html') {
           headers['Cache-Control'] = 'public, max-age=0, must-revalidate';
         } else if (pathname.startsWith('/update/')) {
-          headers['Cache-Control'] = 'public, max-age=86400'; // 1 day cache for uploads
+          headers['Cache-Control'] = 'public, max-age=86400'; // 1 dia cache
         }
-        
+
         res.writeHead(200, headers);
         const stream = fs.createReadStream(resolvedPath);
         stream.on('error', () => {
@@ -133,7 +124,6 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-// Pre-initialize DB connection on server startup
 ensureDb().catch(err => {
   console.warn(`[DB] Pre-inicialización de base de datos falló: ${err.message}`);
 });

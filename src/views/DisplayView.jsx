@@ -2,24 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useCMS } from '../context/CMSContext';
 
-/* ─── Render a single module based on its type ─── */
 export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6, isLivePreview = false, overrideWidth, screenType }) {
   const gp = gridPosition || module.gridPosition || { colSpan: 1, rowSpan: 1 };
   const colSpan = gp.colSpan || 1;
   const rowSpan = gp.rowSpan || 1;
 
-  // Calculate relative proportions of the grid that the module occupies
   const colFraction = colSpan / gridCols;
   const rowFraction = rowSpan / gridRows;
 
-  // Scale factor that is highly responsive to container dimensions.
-  // In vertical layouts, we scale based on row fraction to prevent giant text overflows.
   const isVerticalLayout = gridCols === 1 || (window.innerWidth < window.innerHeight);
 
-  // Normalize colFraction by actual grid aspect ratio to match physical proportions
-  let gridAspect = 2.0; // Default to 12x6 physical aspect ratio (2:1)
+  let gridAspect = 2.0;
   if (isVerticalLayout) {
-    gridAspect = 0.5625; // 9:16 vertical
+    gridAspect = 0.5625;
   } else {
     const activeScreenType = screenType || (gridCols === gridRows ? '9x9' : '12x6');
     if (activeScreenType === '9x9') {
@@ -32,7 +27,6 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   }
   const sizeFactor = Math.min(colFraction * gridAspect, rowFraction);
 
-  // Calculate viewport scaling multiplier (base design resolution is 1920x1080 horizontal or 1080x1920 vertical)
   const baseWidth = isVerticalLayout ? 1080 : 1920;
   const actualWidth = overrideWidth !== undefined
     ? overrideWidth
@@ -130,7 +124,6 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
   );
 }
 
-/* ─── MEDIA MODULE ─── */
 function MediaModule({ content }) {
   const objectFitStyle = content.objectFit || 'contain';
 
@@ -205,7 +198,6 @@ export function emojiToCountryCode(emoji) {
     const codePoints = Array.from(emoji);
     if (codePoints.length >= 1) {
       const charCode = codePoints[0].codePointAt(0);
-      // Regional Indicator Symbol range is U+1F1E6 (127462) to U+1F1FF (127487)
       if (charCode >= 127462 && charCode <= 127487) {
         let code = '';
         for (let i = 0; i < Math.min(2, codePoints.length); i++) {
@@ -230,7 +222,6 @@ export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = 
   if (parsedFlag) return parsedFlag;
   if (!teamName) return null;
   const found = worldCupTeams.find(t => t.name.toUpperCase() === teamName.trim().toUpperCase());
-  // If found in DB, return its internal database ID or flag
   return found ? found : null;
 }
 
@@ -239,7 +230,6 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
 
   let flagUrl = null;
 
-  // 1. Try to find the team in the database to get its ID and load the local SVG flag
   const targetName = teamName || (typeof flag === 'string' && flag.length > 4 ? flag : null);
   if (targetName && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
     const found = worldCupTeams.find(
@@ -251,12 +241,10 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
     }
   }
 
-  // 2. If the flag property itself is a number/ID
   if (!flagUrl && flag && !isNaN(flag)) {
     flagUrl = `/paises/${flag}.svg`;
   }
 
-  // 3. Fallbacks for URLs or emojis
   if (!flagUrl && typeof flag === 'string') {
     const isUrl = flag.startsWith('/') || flag.startsWith('http') || flag.includes('.') || flag.startsWith('data:image');
     if (isUrl) {
@@ -285,7 +273,6 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
           padding: 0
         }}
         onError={(e) => {
-          // If local SVG fails, remove fallback flagUrl to let emoji print
           e.target.style.display = 'none';
         }}
       />
@@ -295,13 +282,11 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
   return <span className="sb-team-flag">{flag || '🏳️'}</span>;
 }
 
-/* ─── SCOREBOARD MODULE ─── */
 function ScoreboardModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
   return (
     <div className="module-scoreboard-display">
       <div className="sb-cards-container">
-        {/* Team A Card */}
         <div className="sb-team-card">
           <div className="sb-card-score">{content.teamA.score}</div>
           <div className="sb-card-info">
@@ -310,10 +295,8 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
 
-        {/* Divider */}
         <div className="sb-card-divider">-</div>
 
-        {/* Team B Card */}
         <div className="sb-team-card">
           <div className="sb-card-score">{content.teamB.score}</div>
           <div className="sb-card-info">
@@ -329,7 +312,6 @@ function ScoreboardModule({ content }) {
 export function parseTeamString(teamStr) {
   if (!teamStr) return { flag: null, name: '' };
   const trimmed = teamStr.trim();
-  // Match emoji flag at the beginning
   const emojiRegex = /^([\uD83C][\uDDE6-\uDDFF][\uD83C][\uDDE6-\uDDFF]|\p{Emoji_Presentation}|\p{Emoji})/u;
   const match = trimmed.match(emojiRegex);
   if (match) {
@@ -340,7 +322,6 @@ export function parseTeamString(teamStr) {
   return { flag: null, name: trimmed };
 }
 
-/* ─── UPCOMING MODULE ─── */
 function UpcomingModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
   const teamAInfo = parseTeamString(content.teamA);
@@ -369,7 +350,6 @@ function UpcomingModule({ content }) {
   );
 }
 
-/* ─── APUESTA MODULE ─── */
 function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const mode = content.mode || '3-way';
   const teamAInfo = content.teamA || {};
@@ -384,7 +364,6 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
         {content.tag && <div className="apuesta-tag">{content.tag}</div>}
       </div>
       <div className="apuesta-odds-row">
-        {/* Box Left: Team A / Selection A (always rendered) */}
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div className={`apuesta-odd-box box-left ${!hasTeamA ? 'no-team-info' : ''}`}>
             {hasTeamA && (
@@ -396,14 +375,12 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
           </div>
         )}
 
-        {/* Box Center: Draw (only in 3-way mode) */}
         {mode === '3-way' && (
           <div className="apuesta-odd-box box-center">
             <span className="apuesta-odd-value">{content.draw?.odd || '—'}</span>
           </div>
         )}
 
-        {/* Box Right: Team B / Selection B */}
         {(mode === '3-way' || mode === '2-way') && (
           <div className={`apuesta-odd-box box-right ${!hasTeamB ? 'no-team-info' : ''}`}>
             <span className="apuesta-odd-value">{teamBInfo.odd || '—'}</span>
@@ -419,7 +396,6 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
   );
 }
 
-/* ─── PREGUNTA MODULE (SÍ/NO) ─── */
 function PreguntaModule({ content }) {
   const yesType = content.yesType || 'text';
   const noType = content.noType || 'text';
@@ -445,10 +421,10 @@ function PreguntaModule({ content }) {
       <div className="pregunta-options-row">
         <div className={`pregunta-option-box box-yes ${optionLayoutClass}`}>
           {yesType === 'sticker' ? (
-            <img 
-              src={`/${content.yesSticker || 'sticker1.png'}`} 
-              alt="Sticker" 
-              className="pregunta-option-sticker" 
+            <img
+              src={`/${content.yesSticker || 'sticker1.png'}`}
+              alt="Sticker"
+              className="pregunta-option-sticker"
             />
           ) : (
             <span className="pregunta-option-label">
@@ -462,10 +438,10 @@ function PreguntaModule({ content }) {
         <div className="pregunta-divider-vertical" />
         <div className={`pregunta-option-box box-no ${optionLayoutClass}`}>
           {noType === 'sticker' ? (
-            <img 
-              src={`/${content.noSticker || 'sticker1.png'}`} 
-              alt="Sticker" 
-              className="pregunta-option-sticker" 
+            <img
+              src={`/${content.noSticker || 'sticker1.png'}`}
+              alt="Sticker"
+              className="pregunta-option-sticker"
             />
           ) : (
             <span className="pregunta-option-label">
@@ -486,13 +462,11 @@ function PreguntaModule({ content }) {
 export function getVerticalLayout(modules) {
   const brand = modules.find(m => m.id === 'default_brand' || (m.type === 'media' && m.label?.toLowerCase().includes('logo')));
 
-  // Clone and filter rest of the modules
   const rest = modules.filter(m => m !== brand).map(m => ({ ...m }));
 
   const verticalModules = [];
   let currentRow = 1;
 
-  // 1. Brand/Logo at the top
   if (brand) {
     verticalModules.push({
       ...brand,
@@ -501,7 +475,6 @@ export function getVerticalLayout(modules) {
     currentRow++;
   }
 
-  // 2. Scoreboard
   const scoreboard = rest.find(m => m.type === 'scoreboard');
   if (scoreboard) {
     verticalModules.push({
@@ -512,21 +485,18 @@ export function getVerticalLayout(modules) {
     currentRow++;
   }
 
-  // 3. Hero Media (Stadium / Main Image)
   const hero = rest.find(m => m.id === 'default_hero' || (m.type === 'media' && !m.label?.toLowerCase().includes('logo') && m.id !== 'default_featured'));
   if (hero) {
     verticalModules.push({
       ...hero,
-      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 2 } // Hero is taller, spanning 2 rows
+      gridPosition: { col: 1, row: currentRow, colSpan: 1, rowSpan: 2 }
     });
     rest.splice(rest.indexOf(hero), 1);
     currentRow += 2;
   }
 
-  // 4. Pack all other modules one by one (stacked vertically)
   while (rest.length > 0) {
     const next = rest.shift();
-    // For media or featured modules, we make them span 2 rows to look good
     const isMedia = next.type === 'media' || next.id === 'default_featured';
     const rowSpan = isMedia ? 2 : 1;
 
@@ -563,12 +533,10 @@ export default function DisplayView() {
 
   useEffect(() => {
     if (hasLoadedFromServer) {
-      // Begin fade out after a short delay so that rendering has completed
       const fadeTimer = setTimeout(() => {
         setFadeCurtain(true);
       }, 300);
 
-      // Completely remove the curtain from the DOM after the fade transition ends (500ms)
       const removeTimer = setTimeout(() => {
         setShowCurtain(false);
       }, 800);
@@ -580,24 +548,18 @@ export default function DisplayView() {
     }
   }, [hasLoadedFromServer]);
 
-  // Detect screen layout: manual query param has priority, then auto-detection by aspect ratio
   let screenType = searchParams.get('screen');
   if (!screenType) {
-    // 9x9 has a 1:1 aspect ratio (1.0). 12x6 has a 2:1 aspect ratio (2.0).
-    // If the viewport is close to square (ratio <= 1.35), use the 9x9 layout.
-    // Otherwise, default to the 12x6 layout.
     screenType = viewportRatio <= 1.35 ? '9x9' : '12x6';
   }
 
   const isDraft = searchParams.get('draft') === 'true' || searchParams.get('mode') === 'draft';
   const targetData = isDraft ? rawDraftData : rawLiveData;
 
-  // Extract modules and layouts from target data
   const modules = targetData?.modules || [];
   const layouts = targetData?.layouts || {};
   const activeLayoutObj = layouts[screenType] || layouts['12x6'] || { grid: { cols: 12, rows: 6 }, positions: {} };
 
-  // Map modules to their corresponding positions in the selected layout
   const mappedModules = modules.map((mod) => ({
     ...mod,
     gridPosition: activeLayoutObj.positions?.[mod.id] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
@@ -610,11 +572,9 @@ export default function DisplayView() {
     ? (9 / 16)
     : (screenType === '9x9' ? 1.0 : 2.0);
 
-  // Native design resolution of the screen
   const targetWidth = isVertical ? 1080 : 1920;
   const targetHeight = targetWidth / aspect;
 
-  // Scale factor to center and fit the canvas inside the viewport
   const scaleFit = Math.min(window.innerWidth / targetWidth, window.innerHeight / targetHeight);
 
   if (!hasLoadedFromServer && !targetData?.modules) {
