@@ -87,7 +87,7 @@ The platform is built around a flexible, component-based widget system:
 ## Setup & Installation
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js (v22 or higher)
 - npm or yarn
 
 ### 1. Install Dependencies
@@ -101,6 +101,14 @@ Launch both the Vite frontend dev server and the backend SSE api server concurre
 ```bash
 npm run dev
 ```
+
+### For production environments
+```bash
+npm run build
+
+npm run start
+```
+
 
 The application will be accessible at:
 *   **Client Billboard Screen**: `http://localhost:5173`
