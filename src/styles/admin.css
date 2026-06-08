@@ -1,7 +1,3 @@
-/* ═══════════════════════════════════════════════════
-   ███ ADMIN PANEL — FULL SCREEN CMS ███
-   ═══════════════════════════════════════════════════ */
-
 .admin-layout {
   width: 100vw;
   height: 100vh;
@@ -31,7 +27,8 @@
 }
 
 .admin-logo-icon {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   background: var(--color-gold);
   border-radius: var(--radius-sm);
   display: flex;
@@ -82,7 +79,9 @@
   color: var(--color-bg-primary);
 }
 
-.admin-btn-primary:hover { background: var(--color-gold-light); }
+.admin-btn-primary:hover {
+  background: var(--color-gold-light);
+}
 
 .admin-btn-secondary {
   background: transparent;
@@ -101,7 +100,9 @@
   color: var(--color-danger);
 }
 
-.admin-btn-danger:hover { background: rgba(229, 62, 62, 0.1); }
+.admin-btn-danger:hover {
+  background: rgba(229, 62, 62, 0.1);
+}
 
 .admin-btn-sm {
   padding: 6px 12px;
@@ -112,7 +113,8 @@
   background: none;
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
-  width: 34px; height: 34px;
+  width: 34px;
+  height: 34px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
@@ -165,9 +167,18 @@
   padding: var(--gap-sm);
 }
 
-.admin-sidebar-list::-webkit-scrollbar { width: 5px; }
-.admin-sidebar-list::-webkit-scrollbar-track { background: transparent; }
-.admin-sidebar-list::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+.admin-sidebar-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-sidebar-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
 
 .module-list-item {
   display: flex;
@@ -181,7 +192,9 @@
   border: 1px solid transparent;
 }
 
-.module-list-item:hover { background: var(--color-bg-card); }
+.module-list-item:hover {
+  background: var(--color-bg-card);
+}
 
 .module-list-item.active {
   background: var(--color-bg-card);
@@ -225,7 +238,9 @@
   transition: opacity var(--transition-fast);
 }
 
-.module-list-item:hover .module-list-actions { opacity: 1; }
+.module-list-item:hover .module-list-actions {
+  opacity: 1;
+}
 
 .module-list-action-btn {
   background: none;
@@ -238,8 +253,13 @@
   transition: color var(--transition-fast);
 }
 
-.module-list-action-btn:hover { color: var(--color-gold); }
-.module-list-action-btn.danger:hover { color: var(--color-danger); }
+.module-list-action-btn:hover {
+  color: var(--color-gold);
+}
+
+.module-list-action-btn.danger:hover {
+  color: var(--color-danger);
+}
 
 /* Add module section */
 .admin-sidebar-footer {
@@ -285,7 +305,9 @@
   text-align: left;
 }
 
-.add-module-option:hover { background: var(--color-bg-card); }
+.add-module-option:hover {
+  background: var(--color-bg-card);
+}
 
 .add-module-option-icon {
   font-size: 22px;
@@ -319,9 +341,18 @@
   padding: var(--gap-xl) var(--gap-2xl);
 }
 
-.admin-main-scroll::-webkit-scrollbar { width: 6px; }
-.admin-main-scroll::-webkit-scrollbar-track { background: var(--color-bg-admin); }
-.admin-main-scroll::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+.admin-main-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-main-scroll::-webkit-scrollbar-track {
+  background: var(--color-bg-admin);
+}
+
+.admin-main-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
 
 /* Editor header */
 .editor-header {
@@ -406,7 +437,10 @@
   border-color: var(--color-gold);
 }
 
-.field textarea { resize: vertical; min-height: 70px; }
+.field textarea {
+  resize: vertical;
+  min-height: 70px;
+}
 
 .field-row {
   display: grid;
@@ -443,7 +477,11 @@
   cursor: pointer;
 }
 
-.media-upload-icon { font-size: 36px; margin-bottom: var(--gap-sm); opacity: 0.4; }
+.media-upload-icon {
+  font-size: 36px;
+  margin-bottom: var(--gap-sm);
+  opacity: 0.4;
+}
 
 .media-upload-label {
   font-family: var(--font-body);
@@ -492,11 +530,13 @@
 
 .media-preview-remove {
   position: absolute;
-  top: 8px; right: 8px;
-  background: rgba(0,0,0,0.7);
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
   border: 1px solid var(--color-border);
   color: var(--color-danger);
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -523,7 +563,9 @@
   border-bottom: 1px solid var(--color-border);
 }
 
-.match-editor-row:last-child { border-bottom: none; }
+.match-editor-row:last-child {
+  border-bottom: none;
+}
 
 
 
@@ -1022,6 +1064,7 @@
 .module-list-action-btn.active-visible {
   color: var(--color-gold);
 }
+
 .module-list-action-btn.active-visible:hover {
   color: var(--color-danger);
 }
@@ -1030,11 +1073,20 @@
    ANIMATIONS
    ═══════════════════════════════════════════ */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.animate-in { animation: fadeInUp 0.5s ease forwards; }
+.animate-in {
+  animation: fadeInUp 0.5s ease forwards;
+}
 
 /* ═══════════════════════════════════════════
    FLOATING ADMIN BUTTON
@@ -1109,9 +1161,7 @@
   margin-right: 18px;
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE DESIGN (MOBILE & TABLET SUPPORT)
-   ═══════════════════════════════════════════ */
+/* Responsive */
 @media (max-width: 992px) {
   .admin-layout {
     grid-template-columns: 1fr;
@@ -1276,9 +1326,6 @@
   }
 }
 
-/* Vertical overrides section moved to the bottom of the file to ensure correct precedence in vertical mode */
-
-
 
 /* ─── DROPDOWN MENUS FOR PREVIEW BUTTONS ─── */
 .admin-dropdown-menu {
@@ -1303,6 +1350,7 @@
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1336,10 +1384,12 @@
   border: 1px solid rgba(139, 92, 246, 0.3) !important;
   color: #a78bfa !important;
 }
+
 .admin-btn-draft-trigger:hover {
   background: rgba(139, 92, 246, 0.2) !important;
   border-color: #a78bfa !important;
 }
+
 .admin-dropdown-item-draft:hover {
   background: rgba(139, 92, 246, 0.1) !important;
   color: #a78bfa !important;

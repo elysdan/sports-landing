@@ -8,18 +8,18 @@ const compareConfigs = (before, after) => {
     return changes;
   }
   if (!before) {
-    changes.push("✨ Configuración inicial creada.");
+    changes.push("Configuración inicial creada.");
     return changes;
   }
 
   if (before.orientation !== after.orientation) {
-    changes.push(`📐 Orientación de pantalla cambiada de "${before.orientation || 'horizontal'}" a "${after.orientation || 'horizontal'}"`);
+    changes.push(`Orientación de pantalla cambiada de "${before.orientation || 'horizontal'}" a "${after.orientation || 'horizontal'}"`);
   }
 
   const beforeGrid = before.grid || { cols: 5, rows: 5 };
   const afterGrid = after.grid || { cols: 5, rows: 5 };
   if (beforeGrid.cols !== afterGrid.cols || beforeGrid.rows !== afterGrid.rows) {
-    changes.push(`🔲 Dimensiones de cuadrícula cambiadas de ${beforeGrid.cols}x${beforeGrid.rows} a ${afterGrid.cols}x${afterGrid.rows}`);
+    changes.push(`Dimensiones de cuadrícula cambiadas de ${beforeGrid.cols}x${beforeGrid.rows} a ${afterGrid.cols}x${afterGrid.rows}`);
   }
 
   const beforeModules = before.modules || [];
@@ -31,18 +31,18 @@ const compareConfigs = (before, after) => {
   // Modificados y Agregados
   for (const mod of afterModules) {
     if (!beforeMap.has(mod.id)) {
-      changes.push(`➕ Agregado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
+      changes.push(`Agregado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
     } else {
       const oldMod = beforeMap.get(mod.id);
       const modDiffs = [];
-      
+
       if (oldMod.label !== mod.label) {
         modDiffs.push(`nombre cambiado de "${oldMod.label}" a "${mod.label}"`);
       }
       if (oldMod.visible !== mod.visible) {
         modDiffs.push(`visibilidad cambiada a ${mod.visible === false ? 'Oculto' : 'Visible'}`);
       }
-      
+
       const oldGP = oldMod.gridPosition || {};
       const newGP = mod.gridPosition || {};
       if (oldGP.col !== newGP.col || oldGP.row !== newGP.row || oldGP.colSpan !== newGP.colSpan || oldGP.rowSpan !== newGP.rowSpan) {
@@ -54,7 +54,7 @@ const compareConfigs = (before, after) => {
       }
 
       if (modDiffs.length > 0) {
-        changes.push(`📝 Modificado: módulo "${mod.label}" (${modDiffs.join(', ')})`);
+        changes.push(`Modificado: módulo "${mod.label}" (${modDiffs.join(', ')})`);
       }
     }
   }
@@ -62,7 +62,7 @@ const compareConfigs = (before, after) => {
   // Eliminados
   for (const mod of beforeModules) {
     if (!afterMap.has(mod.id)) {
-      changes.push(`➖ Eliminado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
+      changes.push(`Eliminado: módulo "${mod.label}" (${MODULE_TYPES[mod.type]?.label || mod.type})`);
     }
   }
 
@@ -195,7 +195,7 @@ export default function HistoryPanel({ setViewMode }) {
     if (!dateStr) return '';
     try {
       const d = new Date(dateStr);
-      return d.toLocaleString('es-ES', { 
+      return d.toLocaleString('es-ES', {
         year: 'numeric', month: '2-digit', day: '2-digit',
         hour: '2-digit', minute: '2-digit', second: '2-digit'
       });
@@ -209,7 +209,7 @@ export default function HistoryPanel({ setViewMode }) {
     const beforeEntry = history[index + 1];
     const beforeConfig = beforeEntry ? beforeEntry.config_data : null;
     const afterConfig = currentEntry.config_data;
-    
+
     return compareConfigs(beforeConfig, afterConfig);
   };
 
@@ -264,14 +264,14 @@ export default function HistoryPanel({ setViewMode }) {
 
                 return (
                   <Fragment key={entry.version}>
-                    <tr 
-                      style={{ 
-                        borderBottom: isExpanded ? 'none' : '1px solid var(--color-border)', 
+                    <tr
+                      style={{
+                        borderBottom: isExpanded ? 'none' : '1px solid var(--color-border)',
                         transition: 'background-color var(--transition-fast)',
                         cursor: 'pointer'
-                      }} 
+                      }}
                       onClick={() => toggleRow(entry.version)}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'} 
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
                       <td style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: 'var(--color-gold)' }}>
@@ -322,28 +322,28 @@ export default function HistoryPanel({ setViewMode }) {
                                   )}
                                 </div>
                                 {beforeEntry ? (
-                                  <div style={{ 
-                                    height: '260px', 
-                                    position: 'relative', 
-                                    overflow: 'hidden', 
-                                    borderRadius: 'var(--radius-sm)', 
+                                  <div style={{
+                                    height: '260px',
+                                    position: 'relative',
+                                    overflow: 'hidden',
+                                    borderRadius: 'var(--radius-sm)',
                                     border: '1px solid var(--color-border)',
                                     background: '#020202'
                                   }}>
-                                    <LivePreview 
-                                      modules={getHistoryModules(beforeEntry.config_data)} 
-                                      grid={getHistoryGrid(beforeEntry.config_data)} 
-                                      screenType={beforeEntry.config_data?.orientation || 'horizontal'} 
+                                    <LivePreview
+                                      modules={getHistoryModules(beforeEntry.config_data)}
+                                      grid={getHistoryGrid(beforeEntry.config_data)}
+                                      screenType={beforeEntry.config_data?.orientation || 'horizontal'}
                                     />
                                   </div>
                                 ) : (
-                                  <div style={{ 
-                                    color: 'var(--color-text-muted)', 
-                                    fontSize: '13px', 
-                                    fontStyle: 'italic', 
-                                    height: '260px', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
+                                  <div style={{
+                                    color: 'var(--color-text-muted)',
+                                    fontSize: '13px',
+                                    fontStyle: 'italic',
+                                    height: '260px',
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     justifyContent: 'center',
                                     border: '1px dashed var(--color-border)',
                                     borderRadius: 'var(--radius-sm)'
@@ -363,18 +363,18 @@ export default function HistoryPanel({ setViewMode }) {
                                     {getHistoryGridText(entry.config_data)}
                                   </div>
                                 </div>
-                                <div style={{ 
-                                  height: '260px', 
-                                  position: 'relative', 
-                                  overflow: 'hidden', 
-                                  borderRadius: 'var(--radius-sm)', 
+                                <div style={{
+                                  height: '260px',
+                                  position: 'relative',
+                                  overflow: 'hidden',
+                                  borderRadius: 'var(--radius-sm)',
                                   border: '1px solid var(--color-border-gold)',
                                   background: '#020202'
                                 }}>
-                                  <LivePreview 
-                                    modules={getHistoryModules(entry.config_data)} 
-                                    grid={getHistoryGrid(entry.config_data)} 
-                                    screenType={entry.config_data?.orientation || 'horizontal'} 
+                                  <LivePreview
+                                    modules={getHistoryModules(entry.config_data)}
+                                    grid={getHistoryGrid(entry.config_data)}
+                                    screenType={entry.config_data?.orientation || 'horizontal'}
                                   />
                                 </div>
                               </div>

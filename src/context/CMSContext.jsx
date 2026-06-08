@@ -1,13 +1,11 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { defaultBillboardData as defaultData } from '../../backend/seedData.js';
 
-// ─── Generate unique IDs ───
 let _idCounter = 0;
 function uid() {
   return `mod_${Date.now()}_${++_idCounter}`;
 }
 
-// ─── Module type definitions ───
 export const MODULE_TYPES = {
   media: { label: 'Multimedia', icon: '🖼️', description: 'Imagen, GIF o Video MP4' },
   scoreboard: { label: 'Marcador', icon: '⚽', description: 'Resultado de partido en vivo' },
@@ -16,7 +14,6 @@ export const MODULE_TYPES = {
   pregunta: { label: 'Apuesta Sí/No', icon: '❓', description: 'Apuesta con respuesta Sí/No' },
 };
 
-// ─── Default content per module type ───
 function defaultContentForType(type) {
   switch (type) {
     case 'media':
@@ -70,7 +67,6 @@ const defaultUsers = [
   { id: 'user_generic', name: 'Editor General', allowedTypes: ['*'] }
 ];
 
-// Helper to generate safe coordinates for old layouts being migrated
 function createDefaultPositions(modules, targetCols, targetRows, originalGrid, originalPositions) {
   const positions = {};
 
@@ -123,7 +119,6 @@ function migrateData(parsed) {
     return mod;
   });
 
-  // Automated migration: If layouts structure doesn't exist, create it and map old coordinates
   if (!parsed.layouts) {
     const originalGrid = parsed.grid || { cols: 5, rows: 5 };
     const originalPositions = {};
@@ -166,7 +161,7 @@ function preloadImage(url) {
     const img = new Image();
     img.src = url;
     img.onload = () => resolve();
-    img.onerror = () => resolve(); // Resolve anyway on error to avoid blocking the app
+    img.onerror = () => resolve();
   });
 }
 
@@ -176,28 +171,24 @@ async function preloadConfigImages(config) {
 
   config.modules.forEach(mod => {
     if (!mod || !mod.content) return;
-    
-    // 1. Media modules (exclude videos from image preloading)
+
     if (mod.type === 'media' && mod.content.src) {
       const isVid = mod.content.src.match(/\.(mp4|webm|ogg)(\?|$)/i) || mod.content.src.startsWith('data:video');
       if (!isVid) {
         urls.push(mod.content.src);
       }
     }
-    
-    // 2. Scoreboard flags
+
     if (mod.type === 'scoreboard') {
       if (mod.content.teamA?.flag) urls.push(mod.content.teamA.flag);
       if (mod.content.teamB?.flag) urls.push(mod.content.teamB.flag);
     }
-    
-    // 3. Upcoming flags
+
     if (mod.type === 'upcoming') {
       if (mod.content.flagA) urls.push(mod.content.flagA);
       if (mod.content.flagB) urls.push(mod.content.flagB);
     }
-    
-    // 4. Apuesta flags
+
     if (mod.type === 'apuesta') {
       if (mod.content.teamA?.flag) urls.push(mod.content.teamA.flag);
       if (mod.content.teamB?.flag) urls.push(mod.content.teamB.flag);
@@ -205,8 +196,7 @@ async function preloadConfigImages(config) {
   });
 
   const uniqueUrls = [...new Set(urls.filter(Boolean))];
-  
-  // Wait for all to preload, with a fallback timeout of 2.5 seconds
+
   await Promise.race([
     Promise.all(uniqueUrls.map(url => preloadImage(url))),
     new Promise(resolve => setTimeout(resolve, 2500))
@@ -242,12 +232,10 @@ export function CMSProvider({ children }) {
     setRawDraftData(val);
   }, []);
 
-  // Fetch initial layout data from database on mount
   useEffect(() => {
     async function loadServerData() {
       try {
         const fetchPromises = [fetch('/api/cms')];
-        // Only fetch draft database configuration if we are in admin panel or draft mode
         if (isEditor || isDraftMode) {
           fetchPromises.push(fetch('/api/cms/draft'));
         }
@@ -268,8 +256,7 @@ export function CMSProvider({ children }) {
 
         if (serverLive && serverLive.modules) {
           const migratedLive = migrateData(serverLive);
-          
-          // Preload all critical layout images (flags, LCP hero) before rendering
+
           await preloadConfigImages(migratedLive);
 
           setRawLiveData(migratedLive);
@@ -300,7 +287,6 @@ export function CMSProvider({ children }) {
     loadServerData();
   }, [isEditor, isDraftMode]);
 
-  // Real-time EventSource listener to sync both liveData and draftData
   useEffect(() => {
     let eventSource;
     let isClosed = false;
@@ -352,11 +338,9 @@ export function CMSProvider({ children }) {
       });
 
       eventSource.onerror = () => {
-        // EventSource se reconectará automáticamente de forma nativa
       };
     };
 
-    // Postpone SSE connection slightly to let the page finish loading without blocking
     let timeoutId;
     if (document.readyState === 'complete') {
       timeoutId = setTimeout(initEventSource, 1500);
@@ -382,18 +366,15 @@ export function CMSProvider({ children }) {
 
 
 
-  // Save rawDraftData in local storage immediately and debounced auto-save to database
   useEffect(() => {
     if (!isEditor || !isLocalChange.current) return;
 
-    // 1. Immediate local storage save
     try {
       localStorage.setItem(CMS_DRAFT_KEY, JSON.stringify(rawDraftData));
     } catch (e) {
       console.warn('Failed to save CMS draft data:', e);
     }
 
-    // 2. Debounce database save
     if (!hasLoadedFromServer || !currentUser) return;
     const timer = setTimeout(async () => {
       try {
@@ -462,7 +443,6 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser, fetchUsers]);
 
-  // Save rawLiveData in local storage
   useEffect(() => {
     if (!isEditor) return; // Only write if editor is active
     try {
