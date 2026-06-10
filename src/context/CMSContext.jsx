@@ -509,6 +509,22 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser]);
 
+  const deleteHistoryEntry = useCallback(async (version) => {
+    if (!currentUser) return false;
+    try {
+      const res = await fetch(`/api/cms/history?version=${encodeURIComponent(version)}&username=${encodeURIComponent(currentUser.username)}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        await fetchHistory();
+        return true;
+      }
+    } catch (e) {
+      console.error("[CMS] Error al eliminar entrada del historial:", e);
+    }
+    return false;
+  }, [currentUser, fetchHistory]);
+
   const logout = useCallback(() => {
     setCurrentUser(null);
     setHistory([]);
@@ -877,6 +893,7 @@ export function CMSProvider({ children }) {
         deleteTemplate,
         history,
         fetchHistory,
+        deleteHistoryEntry,
         activeLayout: rawDraftData.activeLayout || '12x6',
         switchLayout,
         worldCupTeams

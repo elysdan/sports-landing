@@ -568,6 +568,13 @@ export async function getDbHistory() {
   });
 }
 
+export async function deleteDbHistoryEntry(version) {
+  await ensureDb();
+  await pool.query('DELETE FROM billboard_history WHERE version = ?', [version]);
+  console.log(`[DB] Registro del historial con versión '${version}' eliminado de MySQL.`);
+  return true;
+}
+
 export async function getDbWorldCupTeams() {
   await ensureDb();
   const [rows] = await pool.query('SELECT id, name, code, flag FROM world_cup_teams ORDER BY name ASC');

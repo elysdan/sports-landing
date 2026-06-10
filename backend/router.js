@@ -1,4 +1,4 @@
-import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory, handleGetCmsDraft, handlePostCmsDraft, handleGetWorldCupTeams } from './controllers/cmsController.js';
+import { handleGetCms, handleGetCmsVersion, handlePostCms, handleGetCmsHistory, handleDeleteCmsHistory, handleGetCmsDraft, handlePostCmsDraft, handleGetWorldCupTeams } from './controllers/cmsController.js';
 import { handleLogin, handleGetUsers, handlePostUsers, handleDeleteUser } from './controllers/authController.js';
 import { handleGetTemplates, handlePostTemplates, handleDeleteTemplate } from './controllers/templateController.js';
 import { handlePostUpload, handleGetMedia, handleDeleteMedia, handleGetMediaFile } from './controllers/mediaController.js';
@@ -36,6 +36,10 @@ export async function dispatchApiRoute(req, res) {
   }
   if (method === 'GET' && pathname === '/api/cms/history') {
     await handleGetCmsHistory(req, res, parsedUrl);
+    return true;
+  }
+  if (method === 'DELETE' && pathname === '/api/cms/history') {
+    await handleDeleteCmsHistory(req, res, parsedUrl);
     return true;
   }
   if (method === 'GET' && pathname === '/api/worldcup-teams') {

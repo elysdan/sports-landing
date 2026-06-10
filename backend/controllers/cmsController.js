@@ -1,4 +1,4 @@
-import { getConfig, saveConfig, getVersion, getDbHistory, isUserApprover, getDbWorldCupTeams } from '../../db.js';
+import { getConfig, saveConfig, getVersion, getDbHistory, deleteDbHistoryEntry, isUserApprover, getDbWorldCupTeams } from '../../db.js';
 import { readJsonBody, sendJson } from '../utils.js';
 import { broadcastEvent } from './sseController.js';
 let cachedLiveConfig = null;
@@ -156,6 +156,29 @@ export async function handleGetCmsHistory(req, res, parsedUrl) {
     }
     const historyList = await getDbHistory();
     sendJson(res, 200, historyList);
+  } catch (err) {
+    sendJson(res, 500, { error: err.message });
+  }
+}
+
+export async function handleDeleteCmsHistory(req, res, parsedUrl) {
+  try {
+    const version = parsedUrl.searchParams.get('version');
+    const username = parsedUrl.searchParams.get('username');
+    if (!version) {
+      sendJson(res, 400, { error: 'Falta la versión del historial' });
+      return;
+    }
+    if (username !== 'admin') {
+      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador puede eliminar registros del historial.' });
+      return;
+    }
+    const success = await deleteDbHistoryEntry(version);
+    if (success) {
+      sendJson(res, 200, { success: true });
+    } else {
+      sendJson(res, 500, { error: 'No se pudo eliminar el registro del historial' });
+    }
   } catch (err) {
     sendJson(res, 500, { error: err.message });
   }

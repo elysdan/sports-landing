@@ -70,7 +70,7 @@ const compareConfigs = (before, after) => {
 };
 
 export default function HistoryPanel({ setViewMode }) {
-  const { history, fetchHistory, applyTemplate, currentUser } = useCMS();
+  const { history, fetchHistory, applyTemplate, currentUser, deleteHistoryEntry } = useCMS();
   const [loading, setLoading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
   const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
@@ -191,6 +191,21 @@ export default function HistoryPanel({ setViewMode }) {
     }
   };
 
+  const handleDelete = async (entry) => {
+    const editorName = entry.modified_by || 'Desconocido';
+    const approverName = entry.approved_by || entry.username || 'Desconocido';
+    if (window.confirm(`¿Deseas eliminar permanentemente la versión del historial del ${formatDate(entry.created_at)} (Modificado por: ${editorName}, Aprobado por: ${approverName})?`)) {
+      setLoading(true);
+      const success = await deleteHistoryEntry(entry.version);
+      setLoading(false);
+      if (success) {
+        alert('Se ha eliminado el registro del historial.');
+      } else {
+        alert('Error al eliminar el registro del historial.');
+      }
+    }
+  };
+
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
     try {
@@ -297,11 +312,18 @@ export default function HistoryPanel({ setViewMode }) {
                         <span style={{ color: 'var(--color-white)' }}>{modulesCount}</span> módulos ({entry.config_data?.orientation || 'horizontal'})
                       </td>
                       <td style={{ padding: '16px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                        {!isReadOnlyUser && (
-                          <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleRestore(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
-                            📥 Restaurar en Borrador
-                          </button>
-                        )}
+                        <div style={{ display: 'inline-flex', gap: '8px', justifyContent: 'flex-end', width: '100%' }}>
+                          {!isReadOnlyUser && (
+                            <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => handleRestore(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
+                              📥 Restaurar en Borrador
+                            </button>
+                          )}
+                          {currentUser?.username === 'admin' && (
+                            <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
+                              🗑️ Eliminar
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                     {isExpanded && (
