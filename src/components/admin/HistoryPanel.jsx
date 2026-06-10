@@ -318,7 +318,7 @@ export default function HistoryPanel({ setViewMode }) {
                               📥 Restaurar en Borrador
                             </button>
                           )}
-                          {currentUser?.username === 'admin' && (
+                          {(currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve')) && (
                             <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
                               🗑️ Eliminar
                             </button>

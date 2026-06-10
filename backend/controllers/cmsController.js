@@ -169,8 +169,9 @@ export async function handleDeleteCmsHistory(req, res, parsedUrl) {
       sendJson(res, 400, { error: 'Falta la versión del historial' });
       return;
     }
-    if (username !== 'admin') {
-      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador puede eliminar registros del historial.' });
+    const isApprover = await isUserApprover(username);
+    if (!isApprover) {
+      sendJson(res, 403, { error: 'Acceso denegado: Solo los usuarios con rol de administrador/aprobador pueden eliminar registros del historial.' });
       return;
     }
     const success = await deleteDbHistoryEntry(version);
