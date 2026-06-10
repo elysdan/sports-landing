@@ -74,6 +74,41 @@ export default function HistoryPanel({ setViewMode }) {
   const [loading, setLoading] = useState(false);
   const [expandedRows, setExpandedRows] = useState({});
   const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
+  const [selectedVersions, setSelectedVersions] = useState([]);
+
+  useEffect(() => {
+    setSelectedVersions([]);
+  }, [history]);
+
+  const handleSelectRow = (version) => {
+    setSelectedVersions(prev =>
+      prev.includes(version)
+        ? prev.filter(v => v !== version)
+        : [...prev, version]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedVersions.length === history.length) {
+      setSelectedVersions([]);
+    } else {
+      setSelectedVersions(history.map(entry => entry.version));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedVersions.length === 0) return;
+    if (window.confirm(`¿Deseas eliminar permanentemente las ${selectedVersions.length} versiones del historial seleccionadas?`)) {
+      setLoading(true);
+      const success = await deleteHistoryEntry(selectedVersions);
+      setLoading(false);
+      if (success) {
+        alert('Se han eliminado los registros del historial.');
+      } else {
+        alert('Error al eliminar los registros del historial.');
+      }
+    }
+  };
 
   const migrateHistoryConfig = (config) => {
     if (!config) return null;
@@ -239,9 +274,16 @@ export default function HistoryPanel({ setViewMode }) {
             Visualiza el historial completo de cambios publicados, compara los cambios ("Antes" y "Después") y restaura versiones anteriores al borrador de edición.
           </p>
         </div>
-        <button className="admin-btn admin-btn-secondary" onClick={() => setViewMode('modules')}>
-          ✕ Cerrar
-        </button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {currentUser?.username === 'admin' && selectedVersions.length > 0 && (
+            <button className="admin-btn admin-btn-danger" onClick={handleBulkDelete} style={{ display: 'inline-flex', gap: '4px' }}>
+              🗑️ Eliminar Seleccionados ({selectedVersions.length})
+            </button>
+          )}
+          <button className="admin-btn admin-btn-secondary" onClick={() => setViewMode('modules')}>
+            ✕ Cerrar
+          </button>
+        </div>
       </div>
 
       <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: '24px' }}>
@@ -261,6 +303,16 @@ export default function HistoryPanel({ setViewMode }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px', textAlign: 'left', color: 'var(--color-text-secondary)' }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--color-border)', color: 'var(--color-white)', textTransform: 'uppercase', fontSize: '11px', letterSpacing: '0.5px' }}>
+                {currentUser?.username === 'admin' && (
+                  <th style={{ padding: '12px 16px', width: '40px', textAlign: 'center' }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedVersions.length === history.length && history.length > 0}
+                      onChange={handleSelectAll}
+                      style={{ cursor: 'pointer' }}
+                    />
+                  </th>
+                )}
                 <th style={{ padding: '12px 16px', width: '40px' }}></th>
                 <th style={{ padding: '12px 16px' }}>Fecha y Hora</th>
                 <th style={{ padding: '12px 16px' }}>Usuario Responsable (Aprobador)</th>
@@ -289,6 +341,16 @@ export default function HistoryPanel({ setViewMode }) {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.02)'}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                     >
+                      {currentUser?.username === 'admin' && (
+                        <td style={{ padding: '16px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedVersions.includes(entry.version)}
+                            onChange={() => handleSelectRow(entry.version)}
+                            style={{ cursor: 'pointer' }}
+                          />
+                        </td>
+                      )}
                       <td style={{ padding: '16px', textAlign: 'center', fontSize: '12px', color: 'var(--color-gold)' }}>
                         {isExpanded ? '▼' : '▶'}
                       </td>
@@ -318,7 +380,7 @@ export default function HistoryPanel({ setViewMode }) {
                               📥 Restaurar en Borrador
                             </button>
                           )}
-                          {(currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve')) && (
+                          {currentUser?.username === 'admin' && (
                             <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={() => handleDelete(entry)} style={{ display: 'inline-flex', gap: '4px' }}>
                               🗑️ Eliminar
                             </button>
@@ -328,7 +390,7 @@ export default function HistoryPanel({ setViewMode }) {
                     </tr>
                     {isExpanded && (
                       <tr style={{ borderBottom: '1px solid var(--color-border)', background: 'rgba(255, 255, 255, 0.01)' }}>
-                        <td colSpan="7" style={{ padding: '20px 24px 24px 24px' }}>
+                        <td colSpan={currentUser?.username === 'admin' ? 8 : 7} style={{ padding: '20px 24px 24px 24px' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                               {/* ANTES */}

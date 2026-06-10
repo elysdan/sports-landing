@@ -509,10 +509,11 @@ export function CMSProvider({ children }) {
     }
   }, [currentUser]);
 
-  const deleteHistoryEntry = useCallback(async (version) => {
+  const deleteHistoryEntry = useCallback(async (versions) => {
     if (!currentUser) return false;
     try {
-      const res = await fetch(`/api/cms/history?version=${encodeURIComponent(version)}&username=${encodeURIComponent(currentUser.username)}`, {
+      const versionsParam = Array.isArray(versions) ? versions.join(',') : versions;
+      const res = await fetch(`/api/cms/history?versions=${encodeURIComponent(versionsParam)}&username=${encodeURIComponent(currentUser.username)}`, {
         method: 'DELETE'
       });
       if (res.ok) {
@@ -520,7 +521,7 @@ export function CMSProvider({ children }) {
         return true;
       }
     } catch (e) {
-      console.error("[CMS] Error al eliminar entrada del historial:", e);
+      console.error("[CMS] Error al eliminar entrada(s) del historial:", e);
     }
     return false;
   }, [currentUser, fetchHistory]);

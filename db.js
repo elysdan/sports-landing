@@ -568,10 +568,12 @@ export async function getDbHistory() {
   });
 }
 
-export async function deleteDbHistoryEntry(version) {
+export async function deleteDbHistoryEntries(versions) {
+  if (!Array.isArray(versions) || versions.length === 0) return true;
   await ensureDb();
-  await pool.query('DELETE FROM billboard_history WHERE version = ?', [version]);
-  console.log(`[DB] Registro del historial con versión '${version}' eliminado de MySQL.`);
+  const placeholders = versions.map(() => '?').join(', ');
+  await pool.query(`DELETE FROM billboard_history WHERE version IN (${placeholders})`, versions);
+  console.log(`[DB] Registros del historial con versiones [${versions.join(', ')}] eliminados de MySQL.`);
   return true;
 }
 

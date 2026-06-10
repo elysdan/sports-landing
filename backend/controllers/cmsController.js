@@ -1,4 +1,4 @@
-import { getConfig, saveConfig, getVersion, getDbHistory, deleteDbHistoryEntry, isUserApprover, getDbWorldCupTeams } from '../../db.js';
+import { getConfig, saveConfig, getVersion, getDbHistory, deleteDbHistoryEntries, isUserApprover, getDbWorldCupTeams } from '../../db.js';
 import { readJsonBody, sendJson } from '../utils.js';
 import { broadcastEvent } from './sseController.js';
 let cachedLiveConfig = null;
@@ -163,22 +163,26 @@ export async function handleGetCmsHistory(req, res, parsedUrl) {
 
 export async function handleDeleteCmsHistory(req, res, parsedUrl) {
   try {
-    const version = parsedUrl.searchParams.get('version');
+    const versionStr = parsedUrl.searchParams.get('version') || parsedUrl.searchParams.get('versions');
     const username = parsedUrl.searchParams.get('username');
-    if (!version) {
-      sendJson(res, 400, { error: 'Falta la versión del historial' });
+    if (!versionStr) {
+      sendJson(res, 400, { error: 'Falta la versión o versiones del historial' });
       return;
     }
-    const isApprover = await isUserApprover(username);
-    if (!isApprover) {
-      sendJson(res, 403, { error: 'Acceso denegado: Solo los usuarios con rol de administrador/aprobador pueden eliminar registros del historial.' });
+    if (username !== 'admin') {
+      sendJson(res, 403, { error: 'Acceso denegado: Solo el administrador puede eliminar registros del historial.' });
       return;
     }
-    const success = await deleteDbHistoryEntry(version);
+    const versions = versionStr.split(',').map(v => v.trim()).filter(Boolean);
+    if (versions.length === 0) {
+      sendJson(res, 400, { error: 'No se especificaron versiones válidas' });
+      return;
+    }
+    const success = await deleteDbHistoryEntries(versions);
     if (success) {
       sendJson(res, 200, { success: true });
     } else {
-      sendJson(res, 500, { error: 'No se pudo eliminar el registro del historial' });
+      sendJson(res, 500, { error: 'No se pudieron eliminar los registros del historial' });
     }
   } catch (err) {
     sendJson(res, 500, { error: err.message });
