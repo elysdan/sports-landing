@@ -539,7 +539,7 @@ export default function AdminPanel() {
 
             <div className="admin-sidebar-list">
               {draftData.modules.map((mod, idx) => {
-                const isHidden = mod.visible === false;
+                const isHidden = mod.visible === false || mod.gridPosition?.visible === false;
                 const canEdit = hasPermission(mod.type);
                 return (
                   <div
@@ -568,11 +568,18 @@ export default function AdminPanel() {
                         className={`module-list-action-btn ${isHidden ? '' : 'active-visible'}`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (canEdit) updateModule(mod.id, { visible: isHidden });
+                          if (canEdit) {
+                            const isLayoutHidden = mod.gridPosition?.visible === false;
+                            updateModule(mod.id, {
+                              gridPosition: {
+                                ...mod.gridPosition,
+                                visible: isLayoutHidden ? true : false
+                              }
+                            });
+                          }
                         }}
                         title={isHidden ? "Mostrar en la valla" : "Ocultar en la valla"}
                         disabled={!canEdit}
-                        style={{ opacity: canEdit ? 1 : 0.3, cursor: canEdit ? 'pointer' : 'not-allowed' }}
                       >
                         {isHidden ? '👁️' : '🕶️'}
                       </button>

@@ -402,7 +402,7 @@ export default function LayoutPreview({ modules, grid, selectedId, onSelect, upd
                 {/* Celdas interactivas de módulos */}
                 {targetModules.map((mod) => {
                   const isSelected = selectedId === mod.id;
-                  const isHidden = mod.visible === false;
+                  const isHidden = mod.visible === false || mod.gridPosition?.visible === false;
                   const canEdit = (liveViewMode === 'draft') && (!hasPermission || hasPermission(mod.type));
                   const indexInMaster = targetModules.findIndex((m) => m.id === mod.id);
 
@@ -497,7 +497,15 @@ export default function LayoutPreview({ modules, grid, selectedId, onSelect, upd
                           title={isHidden ? "Mostrar módulo" : "Ocultar módulo"}
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (canEdit) updateModule(mod.id, { visible: isHidden });
+                            if (canEdit) {
+                              const isLayoutHidden = mod.gridPosition?.visible === false;
+                              updateModule(mod.id, {
+                                gridPosition: {
+                                  ...mod.gridPosition,
+                                  visible: isLayoutHidden ? true : false
+                                }
+                              });
+                            }
                           }}
                           disabled={!canEdit}
                           style={{

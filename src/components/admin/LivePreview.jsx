@@ -37,7 +37,7 @@ export default function LivePreview({ modules, grid, screenType }) {
     return () => observer.disconnect();
   }, [canvasWidth, canvasHeight]);
 
-  const visibleModules = modules.filter((m) => m.visible !== false);
+  const visibleModules = modules.filter((m) => m.visible !== false && m.gridPosition?.visible !== false);
   const isVerticalPreview = screenType === 'vertical';
   const layout = isVerticalPreview ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid };
 

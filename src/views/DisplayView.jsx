@@ -609,7 +609,7 @@ export default function DisplayView() {
     gridPosition: activeLayoutObj.positions?.[mod.id] || { col: 1, row: 1, colSpan: 1, rowSpan: 1 }
   }));
 
-  const visibleModules = mappedModules.filter(m => m.visible !== false);
+  const visibleModules = mappedModules.filter(m => m.visible !== false && m.gridPosition?.visible !== false);
   const layout = isVertical ? getVerticalLayout(visibleModules) : { modules: visibleModules, grid: activeLayoutObj.grid };
 
   const aspect = isVertical

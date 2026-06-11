@@ -160,8 +160,13 @@ export default function ModuleEditor({ module, updateModule, updateModuleContent
               <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
                 <input
                   type="checkbox"
-                  checked={module.visible !== false}
-                  onChange={(e) => updateModule(module.id, { visible: e.target.checked })}
+                  checked={module.visible !== false && module.gridPosition?.visible !== false}
+                  onChange={(e) => updateModule(module.id, {
+                    gridPosition: {
+                      ...module.gridPosition,
+                      visible: e.target.checked
+                    }
+                  })}
                   style={{ width: '16px', height: '16px', accentColor: 'var(--color-gold)' }}
                 />
                 Visible
