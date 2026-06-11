@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { CMSProvider } from './context/CMSContext';
 import DisplayView from './views/DisplayView';
+import NotFoundView from './views/NotFoundView';
 import './App.css';
 
 const AdminPanel = lazy(() => import('./views/AdminPanel'));
@@ -20,6 +21,7 @@ function App() {
               </Suspense>
             }
           />
+          <Route path="*" element={<NotFoundView />} />
         </Routes>
       </BrowserRouter>
     </CMSProvider>
