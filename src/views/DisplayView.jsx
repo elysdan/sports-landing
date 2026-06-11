@@ -312,15 +312,7 @@ function ScoreboardModule({ content }) {
     <div className="module-scoreboard-display">
       <div className="sb-cards-container">
         <div className="sb-team-card">
-          <div 
-            className="sb-card-score" 
-            style={{
-              background: content.scoreBgColorA || '#ffd014',
-              fontSize: 'calc(120px * var(--font-scale, 1))'
-            }}
-          >
-            {content.teamA.score}
-          </div>
+          <div className="sb-card-score" style={content.scoreBgColorA ? { background: content.scoreBgColorA } : {}}>{content.teamA.score}</div>
           <div
             className="sb-card-info"
             style={hasImageA ? {
@@ -340,15 +332,7 @@ function ScoreboardModule({ content }) {
         <div className="sb-card-divider">-</div>
 
         <div className="sb-team-card">
-          <div 
-            className="sb-card-score" 
-            style={{
-              background: content.scoreBgColorB || '#ffd014',
-              fontSize: 'calc(120px * var(--font-scale, 1))'
-            }}
-          >
-            {content.teamB.score}
-          </div>
+          <div className="sb-card-score" style={content.scoreBgColorB ? { background: content.scoreBgColorB } : {}}>{content.teamB.score}</div>
           <div
             className="sb-card-info"
             style={hasImageB ? {
