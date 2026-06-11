@@ -1,6 +1,6 @@
 import { useState, useEffect, Fragment } from 'react';
 import { useCMS, MODULE_TYPES } from '../../context/CMSContext';
-import { LivePreview } from '../../views/AdminPanel';
+import LivePreview from './LivePreview';
 
 const compareConfigs = (before, after) => {
   const changes = [];
