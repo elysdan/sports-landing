@@ -225,8 +225,16 @@ export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = 
   return found ? found : null;
 }
 
-export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
+export function resolveFlagUrl(flag, teamName, worldCupTeams = [], isScoreboard = false) {
   if (!flag && !teamName) return null;
+
+  // Direct URL mapping for scoreboard to bypass async list loading delay or typos
+  if (isScoreboard && typeof flag === 'string') {
+    const match = flag.match(/\/paises\/(\d+)\.svg$/);
+    if (match) {
+      return `/paises/banderas_marcador/${match[1]}.svg`;
+    }
+  }
 
   let flagUrl = null;
 
@@ -237,12 +245,12 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
         (flag && flag !== '?' && flag !== '??' && t.flag === flag)
     );
     if (found && found.id) {
-      flagUrl = `/paises/${found.id}.svg`;
+      flagUrl = isScoreboard ? `/paises/banderas_marcador/${found.id}.svg` : `/paises/${found.id}.svg`;
     }
   }
 
   if (!flagUrl && flag && !isNaN(flag)) {
-    flagUrl = `/paises/${flag}.svg`;
+    flagUrl = isScoreboard ? `/paises/banderas_marcador/${flag}.svg` : `/paises/${flag}.svg`;
   }
 
   if (!flagUrl && typeof flag === 'string') {
@@ -256,6 +264,15 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
       }
     }
   }
+
+  return flagUrl;
+}
+
+
+export function TeamFlag({ flag, teamName, worldCupTeams = [], isScoreboard = false }) {
+  if (!flag && !teamName) return null;
+
+  const flagUrl = resolveFlagUrl(flag, teamName, worldCupTeams, isScoreboard);
 
   if (flagUrl) {
     return (
@@ -284,13 +301,29 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [] }) {
 
 function ScoreboardModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
+  const flagUrlA = resolveFlagUrl(content.teamA.flag, content.teamA.name, worldCupTeams, true);
+  const flagUrlB = resolveFlagUrl(content.teamB.flag, content.teamB.name, worldCupTeams, true);
+
+  const hasImageA = flagUrlA && (flagUrlA.startsWith('/') || flagUrlA.startsWith('http') || flagUrlA.includes('.'));
+  const hasImageB = flagUrlB && (flagUrlB.startsWith('/') || flagUrlB.startsWith('http') || flagUrlB.includes('.'));
+
   return (
     <div className="module-scoreboard-display">
       <div className="sb-cards-container">
         <div className="sb-team-card">
-          <div className="sb-card-score">{content.teamA.score}</div>
-          <div className="sb-card-info">
-            <TeamFlag flag={content.teamA.flag} teamName={content.teamA.name} worldCupTeams={worldCupTeams} />
+          <div className="sb-card-score" style={content.scoreBgColorA ? { background: content.scoreBgColorA } : {}}>{content.teamA.score}</div>
+          <div
+            className="sb-card-info"
+            style={hasImageA ? {
+              backgroundImage: `url(${flagUrlA})`,
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            } : {}}
+          >
+            {!hasImageA && content.teamA.flag && (
+              <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamA.flag}</span>
+            )}
             <span className="sb-card-code">{content.teamA.code || content.teamA.name?.slice(0, 3)}</span>
           </div>
         </div>
@@ -298,9 +331,19 @@ function ScoreboardModule({ content }) {
         <div className="sb-card-divider">-</div>
 
         <div className="sb-team-card">
-          <div className="sb-card-score">{content.teamB.score}</div>
-          <div className="sb-card-info">
-            <TeamFlag flag={content.teamB.flag} teamName={content.teamB.name} worldCupTeams={worldCupTeams} />
+          <div className="sb-card-score" style={content.scoreBgColorB ? { background: content.scoreBgColorB } : {}}>{content.teamB.score}</div>
+          <div
+            className="sb-card-info"
+            style={hasImageB ? {
+              backgroundImage: `url(${flagUrlB})`,
+              backgroundSize: '100% 100%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            } : {}}
+          >
+            {!hasImageB && content.teamB.flag && (
+              <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamB.flag}</span>
+            )}
             <span className="sb-card-code">{content.teamB.code || content.teamB.name?.slice(0, 3)}</span>
           </div>
         </div>

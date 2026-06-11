@@ -869,6 +869,90 @@ function ScoreboardEditor({ content, updateModuleContent, moduleId, onOpenLibrar
         <label>Estado del partido</label>
         <input type="text" value={content.status || ''} onChange={(e) => updateModuleContent(moduleId, { status: e.target.value })} />
       </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Estilos del Marcador
+      </h3>
+      <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        {/* Fondo score A */}
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Fondo Número A (Local)</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.scoreBgColorA && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorA) ? content.scoreBgColorA : '#ffd014'}
+              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
+              style={{
+                width: '42px',
+                height: '42px',
+                padding: '2px',
+                border: '1px solid var(--color-border)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                background: 'transparent',
+                flexShrink: 0
+              }}
+            />
+            <input
+              type="text"
+              value={content.scoreBgColorA || ''}
+              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
+              placeholder="Ej: #ffd014"
+              style={{ flex: 1 }}
+            />
+            {content.scoreBgColorA && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                onClick={() => updateModuleContent(moduleId, { scoreBgColorA: '' })}
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Fondo score B */}
+        <div className="field" style={{ marginBottom: 0 }}>
+          <label>Fondo Número B (Visitante)</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.scoreBgColorB && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorB) ? content.scoreBgColorB : '#ffd014'}
+              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
+              style={{
+                width: '42px',
+                height: '42px',
+                padding: '2px',
+                border: '1px solid var(--color-border)',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                background: 'transparent',
+                flexShrink: 0
+              }}
+            />
+            <input
+              type="text"
+              value={content.scoreBgColorB || ''}
+              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
+              placeholder="Ej: #ffd014"
+              style={{ flex: 1 }}
+            />
+            {content.scoreBgColorB && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                onClick={() => updateModuleContent(moduleId, { scoreBgColorB: '' })}
+              >
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     </>
   );
 }

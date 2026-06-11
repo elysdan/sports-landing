@@ -336,41 +336,34 @@
 }
 
 .sb-card-info {
+  position: relative;
   background: #151719;
   /* Dark charcoal */
   height: calc(48px * var(--scale, 1));
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: calc(8px * var(--scale, 1));
   padding: 0 calc(8px * var(--scale, 1));
   border-top: 1px solid rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-}
-
-.sb-card-info .sb-team-flag {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: calc(28px * var(--scale, 1)) !important;
-  height: calc(28px * var(--scale, 1)) !important;
-  font-size: calc(18px * var(--font-scale, 1)) !important;
-  border-radius: 50% !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  object-fit: cover !important;
-  background: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  flex-shrink: 0 !important;
+  overflow: hidden;
 }
 
 .sb-card-code {
+  position: relative;
+  z-index: 2;
   font-family: var(--font-display);
   font-size: calc(18px * var(--font-scale, 1));
-  font-weight: 800;
-  color: #ffffff;
+  font-weight: 900;
+  color: var(--text-color, #ffffff) !important; /* Color personalizable, blanco por defecto */
+  background: transparent; /* Sin recuadro blanco */
   letter-spacing: 0.5px;
   text-transform: uppercase;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6); /* Sombra de texto para legibilidad */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .sb-card-divider {
