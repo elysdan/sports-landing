@@ -325,7 +325,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-display);
-  font-size: calc(120px * var(--font-scale, 1)) !important;
+  font-size: calc(120px * var(--font-scale, 1));
   /* Scale dynamically as exactly ~91% of the yellow box height */
   font-weight: 900;
   line-height: 0.9 !important;
