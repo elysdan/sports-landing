@@ -76,7 +76,7 @@ const compareConfigs = (before, after) => {
 };
 
 export default function AdminPanel() {
-  const { draftData, liveData, currentUser, login, logout, users, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, updateGrid, activeLayout, switchLayout } = useCMS();
+  const { draftData, liveData, currentUser, login, logout, users, hasPermission, hasPendingChanges, approveAndPublish, discardDraft, addModule, removeModule, updateModule, updateModuleContent, moveModule, reorderModules, updateGrid, activeLayout, switchLayout } = useCMS();
   const canApprove = currentUser?.username === 'admin' || currentUser?.allowedTypes?.includes('approve');
   const isReadOnlyUser = currentUser?.allowedTypes?.includes('readonly_media_add');
   const [selectedId, setSelectedId] = useState(draftData.modules[0]?.id || null);
@@ -109,6 +109,37 @@ export default function AdminPanel() {
 
   // Modo de vista: 'modules' (diseño de cuadrícula), 'editors' (gestión de editores), 'templates' (plantillas), 'history' (historial)
   const [viewMode, setViewMode] = useState('modules');
+
+  // Drag and drop states for sidebar module list
+  const [draggedIdx, setDraggedIdx] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
+
+  const handleDragStart = (e, idx) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedIdx(idx);
+    e.dataTransfer.setData('text/plain', String(idx));
+  };
+
+  const handleDragOver = (e, idx) => {
+    e.preventDefault();
+    if (draggedIdx === null || draggedIdx === idx) return;
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = (e, targetIdx) => {
+    e.preventDefault();
+    if (draggedIdx !== null && draggedIdx !== targetIdx) {
+      reorderModules(draggedIdx, targetIdx);
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+  };
+
 
   // Login form state
   const [username, setUsername] = useState('');
@@ -513,10 +544,16 @@ export default function AdminPanel() {
                 return (
                   <div
                     key={mod.id}
-                    className={`module-list-item ${selectedId === mod.id ? 'active' : ''} ${isHidden ? 'is-hidden' : ''}`}
+                    className={`module-list-item ${selectedId === mod.id ? 'active' : ''} ${isHidden ? 'is-hidden' : ''} ${draggedIdx === idx ? 'dragging' : ''} ${dragOverIdx === idx ? 'drag-over' : ''}`}
                     onClick={() => setSelectedId(mod.id)}
                     style={{ opacity: canEdit ? 1 : 0.7 }}
+                    draggable={canEdit}
+                    onDragStart={(e) => handleDragStart(e, idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDrop={(e) => handleDrop(e, idx)}
+                    onDragEnd={handleDragEnd}
                   >
+
                     <span className="module-list-icon">{MODULE_TYPES[mod.type]?.icon}</span>
                     <div className="module-list-info">
                       <div className="module-list-label">

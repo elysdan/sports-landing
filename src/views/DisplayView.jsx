@@ -171,10 +171,11 @@ function MediaModule({ content }) {
           ) : (
             <img className={`media-content ${objectFitStyle}`} style={{ objectFit: objectFitStyle }} src={content.src} alt={content.alt || ''} />
           )}
-          <div className="media-overlay" />
+          {content.overlayText && <div className="media-overlay" />}
           {content.overlayText && (
             <div className="media-overlay-text">{content.overlayText}</div>
           )}
+
         </>
       ) : (
         <div className="media-placeholder">

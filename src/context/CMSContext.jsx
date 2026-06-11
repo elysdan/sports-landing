@@ -738,6 +738,19 @@ export function CMSProvider({ children }) {
     });
   }, [currentUser]);
 
+  const reorderModules = useCallback((draggedIndex, targetIndex) => {
+    setLocalDraftData((prev) => {
+      const modules = [...prev.modules];
+      if (draggedIndex < 0 || draggedIndex >= modules.length || targetIndex < 0 || targetIndex >= modules.length) {
+        return prev;
+      }
+      const [draggedItem] = modules.splice(draggedIndex, 1);
+      modules.splice(targetIndex, 0, draggedItem);
+      return { ...prev, modules, lastModifiedBy: currentUser?.username || 'Desconocido' };
+    });
+  }, [currentUser]);
+
+
   const updateGrid = useCallback((gridUpdates) => {
     setLocalDraftData((prev) => {
       const activeLay = prev.activeLayout || '12x6';
@@ -885,7 +898,9 @@ export function CMSProvider({ children }) {
         updateModule,
         updateModuleContent,
         moveModule,
+        reorderModules,
         updateGrid,
+
         updateOrientation,
         resetAll,
         templates,

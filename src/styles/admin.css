@@ -201,6 +201,18 @@
   border-color: var(--color-border-gold);
 }
 
+.module-list-item.dragging {
+  opacity: 0.3 !important;
+  background: rgba(255, 255, 255, 0.02) !important;
+  border: 1px dashed var(--color-border-gold) !important;
+}
+
+.module-list-item.drag-over {
+  border-top: 2px solid var(--color-gold) !important;
+  background: rgba(212, 168, 67, 0.05) !important;
+}
+
+
 .module-list-icon {
   font-size: 18px;
   flex-shrink: 0;
