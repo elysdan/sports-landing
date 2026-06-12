@@ -1452,17 +1452,20 @@ img.sb-team-flag,
 }
 
 .module-scoreboard-display,
-.module-upcoming-display,
-.module-apuesta-display,
-.module-pregunta-display {
+.module-upcoming-display {
   background: var(--module-bg-color, transparent) !important;
   background-color: var(--module-bg-color, transparent) !important;
   background-image: none !important;
 }
 
+.module-apuesta-display,
+.module-pregunta-display {
+  background: var(--card-bg-color, #161616) !important;
+  background-color: var(--card-bg-color, #161616) !important;
+  background-image: none !important;
+}
+
 /* ─── CARD/ELEMENT STYLING WITH CUSTOMIZABLE BACKGROUND COLOR ─── */
-.apuesta-header,
-.apuesta-odd-box,
 .sb-main,
 .sb-status,
 .media-text-container,
@@ -1473,15 +1476,6 @@ img.sb-team-flag,
 }
 
 /* Styled elements configuration (borders, paddings, margins) */
-.apuesta-header {
-  border: 1px solid var(--module-border-color, var(--color-border)) !important;
-  border-radius: var(--radius-md) !important;
-  padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(10px, calc(16px * var(--scale, 1)), 28px) !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.apuesta-odd-box,
 .sb-main,
 .media-text-container {
   border: 1px solid var(--module-border-color, var(--color-border)) !important;
