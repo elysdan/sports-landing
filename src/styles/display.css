@@ -647,8 +647,9 @@
   justify-content: center !important;
   align-items: center;
   width: 100%;
-  margin-bottom: 0 !important;
-  padding: clamp(8px, calc(14px * var(--scale, 1)), 24px) !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+  padding: 2px 12px !important;
   border-bottom: 3px solid #ffb300 !important;
   box-sizing: border-box;
   gap: 12px;
@@ -669,7 +670,9 @@
   text-align: center !important;
   flex: 1;
   min-width: 0;
-  line-height: 1.25 !important;
+  line-height: 1.1 !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
 }
 
 .apuesta-tag {
@@ -1017,8 +1020,9 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin: 0 !important;
-  padding: 0 12px !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
+  padding: 2px 12px !important;
   box-sizing: border-box !important;
   text-align: center;
 }
@@ -1026,8 +1030,9 @@
 .pregunta-title {
   font-family: var(--font-display);
   font-size: calc(clamp(14px, calc(24px * var(--font-scale, 1)), 72px) * var(--pregunta-title-size, 1)) !important;
-  line-height: 0.8 !important;
-  margin: 0 !important;
+  line-height: 1.1 !important;
+  margin-top: 2px !important;
+  margin-bottom: 2px !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;

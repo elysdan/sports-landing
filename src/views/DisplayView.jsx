@@ -252,9 +252,9 @@ export function resolveFlagUrl(flag, teamName, worldCupTeams = [], isScoreboard 
   const targetName = teamName || (typeof flag === 'string' && flag.length > 4 ? flag : null);
   const targetClean = normalizeTeamName(targetName);
 
-  if (targetClean && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
+  if ((targetClean || (flag && flag !== '?' && flag !== '??')) && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
     const found = worldCupTeams.find(
-      t => normalizeTeamName(t.name) === targetClean ||
+      t => (targetClean && normalizeTeamName(t.name) === targetClean) ||
         (flag && flag !== '?' && flag !== '??' && t.flag === flag)
     );
     if (found && found.id) {
@@ -529,11 +529,15 @@ function UpcomingModule({ content }) {
   const flagA = getTeamFlag(teamAInfo.name, content.flagA, teamAInfo.flag, worldCupTeams);
   const flagB = getTeamFlag(teamBInfo.name, content.flagB, teamBInfo.flag, worldCupTeams);
 
+  const hasTime = content.time && content.time.trim() !== '';
+
   return (
     <div className="module-upcoming-display">
-      <div className="upcoming-header-box">
-        <div className="upcoming-time-display">{content.time}</div>
-      </div>
+      {hasTime && (
+        <div className="upcoming-header-box">
+          <div className="upcoming-time-display">{content.time}</div>
+        </div>
+      )}
       <div className={`upcoming-vs-card ${content.showVS === false ? 'no-vs' : ''}`}>
         <div className="upcoming-team-box box-left">
           <TeamFlag flag={flagA?.flag || flagA || '🏳️'} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} isUpcoming={true} />
