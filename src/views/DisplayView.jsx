@@ -218,11 +218,21 @@ export function emojiToCountryCode(emoji) {
   return null;
 }
 
+function normalizeTeamName(name) {
+  if (typeof name !== 'string') return '';
+  return name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .trim()
+    .toUpperCase();
+}
+
 export function getTeamFlag(teamName, explicitFlag, parsedFlag, worldCupTeams = []) {
   if (explicitFlag) return explicitFlag;
   if (parsedFlag) return parsedFlag;
   if (!teamName) return null;
-  const found = worldCupTeams.find(t => t.name.toUpperCase() === teamName.trim().toUpperCase());
+  const targetClean = normalizeTeamName(teamName);
+  const found = worldCupTeams.find(t => normalizeTeamName(t.name) === targetClean);
   return found ? found : null;
 }
 
@@ -240,9 +250,11 @@ export function resolveFlagUrl(flag, teamName, worldCupTeams = [], isScoreboard 
   let flagUrl = null;
 
   const targetName = teamName || (typeof flag === 'string' && flag.length > 4 ? flag : null);
-  if (targetName && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
+  const targetClean = normalizeTeamName(targetName);
+
+  if (targetClean && Array.isArray(worldCupTeams) && worldCupTeams.length > 0) {
     const found = worldCupTeams.find(
-      t => t.name.toUpperCase() === targetName.trim().toUpperCase() ||
+      t => normalizeTeamName(t.name) === targetClean ||
         (flag && flag !== '?' && flag !== '??' && t.flag === flag)
     );
     if (found && found.id) {
@@ -270,12 +282,42 @@ export function resolveFlagUrl(flag, teamName, worldCupTeams = [], isScoreboard 
 }
 
 
-export function TeamFlag({ flag, teamName, worldCupTeams = [], isScoreboard = false }) {
+export function TeamFlag({ flag, teamName, worldCupTeams = [], isScoreboard = false, isUpcoming = false }) {
   if (!flag && !teamName) return null;
 
   const flagUrl = resolveFlagUrl(flag, teamName, worldCupTeams, isScoreboard);
 
   if (flagUrl) {
+    if (isUpcoming && !isScoreboard) {
+      return (
+        <img
+          src={flagUrl}
+          alt={teamName || "Flag"}
+          className="sb-team-flag sb-team-flag-img"
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            minWidth: '100%',
+            minHeight: '100%',
+            maxWidth: 'none',
+            maxHeight: 'none',
+            objectFit: 'contain',
+            borderRadius: 0,
+            border: 'none',
+            padding: 0,
+            margin: 0,
+            zIndex: 0
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      );
+    }
+
     return (
       <img
         src={flagUrl}
@@ -329,7 +371,6 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
 
-        <div className="sb-card-divider">-</div>
 
         <div className="sb-team-card">
           <div className="sb-card-score" style={content.scoreBgColorB ? { background: content.scoreBgColorB } : {}}>{content.teamB.score}</div>
@@ -381,13 +422,13 @@ function UpcomingModule({ content }) {
       </div>
       <div className={`upcoming-vs-card ${content.showVS === false ? 'no-vs' : ''}`}>
         <div className="upcoming-team-box box-left">
-          <TeamFlag flag={flagA?.flag || flagA || '🏳️'} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} />
+          <TeamFlag flag={flagA?.flag || flagA || '🏳️'} teamName={teamAInfo.name} worldCupTeams={worldCupTeams} isUpcoming={true} />
           <span className="upcoming-number">{content.numA || ''}</span>
         </div>
         {content.showVS !== false && <div className="upcoming-vs-badge">VS</div>}
         <div className="upcoming-team-box box-right">
           <span className="upcoming-number">{content.numB || ''}</span>
-          <TeamFlag flag={flagB?.flag || flagB || '🏳️'} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} />
+          <TeamFlag flag={flagB?.flag || flagB || '🏳️'} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} isUpcoming={true} />
         </div>
       </div>
     </div>

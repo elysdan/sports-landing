@@ -30,16 +30,25 @@ export default function PreguntaEditor({ content, onChange, updateModuleContent,
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
             <input
               type="range"
-              min="0.5"
-              max="2.5"
+              min="0.1"
+              max="10.0"
               step="0.05"
               value={content.titleFontSize !== undefined ? content.titleFontSize : 1.0}
               onChange={(e) => onChange('titleFontSize', parseFloat(e.target.value))}
               style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
             />
-            <span style={{ fontSize: '12px', fontWeight: 'bold', minWidth: '36px', color: 'var(--color-gold)' }}>
-              {(content.titleFontSize !== undefined ? content.titleFontSize : 1.0).toFixed(2)}x
-            </span>
+            <input
+              type="number"
+              min="0.1"
+              max="100.0"
+              step="0.05"
+              value={content.titleFontSize !== undefined ? content.titleFontSize : 1.0}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                onChange('titleFontSize', isNaN(val) ? 1.0 : val);
+              }}
+              style={{ width: '70px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--color-gold)', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+            />
           </div>
         </div>
         <div className="field">
@@ -97,35 +106,72 @@ export default function PreguntaEditor({ content, onChange, updateModuleContent,
         Estilos Generales de las Opciones
       </h3>
 
-      <div className="field-row" style={{ marginBottom: '20px' }}>
+      <div className="field-row" style={{ marginBottom: '16px' }}>
         <div className="field">
-          <label>Escala de las Opciones (Sticker / Texto / Cuota)</label>
+          <label>Tamaño de Letras o Stickers (SÍ/NO)</label>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
             <input
               type="range"
-              min="0.5"
-              max="2.5"
+              min="0.1"
+              max="10.0"
               step="0.05"
-              value={content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0}
-              onChange={(e) => onChange('optionScaleFactor', parseFloat(e.target.value))}
+              value={content.optionLabelScale !== undefined ? content.optionLabelScale : (content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0)}
+              onChange={(e) => onChange('optionLabelScale', parseFloat(e.target.value))}
               style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
             />
-            <span style={{ fontSize: '12px', fontWeight: 'bold', minWidth: '36px', color: 'var(--color-gold)' }}>
-              {(content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0).toFixed(2)}x
-            </span>
+            <input
+              type="number"
+              min="0.1"
+              max="100.0"
+              step="0.05"
+              value={content.optionLabelScale !== undefined ? content.optionLabelScale : (content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                onChange('optionLabelScale', isNaN(val) ? 1.0 : val);
+              }}
+              style={{ width: '70px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--color-gold)', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+            />
           </div>
         </div>
+
         <div className="field">
-          <label>Dirección del Contenido</label>
-          <select
-            value={content.optionLayout || 'vertical'}
-            onChange={(e) => onChange('optionLayout', e.target.value)}
-            style={{ marginTop: '6px' }}
-          >
-            <option value="vertical">Apilado (Sticker/Texto arriba, Cuota abajo)</option>
-            <option value="horizontal">Lado a Lado (Sticker/Texto a la izquierda, Cuota a la derecha)</option>
-          </select>
+          <label>Tamaño de Números (Cuotas)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="range"
+              min="0.1"
+              max="10.0"
+              step="0.05"
+              value={content.optionValueScale !== undefined ? content.optionValueScale : (content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0)}
+              onChange={(e) => onChange('optionValueScale', parseFloat(e.target.value))}
+              style={{ flex: 1, height: '6px', accentColor: 'var(--color-primary)' }}
+            />
+            <input
+              type="number"
+              min="0.1"
+              max="100.0"
+              step="0.05"
+              value={content.optionValueScale !== undefined ? content.optionValueScale : (content.optionScaleFactor !== undefined ? content.optionScaleFactor : 1.0)}
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                onChange('optionValueScale', isNaN(val) ? 1.0 : val);
+              }}
+              style={{ width: '70px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--color-gold)', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+            />
+          </div>
         </div>
+      </div>
+
+      <div className="field" style={{ marginBottom: '20px' }}>
+        <label>Dirección del Contenido</label>
+        <select
+          value={content.optionLayout || 'vertical'}
+          onChange={(e) => onChange('optionLayout', e.target.value)}
+          style={{ marginTop: '6px' }}
+        >
+          <option value="vertical">Apilado (Sticker/Texto arriba, Cuota abajo)</option>
+          <option value="horizontal">Lado a Lado (Sticker/Texto a la izquierda, Cuota a la derecha)</option>
+        </select>
       </div>
 
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />

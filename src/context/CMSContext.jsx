@@ -51,6 +51,8 @@ function defaultContentForType(type) {
         titleTextColor: '',
         titleBgColor: '',
         optionScaleFactor: 1.0,
+        optionLabelScale: 1.0,
+        optionValueScale: 1.0,
         optionLayout: 'vertical'
       };
     default:

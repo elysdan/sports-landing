@@ -153,80 +153,200 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
       <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Fondo score A */}
         <div className="field" style={{ marginBottom: 0 }}>
-          <label>Fondo Número A (Local)</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-            <input
-              type="color"
-              value={content.scoreBgColorA && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorA) ? content.scoreBgColorA : '#ffd014'}
-              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
-              style={{
-                width: '42px',
-                height: '42px',
-                padding: '2px',
-                border: '1px solid var(--color-border)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                background: 'transparent',
-                flexShrink: 0
-              }}
-            />
-            <input
-              type="text"
-              value={content.scoreBgColorA || ''}
-              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
-              placeholder="Ej: #ffd014"
-              style={{ flex: 1 }}
-            />
-            {content.scoreBgColorA && (
+          <label>Tipo de Fondo A (Local)</label>
+          <select
+            value={content.scoreBgTypeA || 'color'}
+            onChange={(e) => updateModuleContent(moduleId, { scoreBgTypeA: e.target.value })}
+            style={{ marginBottom: '8px' }}
+          >
+            <option value="color">Color Sólido</option>
+            <option value="image">Imagen</option>
+            <option value="video">Video</option>
+          </select>
+
+          {(content.scoreBgTypeA === 'color' || !content.scoreBgTypeA) && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="color"
+                value={content.scoreBgColorA && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorA) ? content.scoreBgColorA : '#ffd014'}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  padding: '2px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  flexShrink: 0
+                }}
+              />
+              <input
+                type="text"
+                value={content.scoreBgColorA || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgColorA: e.target.value })}
+                placeholder="Ej: #ffd014"
+                style={{ flex: 1 }}
+              />
+              {content.scoreBgColorA && (
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                  onClick={() => updateModuleContent(moduleId, { scoreBgColorA: '' })}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
+
+          {content.scoreBgTypeA === 'image' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="text"
+                value={content.scoreBgImageA || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgImageA: e.target.value })}
+                placeholder="URL de Imagen de Fondo A"
+                style={{ flex: 1 }}
+              />
               <button
                 type="button"
                 className="admin-btn admin-btn-secondary"
-                style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
-                onClick={() => updateModuleContent(moduleId, { scoreBgColorA: '' })}
+                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
+                onClick={() => {
+                  onOpenLibrary((url) => {
+                    updateModuleContent(moduleId, { scoreBgImageA: url });
+                  });
+                }}
               >
-                Reset
+                🖼️ Elegir
               </button>
-            )}
-          </div>
+            </div>
+          )}
+
+          {content.scoreBgTypeA === 'video' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="text"
+                value={content.scoreBgVideoA || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgVideoA: e.target.value })}
+                placeholder="URL de Video de Fondo A"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
+                onClick={() => {
+                  onOpenLibrary((url) => {
+                    updateModuleContent(moduleId, { scoreBgVideoA: url });
+                  });
+                }}
+              >
+                📹 Elegir
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Fondo score B */}
         <div className="field" style={{ marginBottom: 0 }}>
-          <label>Fondo Número B (Visitante)</label>
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-            <input
-              type="color"
-              value={content.scoreBgColorB && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorB) ? content.scoreBgColorB : '#ffd014'}
-              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
-              style={{
-                width: '42px',
-                height: '42px',
-                padding: '2px',
-                border: '1px solid var(--color-border)',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                background: 'transparent',
-                flexShrink: 0
-              }}
-            />
-            <input
-              type="text"
-              value={content.scoreBgColorB || ''}
-              onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
-              placeholder="Ej: #ffd014"
-              style={{ flex: 1 }}
-            />
-            {content.scoreBgColorB && (
+          <label>Tipo de Fondo B (Visitante)</label>
+          <select
+            value={content.scoreBgTypeB || 'color'}
+            onChange={(e) => updateModuleContent(moduleId, { scoreBgTypeB: e.target.value })}
+            style={{ marginBottom: '8px' }}
+          >
+            <option value="color">Color Sólido</option>
+            <option value="image">Imagen</option>
+            <option value="video">Video</option>
+          </select>
+
+          {(content.scoreBgTypeB === 'color' || !content.scoreBgTypeB) && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="color"
+                value={content.scoreBgColorB && /^#[0-9A-F]{6}$/i.test(content.scoreBgColorB) ? content.scoreBgColorB : '#ffd014'}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  padding: '2px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  flexShrink: 0
+                }}
+              />
+              <input
+                type="text"
+                value={content.scoreBgColorB || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgColorB: e.target.value })}
+                placeholder="Ej: #ffd014"
+                style={{ flex: 1 }}
+              />
+              {content.scoreBgColorB && (
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                  onClick={() => updateModuleContent(moduleId, { scoreBgColorB: '' })}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          )}
+
+          {content.scoreBgTypeB === 'image' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="text"
+                value={content.scoreBgImageB || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgImageB: e.target.value })}
+                placeholder="URL de Imagen de Fondo B"
+                style={{ flex: 1 }}
+              />
               <button
                 type="button"
                 className="admin-btn admin-btn-secondary"
-                style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
-                onClick={() => updateModuleContent(moduleId, { scoreBgColorB: '' })}
+                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
+                onClick={() => {
+                  onOpenLibrary((url) => {
+                    updateModuleContent(moduleId, { scoreBgImageB: url });
+                  });
+                }}
               >
-                Reset
+                🖼️ Elegir
               </button>
-            )}
-          </div>
+            </div>
+          )}
+
+          {content.scoreBgTypeB === 'video' && (
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+              <input
+                type="text"
+                value={content.scoreBgVideoB || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreBgVideoB: e.target.value })}
+                placeholder="URL de Video de Fondo B"
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
+                onClick={() => {
+                  onOpenLibrary((url) => {
+                    updateModuleContent(moduleId, { scoreBgVideoB: url });
+                  });
+                }}
+              >
+                📹 Elegir
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </>

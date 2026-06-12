@@ -24,9 +24,18 @@ async function populateFlagsInConfig(config) {
     const teamNameToTeam = {};
     const teamFlagToTeam = {};
 
+    const normalizeTeamName = (name) => {
+      if (typeof name !== 'string') return '';
+      return name
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toUpperCase();
+    };
+
     teams.forEach(t => {
       if (t.name) {
-        teamNameToTeam[t.name.toUpperCase().trim()] = t;
+        teamNameToTeam[normalizeTeamName(t.name)] = t;
       }
       if (t.flag) {
         teamFlagToTeam[t.flag.trim()] = t;
@@ -41,7 +50,7 @@ async function populateFlagsInConfig(config) {
 
       // 2. Lookup by name
       if (teamName) {
-        const match = teamNameToTeam[teamName.toUpperCase().trim()];
+        const match = teamNameToTeam[normalizeTeamName(teamName)];
         if (match) return `/paises/${match.id}.svg`;
       }
 

@@ -362,39 +362,20 @@
   font-family: var(--font-display);
   font-size: calc(18px * var(--font-scale, 1));
   font-weight: 900;
-  color: var(--text-color, #ffffff) !important; /* Color personalizable, blanco por defecto */
-  background: transparent; /* Sin recuadro blanco */
+  color: var(--text-color, #ffffff) !important;
+  /* Color personalizable, blanco por defecto */
+  background: transparent;
+  /* Sin recuadro blanco */
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6); /* Sombra de texto para legibilidad */
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.6);
+  /* Sombra de texto para legibilidad */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
 }
 
-.sb-card-divider {
-  font-family: var(--font-display);
-  font-size: calc(32px * var(--font-scale, 1)) !important;
-  font-weight: 900;
-  color: #ffffff;
-  line-height: 1;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  background: #161616;
-  width: clamp(30px, calc(60px * var(--scale, 1)), 100px);
-  height: clamp(30px, calc(60px * var(--scale, 1)), 100px);
-  border: 3px solid #ffb300;
-  border-radius: 50% !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  box-shadow: 0 0 10px rgba(0,0,0,0.5);
-}
 
 .sb-status-badge {
   font-family: var(--font-display);
@@ -490,14 +471,12 @@
   min-width: 0;
   padding: clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
   box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 
 .upcoming-team-box.box-left {
   border-right: 3px solid #ffb300 !important;
-}
-
-.upcoming-team-box.box-right {
-  /* centered flex box */
 }
 
 .upcoming-number {
@@ -505,9 +484,11 @@
   font-size: clamp(20px, calc(42px * var(--font-scale, 1)), 80px) !important;
   font-weight: 800;
   color: var(--color-gold);
-  text-shadow: 0 0 12px rgba(212, 168, 67, 0.3);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9), 0 0 15px rgba(0, 0, 0, 0.8), 0 0 8px var(--color-gold);
   line-height: 1;
   white-space: nowrap;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .upcoming-vs-card.no-vs {
@@ -527,26 +508,37 @@
   justify-content: flex-start !important;
 }
 
-.module-wrapper .module-upcoming-display img.sb-team-flag {
-  width: calc(150px * var(--scale, 1)) !important;
-  height: calc(150px * var(--scale, 1)) !important;
-  min-width: calc(150px * var(--scale, 1)) !important;
-  min-height: calc(150px * var(--scale, 1)) !important;
-  object-fit: cover !important;
-  border-radius: 50% !important;
-  border: 3px solid #ffb300 !important;
+.upcoming-team-box img.sb-team-flag {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  border-radius: 0 !important;
+  border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  aspect-ratio: 1/1 !important;
+  aspect-ratio: auto !important;
   flex-shrink: 0 !important;
+  z-index: 0 !important;
 }
 
-.module-wrapper .module-upcoming-display .sb-team-flag {
-  width: calc(150px * var(--scale, 1)) !important;
-  height: calc(150px * var(--scale, 1)) !important;
-  min-width: calc(150px * var(--scale, 1)) !important;
-  min-height: calc(150px * var(--scale, 1)) !important;
-  border-radius: 50% !important;
+.upcoming-team-box .sb-team-flag {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  border-radius: 0 !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -554,8 +546,9 @@
   border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  font-size: calc(90px * var(--scale, 1)) !important;
+  font-size: calc(120px * var(--scale, 1)) !important;
   flex-shrink: 0 !important;
+  z-index: 0 !important;
 }
 
 .upcoming-vs-badge {
@@ -927,7 +920,7 @@
     text-align: right !important;
     margin-left: auto !important;
   }
- 
+
   .module-apuesta-display .box-center .apuesta-odd-value {
     font-size: clamp(11px, calc(16cqi * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0)), calc(20px * var(--text-scale-factor, 1) * var(--apuesta-odd-scale, 1.0))) !important;
     white-space: nowrap !important;
@@ -936,7 +929,7 @@
     margin-left: auto !important;
     /* Align numbers to the right */
   }
- 
+
   .module-apuesta-display .box-right .apuesta-odd-value {
     order: 3 !important;
     /* Align numbers to the right */
@@ -994,6 +987,7 @@
 .module-apuesta-display .apuesta-odd-box.no-team-info {
   justify-content: center !important;
 }
+
 .module-apuesta-display .apuesta-odd-box.no-team-info .apuesta-odd-value {
   margin: 0 auto !important;
   text-align: center !important;
@@ -1021,7 +1015,7 @@
   align-items: center;
   width: 100%;
   margin: 0 !important;
-  padding: clamp(8px, calc(14px * var(--scale, 1)), 24px) !important;
+  padding: 0 12px !important;
   box-sizing: border-box !important;
   text-align: center;
 }
@@ -1029,6 +1023,8 @@
 .pregunta-title {
   font-family: var(--font-display);
   font-size: calc(clamp(14px, calc(24px * var(--font-scale, 1)), 72px) * var(--pregunta-title-size, 1)) !important;
+  line-height: 0.8 !important;
+  margin: 0 !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
@@ -1111,7 +1107,7 @@
 
 .pregunta-option-label {
   font-family: var(--font-display);
-  font-size: calc(clamp(9px, calc(14cqi * var(--text-scale-factor, 1)), 24cqi) * var(--pregunta-option-scale, 1)) !important;
+  font-size: calc(clamp(9px, calc(14cqi * var(--text-scale-factor, 1)), 24cqi) * var(--pregunta-label-scale, 1)) !important;
   font-weight: 800;
   color: var(--color-white);
   text-transform: uppercase;
@@ -1120,7 +1116,7 @@
 }
 
 .pregunta-option-sticker {
-  height: calc(clamp(30px, calc(65px * var(--scale, 1)), 150px) * var(--pregunta-option-scale, 1)) !important;
+  height: calc(clamp(30px, calc(65px * var(--scale, 1)), 150px) * var(--pregunta-label-scale, 1)) !important;
   width: auto;
   max-width: 80%;
   object-fit: contain;
@@ -1134,7 +1130,7 @@
 
 .pregunta-option-value {
   font-family: var(--font-display);
-  font-size: calc(clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) * var(--pregunta-option-scale, 1)) !important;
+  font-size: calc(clamp(11px, calc(100cqi / var(--char-count, 4) * 0.85 * var(--text-scale-factor, 1)), min(36cqi, calc(100cqi / var(--char-count, 4) * 0.9))) * var(--pregunta-value-scale, 1)) !important;
   font-weight: 800;
   color: var(--color-gold);
   text-shadow: 0 0 10px rgba(212, 168, 67, 0.2);
@@ -1174,7 +1170,7 @@
 }
 
 [class*="narrow-col-"] .pregunta-title {
-  font-size: clamp(16px, calc(24px * var(--font-scale, 1)), 38px) !important;
+  font-size: calc(clamp(16px, calc(24px * var(--font-scale, 1)), 38px) * var(--pregunta-title-size, 1)) !important;
   max-width: 100% !important;
   white-space: normal !important;
   word-wrap: break-word !important;
@@ -1278,15 +1274,28 @@
   gap: calc(4px * var(--scale, 1)) !important;
 }
 
-.short-row-1 .module-upcoming-display img.sb-team-flag {
+.short-row-1 .upcoming-team-box img.sb-team-flag {
+  position: static !important;
   width: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
   height: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+  border-radius: 4px !important;
   border-width: 1px !important;
 }
 
-.short-row-1 .module-upcoming-display .sb-team-flag {
+.short-row-1 .upcoming-team-box .sb-team-flag {
+  position: static !important;
   width: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
   height: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  border-radius: 4px !important;
   font-size: clamp(14px, calc(24px * var(--scale, 1)), 32px) !important;
 }
 
@@ -1373,11 +1382,11 @@
 }
 
 /* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
-[class*="narrow-col-"] .module-pregunta-display,
+/*[class*="narrow-col-"] .module-pregunta-display,
 [class*="narrow-col-"] .module-upcoming-display {
   padding-left: clamp(12px, 2vw, 32px) !important;
   padding-right: clamp(12px, 2vw, 32px) !important;
-}
+}*/
 
 [class*="narrow-col-"] .module-pregunta-display {
   justify-content: center !important;
@@ -1410,11 +1419,11 @@
 }
 
 [class*="narrow-col-"] .pregunta-option-label {
-  font-size: calc(clamp(10px, calc(16px * var(--font-scale, 1)), 28px) * var(--pregunta-option-scale, 1)) !important;
+  font-size: calc(clamp(10px, calc(16px * var(--font-scale, 1)), 28px) * var(--pregunta-label-scale, 1)) !important;
 }
 
 [class*="narrow-col-"] .pregunta-option-value {
-  font-size: calc(clamp(12px, calc(24px * var(--font-scale, 1)), 38px) * var(--pregunta-option-scale, 1)) !important;
+  font-size: calc(clamp(12px, calc(24px * var(--font-scale, 1)), 38px) * var(--pregunta-value-scale, 1)) !important;
 }
 
 /* ─── OVERFLOW PREVENTION & BOUNDS ADAPTABILITY ─── */
@@ -1762,12 +1771,12 @@ img.sb-team-flag,
   font-size: clamp(12px, calc(18px * var(--font-scale, 1)), 24px) !important;
 }
 
-.vertical .module-pregunta-display {
+/*.vertical .module-pregunta-display {
   padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
-}
+}*/
 
 .vertical .pregunta-title {
-  font-size: clamp(18px, calc(28px * var(--font-scale, 1)), 36px) !important;
+  font-size: calc(clamp(18px, calc(28px * var(--font-scale, 1)), 36px) * var(--pregunta-title-size, 1)) !important;
   max-width: 100% !important;
   white-space: normal !important;
   word-wrap: break-word !important;
