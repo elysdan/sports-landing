@@ -1,9 +1,47 @@
-<svg width="203" height="122" viewBox="0 0 203 122" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none">
-<rect width="202.749" height="121.649" fill="url(#pattern0_16_73)"/>
-<defs>
-<pattern id="pattern0_16_73" patternContentUnits="objectBoundingBox" width="1" height="1">
-<use xlink:href="#image0_16_73" transform="matrix(0.0048 0 0 0.008 -0.1 0)"/>
-</pattern>
-<image id="image0_16_73" width="250" height="125" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAB9CAIAAAAEO+kKAAAHsElEQVR4AeycW4wTVRiAZ6fDVvEWMCE8gD5ovGCUi0bXaILcVk0MxgsvKl54QDSoIGJUnvRBTRAxiookigIaE4SI0aDclETlEhWMAWKiLwiRkAhege1Ou55ut522u9Pt7vxnenrm20zb6czpP////V9mZybTuuOePckEgYQQcB3+IJAYAuiemFZTqOOgOxYkiAC6J6jZlKpLd7fFmXC++3i7t2pW69YF6V2LTlsxs3XGld4FI9yhrS0tGsCPHe1eMaqfcqTG9JM+q00l0I8fg0g77TkPXOdtWZB++77WmW3eRSPdDXuzNy3tmL06s/Z7/9ejuROZrq5BxO3vI9PHpdRUe5QaoKboY2pHYK2xBIR1bx+T+uSR9KNTvGFD83vwTfuz01/reHWrf/yEDsN7qN58eWrjvPRt41O3T0h9Pi+t3vasKHtRC0XGlIVktvkIiOmu7J4z0XvxziEjzlKzjrJ7+Xb/qY86j/6jZvVy2fhTdtH6zvxWHeeZ9Z3qbe/tqYUiY3pHZkkTEZDRXR2pK9EfnOgVnMt1OUr0t7b72k0vkp42xt28L/fxD9lJl4RWJDWmuE1em49AqBwDKmXuZE8dxpQ+smybrw5jSm9jmFmzK/vkusxzn3Z+uDsbtjmpMWHxWa6VgEhwAd2V6OrctJSNEn3lN37pbTwzh4/3/CM5/GfPTO/tSo3pHZklzUIgqu7qOsz8dq9UbYfvLN0Ut+ulrTMDgdoEoup+d5s38uzCEXt+Q+/v9I/8Hbp/zY/gAYHGEYikuzpDvactVUpenaGu2Rl66FwaxgwEGkUgku7jz3ML19cL2e85mNN6fb2wFZ4hMGgCkXS/4eKKj3/1c27QeZjyQfKwmkCFrwOtdOzoio//+Jsu3dWGYrsfpp5tDRQU4w0hUOHrQHMaNSw4SVWfPVS8GqjmZafpMd4PU8+2ZKsjWmwEIul+ZrpC93875K/JSN3rIhUntsawIR0EIumuI6GqmFL3ukjFqUqPt81FIJLuVbvzqp29FAipe12k4kjVlZw45lQaSfdDxyqOXkYNrzi2kSpS6l4XqThSdREnfgKRdN9beSlmXOWFGqlipO51kYojVRdx4icQSfeqC+1Vl+HjL4YtQqA2gUi6q737sf+C4xm1dx9+hpbjmdo1sBYCdRKIpHuuy1m9I7hJxm1xZl4b3EJTZwYMg0BsBCLprrL8YLd/5K9gB3/X1d7Icxq0g1fZMEGgJoGoumd8Z8nm4Et6rZ6zYFrPV/hqbpeVEGgAgai6q5S37M++83XwlY6pY1Kzrg++8KEG1J7quUfFtDG1K2KtsQQEdFe1vfGl/8W+4CD+4UnejZfVexBfzz0qpo1RJTM1IwEZ3dU569PrOks/PaDOWV+4Y0jphwnCuEjdxxJnnLBaWN4UBGR0V6Wq09Xl2/2FazsLX95Tp6tzJnqLZwwp/2qfGlY+Sd3HEmec8vyTMG9ZjWK6F7hsPZC9dVnHK1v8P7qvx0+5NLVhbnreVO/ckOvxUvexxBmnUCnPzUhAWHeFQF2ree9bv/3ljlnvZlbt8A/8nrtlbOqzx9Ir7m2dcZV3YeEnUdXOXw11HKn7WOKM0504T01JQF73AgZ1NL/nYG7pZv/+lZmpSzranj81e1Vm7Xf+L4WfRFWHPt3jpO5jiTNOd+I8NSUBXbo3JQyStp0AutveYeorI2CG7mUJMQsBfQTQXR9bIhtHwN32+jVMEEgIAfbuxu2BSEgfAff0hQ8xQSAhBNzTnpjDZCUBiupNgIMZff85iWwcAXQ3riUkpI8AuutjS2TjCKC7cS0hIX0E0F0fWyIbRyCy7sZVREIQCCWA7qFoWGEfAXS3r6dUFEoA3UPRsMI+AuhuX0+pKJQAuoeiaeAKNq2JALprAktYEwmgu4ldISdNBNBdE1jCmkgA3U3sCjlpIoDumsAS1jQC+XzQPU+BR0IIoHtCGk2ZeQLonqfAIyEE0D0hjabMPAF0z1PgkRAC6C7caMKZTADdTe4OuQkTQHdhoIQzmQC6m9wdchMmgO7CQAlnMgF0N7k75FYgIPaM7mIoCWQ+AXQ3v0dkKEYA3cVQEsh8Auhufo/IUIwAuouhJJD5BNA96BFz1hNAd+tbTIEBAXQPWDBnPQF0t77FFBgQQPeABXPWE0B361vc2ALN2rp76qXlTBBICAH35OI3mSCQEAIczJj135ZstBJwJ88fygSBhBBg7651b0JwswhYortZUMnGVALobmpnyEsDAXTXAJWQphJAd1M7Q14aCKC7BqiENJUAupvamcbnZWEG6G5hUykpjAC6h5FhuYUE0N3CplJSGAF0DyPDcgsJoLuFTaWkMAKN1z0sM5ZDQJwAuosjJaC5BNDd3N6QmTgBdBdHSkBzCaC7ub0hM3EC6C6O1ISA5NA3AXTvmwtLrSSA7la2laL6JoDufXNhqZUE0N3KtlJU3wTQvW8uLLWSQCTdrSRCURYTQHeLm0tp1QTQvZoI7y0mgO4WN5fSqgmgezUR3ltMAN1Nay75aCSA7hrhEto0AuhuWkfIRyMBdNcIl9CmEUB30zpCPhoJoLtGuIQ2hUAxD3QvkuA1AQTQPQFNpsQiAXQvkuA1AQTQPQFNpsQiAXQvkuA1AQT+BwAA//9EYDjkAAAABklEQVQDAFlkQxX5MLCXAAAAAElFTkSuQmCC"/>
-</defs>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 84">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #18b637;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        fill: #009ab6;
+      }
+
+      .cls-3, .cls-4 {
+        fill: #fff;
+      }
+
+      .cls-4 {
+        fill-rule: evenodd;
+      }
+
+      .cls-5 {
+        fill: #cf0821;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" y="-1.3" width="301" height="86.59"/>
+  <rect class="cls-2" y="-1.3" width="301" height="27.25"/>
+  <rect class="cls-5" y="25.95" width="301" height="30.75"/>
+  <rect class="cls-3" y="27.61" width="301" height="27.44"/>
+  <path class="cls-4" d="M25.23,1.52c.62,0,1.24.05,1.83.16-5.1.87-8.98,5.31-8.98,10.66s3.88,9.79,8.98,10.66c-.6.1-1.21.16-1.83.16-5.97,0-10.81-4.84-10.81-10.81S19.26,1.52,25.23,1.52Z"/>
+  <polygon class="cls-4" points="31.41 18.55 31.95 20.22 33.7 20.22 32.28 21.24 32.82 22.91 31.41 21.87 30 22.91 30.54 21.24 29.12 20.22 30.87 20.22 31.41 18.55"/>
+  <polygon class="cls-4" points="39.42 18.55 39.96 20.22 41.71 20.22 40.29 21.24 40.84 22.91 39.42 21.87 38.01 22.91 38.55 21.24 37.13 20.22 38.88 20.22 39.42 18.55"/>
+  <polygon class="cls-4" points="47.43 18.55 47.97 20.22 49.72 20.22 48.3 21.24 48.85 22.91 47.43 21.87 46.02 22.91 46.56 21.24 45.14 20.22 46.89 20.22 47.43 18.55"/>
+  <polygon class="cls-4" points="55.44 18.55 55.98 20.22 57.73 20.22 56.31 21.24 56.86 22.91 55.44 21.87 54.03 22.91 54.57 21.24 53.15 20.22 54.9 20.22 55.44 18.55"/>
+  <polygon class="cls-4" points="63.45 18.55 63.99 20.22 65.74 20.22 64.32 21.24 64.87 22.91 63.45 21.87 62.04 22.91 62.58 21.24 61.16 20.22 62.92 20.22 63.45 18.55"/>
+  <polygon class="cls-4" points="39.42 9.97 39.96 11.64 41.71 11.64 40.29 12.66 40.84 14.33 39.42 13.29 38.01 14.33 38.55 12.66 37.13 11.64 38.88 11.64 39.42 9.97"/>
+  <polygon class="cls-4" points="47.43 9.97 47.97 11.64 49.72 11.64 48.3 12.66 48.85 14.33 47.43 13.29 46.02 14.33 46.56 12.66 45.14 11.64 46.89 11.64 47.43 9.97"/>
+  <polygon class="cls-4" points="55.44 9.97 55.98 11.64 57.73 11.64 56.31 12.66 56.86 14.33 55.44 13.29 54.03 14.33 54.57 12.66 53.15 11.64 54.9 11.64 55.44 9.97"/>
+  <polygon class="cls-4" points="63.45 9.97 63.99 11.64 65.74 11.64 64.32 12.66 64.87 14.33 63.45 13.29 62.04 14.33 62.58 12.66 61.16 11.64 62.92 11.64 63.45 9.97"/>
+  <polygon class="cls-4" points="47.43 1.39 47.97 3.06 49.72 3.05 48.3 4.08 48.85 5.75 47.43 4.71 46.02 5.75 46.56 4.08 45.14 3.05 46.89 3.06 47.43 1.39"/>
+  <polygon class="cls-4" points="55.44 1.39 55.98 3.06 57.73 3.05 56.31 4.08 56.86 5.75 55.44 4.71 54.03 5.75 54.57 4.08 53.15 3.05 54.9 3.06 55.44 1.39"/>
+  <polygon class="cls-4" points="63.45 1.39 63.99 3.06 65.74 3.05 64.32 4.08 64.87 5.75 63.45 4.71 62.04 5.75 62.58 4.08 61.16 3.05 62.92 3.06 63.45 1.39"/>
 </svg>

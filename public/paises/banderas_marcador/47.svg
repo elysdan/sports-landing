@@ -1,10 +1,21 @@
-<svg width="203" height="122" viewBox="0 0 203 122" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none">
-<rect width="202.749" height="121.649" fill="#FF0000"/>
-<rect width="202.749" height="121.649" fill="url(#pattern0_16_62)"/>
-<defs>
-<pattern id="pattern0_16_62" patternContentUnits="objectBoundingBox" width="1" height="1">
-<use xlink:href="#image0_16_62" transform="matrix(0.00502979 0 0 0.00838299 0.203333 -0.0140328)"/>
-</pattern>
-<image id="image0_16_62" width="120" height="120" preserveAspectRatio="none" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHgAAAB4CAIAAAC2BqGFAAACeklEQVR4AezS4U3DMBRF4ScmyQgdATZhBSagTMAK3aQdoSN0E7DkPyClBMnvnSbKqawIpeVd+/N9+opwAQJP4QcREBphjhBaaEgAirHRQkMCUIyNFhoSgGJstNCQABTz0EZDZ1xFjNDQNQgtNCQAxdhooSEBKMZGCw0JQDE2WmhIAIqx0buFnqY4HkdXG7IECH+/vkY3o/f3GFxtCAy5FLc+6KUdb/R7oaGLE1poSACKsdFCQwJQjI0WGhKAYmy00JAAFPO70VDoHmOEhm5daKEhASjGRgsNCUAxNlpoSACKsdFCQwJQjI3eHzR04gfF2GgIXugNQU9TPD+nrcMhxj+HQ9p+2tGmaXxHGY1+fY3zOW19fo6fKtqQxC21Aw7vKQN6eBN7GCA0dMtCCw0JQDE2WmhIAIqx0R26/Cl0OXEPELo7lD+FLifuAUJ3h/Kn0OXEPUDo7lD+FLqcuAcI3R3Kn0KXE/cAobtD+VPocuIe8Bd0/4XPFAGhUxiXhwi9bJTyiwzo0yleXtLW21vCwdqQxC21Aw7vKQP6dovLJW1dr8OHirhe0/bTjtYOOLynDOjhTexhgNDQLQstNCQAxdhooSEBKGa1jYbOj8UIDVELLTQkAMXYaKEhASjGRgsNCUAxNlpoSACKsdFCQwJzMQXvbHQB6txIoedUCt4JXYA6N1LoOZWCd0IXoM6NFHpOpeDd+qBvt/j4GF1tSAHWyMhVQh+PMbiEHinFpv93fY3eNOf9zQt93yb1m/9Dp8bub5jQ0J0LLTQkAMXYaKEhASjGRgsNCUAxNlpoSACKsdFC/xTY/t82GrpDoYWGBKAYGy00JADF2GgI+hsAAP//wG02WAAAAAZJREFUAwCjKLCI2ERvdwAAAABJRU5ErkJggg=="/>
-</defs>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 84">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: red;
+      }
+
+      .cls-1, .cls-2 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        fill: #fff;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <rect class="cls-1" x="-1.42" y="-2.45" width="302.86" height="89"/>
+  <polygon class="cls-2" points="140.25 11.19 159.75 11.19 159.75 32.25 180.81 32.25 180.81 51.75 159.75 51.75 159.75 72.81 140.25 72.81 140.25 51.75 119.19 51.75 119.19 32.25 140.25 32.25 140.25 11.19"/>
 </svg>

@@ -1,6 +1,25 @@
-<svg width="204" height="123" viewBox="0 0 204 123" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-  <!-- Germany Flag Stripes -->
-  <rect width="204" height="41" fill="#000000"/>
-  <rect y="41" width="204" height="41" fill="#FF0000"/>
-  <rect y="82" width="204" height="41" fill="#FFCC00"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 84">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #fff915;
+      }
+
+      .cls-1, .cls-2, .cls-3 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        fill: #dd3131;
+      }
+
+      .cls-3 {
+        fill: #28292b;
+      }
+    </style>
+  </defs>
+  <rect class="cls-3" x="-.31" y="-.33" width="301.15" height="84.67"/>
+  <rect class="cls-1" x="-.31" y="40.59" width="301.15" height="43.74"/>
+  <rect class="cls-2" x="-.31" y="27.51" width="301.31" height="28.49"/>
 </svg>
