@@ -237,6 +237,44 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
               </button>
             </div>
           )}
+
+          <div className="field" style={{ marginTop: '12px', marginBottom: 0 }}>
+            <label>Color del Número A</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="color"
+                value={content.scoreTextColorA && /^#[0-9A-F]{6}$/i.test(content.scoreTextColorA) ? content.scoreTextColorA : '#121212'}
+                onChange={(e) => updateModuleContent(moduleId, { scoreTextColorA: e.target.value })}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  padding: '2px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  flexShrink: 0
+                }}
+              />
+              <input
+                type="text"
+                value={content.scoreTextColorA || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreTextColorA: e.target.value })}
+                placeholder="Ej: #121212 (Defecto)"
+                style={{ flex: 1 }}
+              />
+              {content.scoreTextColorA && (
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                  onClick={() => updateModuleContent(moduleId, { scoreTextColorA: '' })}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Fondo score B */}
@@ -325,6 +363,44 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
               </button>
             </div>
           )}
+
+          <div className="field" style={{ marginTop: '12px', marginBottom: 0 }}>
+            <label>Color del Número B</label>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <input
+                type="color"
+                value={content.scoreTextColorB && /^#[0-9A-F]{6}$/i.test(content.scoreTextColorB) ? content.scoreTextColorB : '#121212'}
+                onChange={(e) => updateModuleContent(moduleId, { scoreTextColorB: e.target.value })}
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  padding: '2px',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  background: 'transparent',
+                  flexShrink: 0
+                }}
+              />
+              <input
+                type="text"
+                value={content.scoreTextColorB || ''}
+                onChange={(e) => updateModuleContent(moduleId, { scoreTextColorB: e.target.value })}
+                placeholder="Ej: #121212 (Defecto)"
+                style={{ flex: 1 }}
+              />
+              {content.scoreTextColorB && (
+                <button
+                  type="button"
+                  className="admin-btn admin-btn-secondary"
+                  style={{ padding: '4px 8px', fontSize: '11px', height: '42px' }}
+                  onClick={() => updateModuleContent(moduleId, { scoreTextColorB: '' })}
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </>

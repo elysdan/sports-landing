@@ -370,8 +370,9 @@ function ScoreboardModule({ content }) {
   const scoreStyleA = {
     position: 'relative',
     overflow: 'hidden',
-    ...(scoreBgTypeA === 'color' && scoreBgColorA ? { background: scoreBgColorA, color: '#ffffff' } : {}),
-    ...(hasMediaBgA ? { background: '#151719', color: '#ffffff' } : {})
+    ...(scoreBgTypeA === 'color' && scoreBgColorA ? { background: scoreBgColorA } : {}),
+    ...(hasMediaBgA ? { background: '#151719' } : {}),
+    ...(content.scoreTextColorA ? { color: content.scoreTextColorA } : {})
   };
 
   // Fondo del marcador B (Visitante)
@@ -384,8 +385,9 @@ function ScoreboardModule({ content }) {
   const scoreStyleB = {
     position: 'relative',
     overflow: 'hidden',
-    ...(scoreBgTypeB === 'color' && scoreBgColorB ? { background: scoreBgColorB, color: '#ffffff' } : {}),
-    ...(hasMediaBgB ? { background: '#151719', color: '#ffffff' } : {})
+    ...(scoreBgTypeB === 'color' && scoreBgColorB ? { background: scoreBgColorB } : {}),
+    ...(hasMediaBgB ? { background: '#151719' } : {}),
+    ...(content.scoreTextColorB ? { color: content.scoreTextColorB } : {})
   };
 
   return (
