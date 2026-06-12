@@ -266,8 +266,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  /* Center vertically to keep it clean */
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) clamp(12px, 2vw, 32px) !important;
+  padding: 0 !important;
+  background: var(--card-bg-color, #161616) !important;
+  border: 3px solid #ffb300 !important;
+  border-radius: 0 !important;
   box-sizing: border-box;
   overflow: hidden;
   position: relative;
@@ -289,13 +291,15 @@
 
 .sb-cards-container {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  gap: calc(14px * var(--scale, 1));
+  gap: 0 !important;
   width: 100%;
+  height: 100%;
   flex: 1;
   /* Center cards vertically */
   margin-top: 0;
+  position: relative;
 }
 
 .sb-team-card {
@@ -307,13 +311,17 @@
   /* Fill full height */
   max-height: 100% !important;
   border-radius: 0 !important;
-  border: 1px solid rgba(212, 168, 67, 0.15) !important;
-  box-shadow: 0 calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) rgba(0, 0, 0, 0.5) !important;
+  border: none !important;
+  box-shadow: none !important;
   overflow: hidden;
   background: #1e2022;
   box-sizing: border-box;
   container-type: size;
   /* Enable container query units based on card dimensions */
+}
+
+.sb-team-card:first-child {
+  border-right: 3px solid #ffb300 !important;
 }
 
 .sb-card-score {
@@ -331,6 +339,7 @@
   line-height: 0.9 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   overflow: hidden !important;
+  border-bottom: 3px solid #ffb300 !important;
 }
 
 .sb-card-info {
@@ -366,11 +375,25 @@
 
 .sb-card-divider {
   font-family: var(--font-display);
-  font-size: calc(32px * var(--font-scale, 1));
-  font-weight: 800;
+  font-size: calc(32px * var(--font-scale, 1)) !important;
+  font-weight: 900;
   color: #ffffff;
   line-height: 1;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #161616;
+  width: clamp(30px, calc(60px * var(--scale, 1)), 100px);
+  height: clamp(30px, calc(60px * var(--scale, 1)), 100px);
+  border: 3px solid #ffb300;
+  border-radius: 50% !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
 .sb-status-badge {
@@ -1176,7 +1199,7 @@
 }
 
 .short-row-1 .module-scoreboard-display {
-  padding: calc(6px * var(--scale, 1)) calc(6px * var(--scale, 1)) !important;
+  padding: 0 !important;
 }
 
 .short-row-1 .module-upcoming-display {
@@ -1351,8 +1374,7 @@
 
 /* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
 [class*="narrow-col-"] .module-pregunta-display,
-[class*="narrow-col-"] .module-upcoming-display,
-[class*="narrow-col-"] .module-scoreboard-display {
+[class*="narrow-col-"] .module-upcoming-display {
   padding-left: clamp(12px, 2vw, 32px) !important;
   padding-right: clamp(12px, 2vw, 32px) !important;
 }
@@ -1559,7 +1581,7 @@ img.sb-team-flag,
 }
 
 .vertical .module-scoreboard-display {
-  padding: var(--gap-xl) clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
+  padding: 0 !important;
 }
 
 .vertical .sb-main {
