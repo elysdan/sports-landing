@@ -66,7 +66,7 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
           <input
             type="range"
             min="0.5"
-            max="2.5"
+            max="6.0"
             step="0.1"
             value={content.apuestaOddScale !== undefined ? content.apuestaOddScale : 1.0}
             onChange={(e) => onChange('apuestaOddScale', parseFloat(e.target.value))}

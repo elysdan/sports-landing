@@ -463,7 +463,7 @@ export default function ModuleEditor({ module, updateModule, updateModuleContent
                 <input
                   type="range"
                   min="0.5"
-                  max="3.0"
+                  max={module.type === 'apuesta' ? '6.0' : '3.0'}
                   step="0.1"
                   value={currentTextSizeFactor}
                   onChange={(e) => handleLayoutTextSizeChange(e.target.value)}
@@ -544,7 +544,7 @@ export default function ModuleEditor({ module, updateModule, updateModuleContent
                 <input
                   type="range"
                   min="0.5"
-                  max="2.5"
+                  max={module.type === 'apuesta' ? '6.0' : '2.5'}
                   step="0.05"
                   value={currentScaleFactor}
                   onChange={(e) => handleLayoutScaleChange(e.target.value)}
