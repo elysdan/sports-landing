@@ -61,7 +61,7 @@ export function RenderModule({ module, gridPosition, gridCols = 12, gridRows = 6
     '--text-scale-factor': layoutTextSizeFactor,
     '--card-bg-color': content.cardBgColor || (module.type === 'apuesta' ? '#161616' : 'rgba(255, 255, 255, 0.03)'),
     '--module-bg-color': (bgType === 'transparent' || bgType === 'image' || bgType === 'video') ? 'transparent' : (content.moduleBgColor || content.cardBgColor || (module.type === 'apuesta' ? '#4b4b4b' : '#0a0a0a')),
-    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'var(--color-border)'),
+    '--module-border-color': content.moduleBorderTransparent === true ? 'transparent' : (content.moduleBorderColor || 'transparent'),
     '--apuesta-odd-scale': content.apuestaOddScale !== undefined ? content.apuestaOddScale : 1.0,
     ...(content.textColor ? { '--text-color': content.textColor } : {}),
     width: '100%',
@@ -853,8 +853,8 @@ export default function DisplayView() {
             }).join(' ')
             : `repeat(${layout.grid.rows}, 1fr)`,
           display: 'grid',
-          gap: '2px',
-          background: 'var(--color-border)'
+          gap: '0px',
+          background: 'transparent'
         }}
       >
         {layout.modules.map((mod) => {
