@@ -436,7 +436,7 @@
 
 .upcoming-time-display {
   font-family: var(--font-display);
-  font-size: clamp(20px, calc(42px * var(--font-scale, 1)), 64px);
+  font-size: clamp(20px, calc(72px * var(--font-scale, 1)), 250px) !important;
   font-weight: 800;
   color: var(--color-white);
   line-height: 1.1;
@@ -505,8 +505,10 @@
 }
 
 .module-wrapper .module-upcoming-display img.sb-team-flag {
-  width: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
-  height: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
+  width: calc(150px * var(--scale, 1)) !important;
+  height: calc(150px * var(--scale, 1)) !important;
+  min-width: calc(150px * var(--scale, 1)) !important;
+  min-height: calc(150px * var(--scale, 1)) !important;
   object-fit: cover !important;
   border-radius: 50% !important;
   border: 3px solid #ffb300 !important;
@@ -517,8 +519,10 @@
 }
 
 .module-wrapper .module-upcoming-display .sb-team-flag {
-  width: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
-  height: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
+  width: calc(150px * var(--scale, 1)) !important;
+  height: calc(150px * var(--scale, 1)) !important;
+  min-width: calc(150px * var(--scale, 1)) !important;
+  min-height: calc(150px * var(--scale, 1)) !important;
   border-radius: 50% !important;
   display: flex !important;
   align-items: center !important;
@@ -527,7 +531,7 @@
   border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  font-size: clamp(36px, calc(90px * var(--scale, 1)), 140px) !important;
+  font-size: calc(90px * var(--scale, 1)) !important;
   flex-shrink: 0 !important;
 }
 
@@ -1342,7 +1346,7 @@
 }
 
 [class*="narrow-col-"] .upcoming-time-display {
-  font-size: clamp(20px, calc(28px * var(--font-scale, 1)), 56px) !important;
+  font-size: clamp(20px, calc(54px * var(--font-scale, 1)), 200px) !important;
 }
 
 /* --- Pregunta (Sí/No) Narrow & Responsive Overrides --- */
@@ -1601,7 +1605,7 @@ img.sb-team-flag,
 }
 
 .vertical .upcoming-time-display {
-  font-size: clamp(24px, calc(56px * var(--font-scale, 1)), 64px) !important;
+  font-size: clamp(24px, calc(80px * var(--font-scale, 1)), 250px) !important;
   line-height: 1.2 !important;
 }
 
