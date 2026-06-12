@@ -614,7 +614,7 @@
 
 .apuesta-title {
   font-family: var(--font-display);
-  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 48px) !important;
+  font-size: clamp(14px, calc(24px * var(--font-scale, 1)), 250px) !important;
   font-weight: 700;
   color: var(--color-white);
   text-transform: uppercase;
@@ -632,7 +632,7 @@
 
 .apuesta-tag {
   font-family: var(--font-display);
-  font-size: clamp(11px, calc(18px * var(--font-scale, 1)), 32px) !important;
+  font-size: clamp(11px, calc(18px * var(--font-scale, 1)), 150px) !important;
   font-weight: 600;
   color: var(--color-text-secondary);
   text-transform: uppercase;
@@ -741,7 +741,7 @@
 
 .apuesta-team-name {
   font-family: var(--font-display);
-  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 36px) !important;
+  font-size: clamp(12px, calc(20px * var(--font-scale, 1)), 180px) !important;
   font-weight: 600;
   color: var(--color-white);
   letter-spacing: 0.5px;
@@ -760,7 +760,7 @@
 
 .apuesta-odd-value {
   font-family: var(--font-display);
-  font-size: clamp(16px, calc(32px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 120px) !important;
+  font-size: clamp(16px, calc(32px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 600px) !important;
   font-weight: 800;
   color: #ffb300;
   text-shadow: 0 0 10px rgba(255, 179, 0, 0.25);
@@ -813,7 +813,7 @@
   /* Name style inside vertical info */
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-team-info .apuesta-team-name {
     text-align: center !important;
-    font-size: clamp(10px, calc(14px * var(--font-scale, 1)), 22px) !important;
+    font-size: clamp(10px, calc(14px * var(--font-scale, 1)), 150px) !important;
     white-space: nowrap !important;
     margin: 0 !important;
     width: auto !important;
@@ -822,7 +822,7 @@
 
   /* Odds Value style */
   .module-apuesta-display.horizontal:not(.short-row) .apuesta-odd-box .apuesta-odd-value {
-    font-size: clamp(14px, calc(24px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 80px) !important;
+    font-size: clamp(14px, calc(24px * var(--font-scale, 1) * var(--apuesta-odd-scale, 1.0)), 400px) !important;
     white-space: nowrap !important;
     margin: 0 !important;
     justify-self: center !important;
@@ -1618,7 +1618,7 @@ img.sb-team-flag,
 }
 
 .vertical .apuesta-title {
-  font-size: clamp(24px, calc(38px * var(--font-scale, 1)), 48px) !important;
+  font-size: clamp(24px, calc(38px * var(--font-scale, 1)), 250px) !important;
   max-width: 100% !important;
   white-space: nowrap !important;
   overflow: hidden !important;
@@ -1626,7 +1626,7 @@ img.sb-team-flag,
 }
 
 .vertical .apuesta-tag {
-  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 24px) !important;
+  font-size: clamp(12px, calc(16px * var(--font-scale, 1)), 150px) !important;
 }
 
 .vertical .apuesta-odds-row {
