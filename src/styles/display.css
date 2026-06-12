@@ -325,6 +325,7 @@
 }
 
 .sb-card-score {
+  position: relative !important;
   background: #ffd014;
   /* Vibrant yellow */
   color: #121212;
@@ -491,6 +492,7 @@
   z-index: 1 !important;
 }
 
+/*
 .upcoming-vs-card.no-vs {
   justify-content: center !important;
   gap: clamp(16px, calc(32px * var(--scale, 1)), 64px) !important;
@@ -507,6 +509,7 @@
 .upcoming-vs-card.no-vs .upcoming-team-box.box-right {
   justify-content: flex-start !important;
 }
+*/
 
 .upcoming-team-box img.sb-team-flag {
   position: absolute !important;

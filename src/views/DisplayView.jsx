@@ -342,6 +342,16 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [], isScoreboard = fa
   return <span className="sb-team-flag">{flag || '🏳️'}</span>;
 }
 
+const isVideoUrl = (url) => {
+  if (!url) return false;
+  const cleanUrl = url.split('?')[0].split('#')[0].toLowerCase();
+  return cleanUrl.endsWith('.mp4') || 
+         cleanUrl.endsWith('.webm') || 
+         cleanUrl.endsWith('.ogg') || 
+         cleanUrl.endsWith('.mov') || 
+         url.includes('data:video');
+};
+
 function ScoreboardModule({ content }) {
   const { worldCupTeams = [] } = useCMS();
   const flagUrlA = resolveFlagUrl(content.teamA.flag, content.teamA.name, worldCupTeams, true);
@@ -350,11 +360,76 @@ function ScoreboardModule({ content }) {
   const hasImageA = flagUrlA && (flagUrlA.startsWith('/') || flagUrlA.startsWith('http') || flagUrlA.includes('.'));
   const hasImageB = flagUrlB && (flagUrlB.startsWith('/') || flagUrlB.startsWith('http') || flagUrlB.includes('.'));
 
+  // Fondo del marcador A (Local)
+  const scoreBgTypeA = content.scoreBgTypeA || 'color';
+  const scoreBgColorA = content.scoreBgColorA || '';
+  const scoreBgUrlA = content.scoreBgUrlA || content.scoreBgImageA || content.scoreBgVideoA || '';
+  const hasMediaBgA = (scoreBgTypeA === 'multimedia' || scoreBgTypeA === 'image' || scoreBgTypeA === 'video') && scoreBgUrlA;
+  const isVideoBgA = hasMediaBgA && isVideoUrl(scoreBgUrlA);
+
+  const scoreStyleA = {
+    position: 'relative',
+    overflow: 'hidden',
+    ...(scoreBgTypeA === 'color' && scoreBgColorA ? { background: scoreBgColorA, color: '#ffffff' } : {}),
+    ...(hasMediaBgA ? { background: '#151719', color: '#ffffff' } : {})
+  };
+
+  // Fondo del marcador B (Visitante)
+  const scoreBgTypeB = content.scoreBgTypeB || 'color';
+  const scoreBgColorB = content.scoreBgColorB || '';
+  const scoreBgUrlB = content.scoreBgUrlB || content.scoreBgImageB || content.scoreBgVideoB || '';
+  const hasMediaBgB = (scoreBgTypeB === 'multimedia' || scoreBgTypeB === 'image' || scoreBgTypeB === 'video') && scoreBgUrlB;
+  const isVideoBgB = hasMediaBgB && isVideoUrl(scoreBgUrlB);
+
+  const scoreStyleB = {
+    position: 'relative',
+    overflow: 'hidden',
+    ...(scoreBgTypeB === 'color' && scoreBgColorB ? { background: scoreBgColorB, color: '#ffffff' } : {}),
+    ...(hasMediaBgB ? { background: '#151719', color: '#ffffff' } : {})
+  };
+
   return (
     <div className="module-scoreboard-display">
       <div className="sb-cards-container">
         <div className="sb-team-card">
-          <div className="sb-card-score" style={content.scoreBgColorA ? { background: content.scoreBgColorA } : {}}>{content.teamA.score}</div>
+          <div className="sb-card-score" style={scoreStyleA}>
+            {hasMediaBgA && (
+              isVideoBgA ? (
+                <video
+                  src={scoreBgUrlA}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: 0
+                  }}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundImage: `url(${scoreBgUrlA})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    zIndex: 0
+                  }}
+                />
+              )
+            )}
+            <span style={{ position: 'relative', zIndex: 1 }}>{content.teamA.score}</span>
+          </div>
           <div
             className="sb-card-info"
             style={hasImageA ? {
@@ -373,7 +448,44 @@ function ScoreboardModule({ content }) {
 
 
         <div className="sb-team-card">
-          <div className="sb-card-score" style={content.scoreBgColorB ? { background: content.scoreBgColorB } : {}}>{content.teamB.score}</div>
+          <div className="sb-card-score" style={scoreStyleB}>
+            {hasMediaBgB && (
+              isVideoBgB ? (
+                <video
+                  src={scoreBgUrlB}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    zIndex: 0
+                  }}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                />
+              ) : (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    backgroundImage: `url(${scoreBgUrlB})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    zIndex: 0
+                  }}
+                />
+              )
+            )}
+            <span style={{ position: 'relative', zIndex: 1 }}>{content.teamB.score}</span>
+          </div>
           <div
             className="sb-card-info"
             style={hasImageB ? {
@@ -489,6 +601,8 @@ function PreguntaModule({ content }) {
   const moduleStyle = {
     '--pregunta-title-size': content.titleFontSize || 1.0,
     '--pregunta-option-scale': content.optionScaleFactor || 1.0,
+    '--pregunta-label-scale': content.optionLabelScale !== undefined ? content.optionLabelScale : 1.0,
+    '--pregunta-value-scale': content.optionValueScale !== undefined ? content.optionValueScale : 1.0,
   };
   if (content.titleTextColor) {
     moduleStyle['--pregunta-title-color'] = content.titleTextColor;

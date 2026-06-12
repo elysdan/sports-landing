@@ -155,13 +155,18 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
         <div className="field" style={{ marginBottom: 0 }}>
           <label>Tipo de Fondo A (Local)</label>
           <select
-            value={content.scoreBgTypeA || 'color'}
+            value={
+              content.scoreBgTypeA === 'color'
+                ? 'color'
+                : (content.scoreBgTypeA === 'image' || content.scoreBgTypeA === 'video' || content.scoreBgTypeA === 'multimedia')
+                  ? 'multimedia'
+                  : 'color'
+            }
             onChange={(e) => updateModuleContent(moduleId, { scoreBgTypeA: e.target.value })}
             style={{ marginBottom: '8px' }}
           >
             <option value="color">Color Sólido</option>
-            <option value="image">Imagen</option>
-            <option value="video">Video</option>
+            <option value="multimedia">Imagen / Video</option>
           </select>
 
           {(content.scoreBgTypeA === 'color' || !content.scoreBgTypeA) && (
@@ -201,13 +206,17 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
             </div>
           )}
 
-          {content.scoreBgTypeA === 'image' && (
+          {(content.scoreBgTypeA === 'multimedia' || content.scoreBgTypeA === 'image' || content.scoreBgTypeA === 'video') && (
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
               <input
                 type="text"
-                value={content.scoreBgImageA || ''}
-                onChange={(e) => updateModuleContent(moduleId, { scoreBgImageA: e.target.value })}
-                placeholder="URL de Imagen de Fondo A"
+                value={content.scoreBgUrlA || content.scoreBgImageA || content.scoreBgVideoA || ''}
+                onChange={(e) => updateModuleContent(moduleId, { 
+                  scoreBgUrlA: e.target.value,
+                  scoreBgImageA: '',
+                  scoreBgVideoA: ''
+                })}
+                placeholder="URL de Imagen o Video de Fondo A"
                 style={{ flex: 1 }}
               />
               <button
@@ -216,35 +225,15 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
                 style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
                 onClick={() => {
                   onOpenLibrary((url) => {
-                    updateModuleContent(moduleId, { scoreBgImageA: url });
+                    updateModuleContent(moduleId, { 
+                      scoreBgUrlA: url,
+                      scoreBgImageA: '',
+                      scoreBgVideoA: ''
+                    });
                   });
                 }}
               >
-                🖼️ Elegir
-              </button>
-            </div>
-          )}
-
-          {content.scoreBgTypeA === 'video' && (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-              <input
-                type="text"
-                value={content.scoreBgVideoA || ''}
-                onChange={(e) => updateModuleContent(moduleId, { scoreBgVideoA: e.target.value })}
-                placeholder="URL de Video de Fondo A"
-                style={{ flex: 1 }}
-              />
-              <button
-                type="button"
-                className="admin-btn admin-btn-secondary"
-                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
-                onClick={() => {
-                  onOpenLibrary((url) => {
-                    updateModuleContent(moduleId, { scoreBgVideoA: url });
-                  });
-                }}
-              >
-                📹 Elegir
+                📁 Elegir
               </button>
             </div>
           )}
@@ -254,13 +243,18 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
         <div className="field" style={{ marginBottom: 0 }}>
           <label>Tipo de Fondo B (Visitante)</label>
           <select
-            value={content.scoreBgTypeB || 'color'}
+            value={
+              content.scoreBgTypeB === 'color'
+                ? 'color'
+                : (content.scoreBgTypeB === 'image' || content.scoreBgTypeB === 'video' || content.scoreBgTypeB === 'multimedia')
+                  ? 'multimedia'
+                  : 'color'
+            }
             onChange={(e) => updateModuleContent(moduleId, { scoreBgTypeB: e.target.value })}
             style={{ marginBottom: '8px' }}
           >
             <option value="color">Color Sólido</option>
-            <option value="image">Imagen</option>
-            <option value="video">Video</option>
+            <option value="multimedia">Imagen / Video</option>
           </select>
 
           {(content.scoreBgTypeB === 'color' || !content.scoreBgTypeB) && (
@@ -300,13 +294,17 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
             </div>
           )}
 
-          {content.scoreBgTypeB === 'image' && (
+          {(content.scoreBgTypeB === 'multimedia' || content.scoreBgTypeB === 'image' || content.scoreBgTypeB === 'video') && (
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
               <input
                 type="text"
-                value={content.scoreBgImageB || ''}
-                onChange={(e) => updateModuleContent(moduleId, { scoreBgImageB: e.target.value })}
-                placeholder="URL de Imagen de Fondo B"
+                value={content.scoreBgUrlB || content.scoreBgImageB || content.scoreBgVideoB || ''}
+                onChange={(e) => updateModuleContent(moduleId, { 
+                  scoreBgUrlB: e.target.value,
+                  scoreBgImageB: '',
+                  scoreBgVideoB: ''
+                })}
+                placeholder="URL de Imagen o Video de Fondo B"
                 style={{ flex: 1 }}
               />
               <button
@@ -315,35 +313,15 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
                 style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
                 onClick={() => {
                   onOpenLibrary((url) => {
-                    updateModuleContent(moduleId, { scoreBgImageB: url });
+                    updateModuleContent(moduleId, { 
+                      scoreBgUrlB: url,
+                      scoreBgImageB: '',
+                      scoreBgVideoB: ''
+                    });
                   });
                 }}
               >
-                🖼️ Elegir
-              </button>
-            </div>
-          )}
-
-          {content.scoreBgTypeB === 'video' && (
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
-              <input
-                type="text"
-                value={content.scoreBgVideoB || ''}
-                onChange={(e) => updateModuleContent(moduleId, { scoreBgVideoB: e.target.value })}
-                placeholder="URL de Video de Fondo B"
-                style={{ flex: 1 }}
-              />
-              <button
-                type="button"
-                className="admin-btn admin-btn-secondary"
-                style={{ padding: '10px 14px', whiteSpace: 'nowrap', height: '42px' }}
-                onClick={() => {
-                  onOpenLibrary((url) => {
-                    updateModuleContent(moduleId, { scoreBgVideoB: url });
-                  });
-                }}
-              >
-                📹 Elegir
+                📁 Elegir
               </button>
             </div>
           )}
