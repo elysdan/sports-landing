@@ -396,16 +396,18 @@
 .module-upcoming-display {
   width: 100%;
   height: 100%;
-  padding: clamp(8px, calc(16px * var(--scale, 1)), 24px) clamp(12px, 2vw, 32px) !important;
-  background: var(--module-bg-color, transparent) !important;
+  padding: 0 !important;
+  background: var(--card-bg-color, #161616) !important;
+  border: 3px solid #ffb300 !important;
+  border-radius: 0 !important;
   display: flex;
   flex-direction: column !important;
   align-items: center !important;
-  justify-content: space-evenly !important;
+  justify-content: stretch !important;
   box-sizing: border-box;
   overflow: hidden;
   min-height: 0;
-  gap: calc(10px * var(--scale, 1)) !important;
+  gap: 0 !important;
 }
 
 .upcoming-header-box {
@@ -415,10 +417,11 @@
   align-items: center !important;
   width: 100% !important;
   flex-shrink: 0;
-  padding: 0 !important;
-  border: none !important;
+  padding: clamp(8px, calc(14px * var(--scale, 1)), 24px) !important;
+  border-bottom: 3px solid #ffb300 !important;
   background: transparent !important;
   text-align: center !important;
+  box-sizing: border-box;
 }
 
 .upcoming-label-display {
@@ -443,32 +446,35 @@
 .upcoming-vs-card {
   display: flex;
   flex-direction: row !important;
-  justify-content: space-between !important;
-  align-items: center !important;
+  justify-content: stretch !important;
+  align-items: stretch !important;
   width: 100% !important;
   flex: 1;
   background: transparent !important;
   border: none !important;
   padding: 0 !important;
-  gap: calc(12px * var(--scale, 1)) !important;
+  gap: 0 !important;
+  position: relative;
 }
 
 .upcoming-team-box {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: center !important;
   gap: clamp(8px, calc(16px * var(--scale, 1)), 24px);
   flex: 1;
   min-width: 0;
+  padding: clamp(16px, calc(24px * var(--scale, 1)), 48px) !important;
+  box-sizing: border-box;
 }
 
 .upcoming-team-box.box-left {
-  justify-content: flex-start !important;
+  border-right: 3px solid #ffb300 !important;
 }
 
 .upcoming-team-box.box-right {
-  justify-content: flex-end !important;
-  flex-direction: row !important;
+  /* centered flex box */
 }
 
 .upcoming-number {
@@ -503,7 +509,7 @@
   height: clamp(60px, calc(150px * var(--scale, 1)), 220px) !important;
   object-fit: cover !important;
   border-radius: 50% !important;
-  border: 2px solid rgba(255, 255, 255, 0.15) !important;
+  border: 3px solid #ffb300 !important;
   padding: 0 !important;
   margin: 0 !important;
   aspect-ratio: 1/1 !important;
@@ -536,11 +542,15 @@
   background: var(--color-gold);
   padding: clamp(6px, calc(10px * var(--scale, 1)), 16px) clamp(12px, calc(20px * var(--scale, 1)), 32px);
   border-radius: calc(6px * var(--scale, 1));
-  align-self: center;
   letter-spacing: 1.5px;
   line-height: 1;
   box-shadow: 0 0 12px rgba(212, 168, 67, 0.35);
   flex-shrink: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
 }
 
 /* Stack vertically in narrow slots or portrait mode */
@@ -582,6 +592,15 @@
 .span-w-2 .upcoming-team-box,
 .vertical .upcoming-team-box {
   justify-content: center !important;
+}
+
+.narrow-col-2 .upcoming-team-box.box-left,
+.narrow-col-1 .upcoming-team-box.box-left,
+.span-w-1 .upcoming-team-box.box-left,
+.span-w-2 .upcoming-team-box.box-left,
+.vertical .upcoming-team-box.box-left {
+  border-right: none !important;
+  border-bottom: 3px solid #ffb300 !important;
 }
 
 /* ─── MODULE TYPE: APUESTA ─── */
