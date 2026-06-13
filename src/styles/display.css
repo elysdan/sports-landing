@@ -648,8 +648,8 @@
   justify-content: center !important;
   align-items: center;
   width: 100%;
-  margin-top: 2px !important;
-  margin-bottom: 2px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   padding: 2px 12px !important;
   border-bottom: var(--apuesta-border-horizontal, none) !important;
   box-sizing: border-box;
