@@ -226,6 +226,68 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
         </>
       )}
 
+      {/* --- Bordes y Separadores --- */}
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Bordes y Separadores de Cuotas
+      </h3>
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field">
+          <label>Grosor del Borde/Separador (px)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="1"
+              value={content.apuestaBorderWidth !== undefined ? content.apuestaBorderWidth : 3}
+              onChange={(e) => onChange('apuestaBorderWidth', parseInt(e.target.value))}
+              style={{ flex: 1, height: '6px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+            />
+            <input
+              type="number"
+              min="0"
+              max="20"
+              step="1"
+              value={content.apuestaBorderWidth !== undefined ? content.apuestaBorderWidth : 3}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                onChange('apuestaBorderWidth', isNaN(val) ? 0 : val);
+              }}
+              style={{ width: '70px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--color-gold)', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label>Color del Borde/Separador</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.apuestaBorderColor && /^#[0-9A-F]{6}$/i.test(content.apuestaBorderColor) ? content.apuestaBorderColor : '#ffb300'}
+              onChange={(e) => onChange('apuestaBorderColor', e.target.value)}
+              style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+            />
+            <input
+              type="text"
+              value={content.apuestaBorderColor || ''}
+              onChange={(e) => onChange('apuestaBorderColor', e.target.value)}
+              placeholder="Ej: #ffb300 o transparent"
+              style={{ flex: 1, padding: '8px' }}
+            />
+            {content.apuestaBorderColor && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '8px 12px', height: 'auto' }}
+                onClick={() => onChange('apuestaBorderColor', '')}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* --- Fondos Personalizados --- */}
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>

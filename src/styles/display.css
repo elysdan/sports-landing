@@ -650,7 +650,7 @@
   margin-top: 2px !important;
   margin-bottom: 2px !important;
   padding: 2px 12px !important;
-  border-bottom: none !important;
+  border-bottom: var(--apuesta-border-horizontal, none) !important;
   box-sizing: border-box;
   gap: 12px;
 }
@@ -713,7 +713,7 @@
 }
 
 .apuesta-odd-box:not(:first-child) {
-  border-left: none !important;
+  border-left: var(--apuesta-border-vertical, none) !important;
 }
 
 .apuesta-odd-box:hover {
@@ -901,7 +901,7 @@
 
   .module-apuesta-display .apuesta-odd-box:not(:first-child) {
     border-left: none !important;
-    border-top: none !important;
+    border-top: var(--apuesta-border-horizontal, none) !important;
   }
 
   .module-apuesta-display .box-left .sb-team-flag,
@@ -1675,7 +1675,7 @@ img.sb-team-flag,
 .vertical .apuesta-header {
   margin-bottom: 0 !important;
   padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
-  border-bottom: none !important;
+  border-bottom: var(--apuesta-border-horizontal, none) !important;
   box-sizing: border-box;
 }
 
@@ -1709,7 +1709,7 @@ img.sb-team-flag,
 
 .vertical .apuesta-odd-box:not(:first-child) {
   border-left: none !important;
-  border-top: none !important;
+  border-top: var(--apuesta-border-horizontal, none) !important;
 }
 
 .vertical .apuesta-team-info {

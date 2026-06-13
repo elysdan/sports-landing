@@ -576,8 +576,17 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const hasTeamA = !!(teamAInfo.name?.trim() || teamAInfo.code?.trim());
   const hasTeamB = !!(teamBInfo.name?.trim() || teamBInfo.code?.trim());
 
+  const borderWidth = content.apuestaBorderWidth !== undefined ? content.apuestaBorderWidth : 3;
+  const borderColor = content.apuestaBorderColor || '#ffb300';
+  const borderValue = borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : 'none';
+
+  const containerStyle = {
+    '--apuesta-border-horizontal': borderValue,
+    '--apuesta-border-vertical': borderValue
+  };
+
   return (
-    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`}>
+    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`} style={containerStyle}>
       <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
         <div className="apuesta-title">{content.title}</div>
         {content.tag && <div className="apuesta-tag">{content.tag}</div>}
