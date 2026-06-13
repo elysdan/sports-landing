@@ -87,8 +87,8 @@ export default function LivePreview({ modules, grid, screenType }) {
               return `${baseWeight / (mod.gridPosition?.rowSpan || 1)}fr`;
             }).join(' ')
             : `repeat(${layout.grid.rows}, 1fr)`,
-          background: 'var(--color-border)',
-          gap: '2px',
+          background: 'transparent',
+          gap: '0px',
           display: 'grid',
           position: 'absolute',
           flexShrink: 0,
