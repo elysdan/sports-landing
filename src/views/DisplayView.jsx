@@ -580,9 +580,14 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const borderColor = content.apuestaBorderColor || '#ffb300';
   const borderValue = borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : 'none';
 
+  const bottomBorderWidth = content.apuestaBottomBorderWidth !== undefined ? content.apuestaBottomBorderWidth : 3;
+  const bottomBorderColor = content.apuestaBottomBorderColor || '#8b5cf6';
+  const bottomBorderValue = bottomBorderWidth > 0 ? `${bottomBorderWidth}px solid ${bottomBorderColor}` : 'none';
+
   const containerStyle = {
     '--apuesta-border-horizontal': borderValue,
-    '--apuesta-border-vertical': borderValue
+    '--apuesta-border-vertical': borderValue,
+    '--apuesta-border-bottom': bottomBorderValue
   };
 
   return (

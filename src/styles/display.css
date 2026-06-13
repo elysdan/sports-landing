@@ -633,6 +633,7 @@
   padding: 0 !important;
   background: var(--card-bg-color, #161616) !important;
   border: none !important;
+  border-bottom: var(--apuesta-border-bottom, none) !important;
   border-radius: 0 !important;
   display: flex;
   flex-direction: column;

@@ -288,6 +288,63 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
         </div>
       </div>
 
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field">
+          <label>Grosor del Borde Inferior (px)</label>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="range"
+              min="0"
+              max="10"
+              step="1"
+              value={content.apuestaBottomBorderWidth !== undefined ? content.apuestaBottomBorderWidth : 3}
+              onChange={(e) => onChange('apuestaBottomBorderWidth', parseInt(e.target.value))}
+              style={{ flex: 1, height: '6px', accentColor: 'var(--color-gold)', cursor: 'pointer' }}
+            />
+            <input
+              type="number"
+              min="0"
+              max="20"
+              step="1"
+              value={content.apuestaBottomBorderWidth !== undefined ? content.apuestaBottomBorderWidth : 3}
+              onChange={(e) => {
+                const val = parseInt(e.target.value);
+                onChange('apuestaBottomBorderWidth', isNaN(val) ? 0 : val);
+              }}
+              style={{ width: '70px', padding: '4px 8px', fontSize: '12px', fontWeight: 'bold', color: 'var(--color-gold)', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label>Color del Borde Inferior</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.apuestaBottomBorderColor && /^#[0-9A-F]{6}$/i.test(content.apuestaBottomBorderColor) ? content.apuestaBottomBorderColor : '#8b5cf6'}
+              onChange={(e) => onChange('apuestaBottomBorderColor', e.target.value)}
+              style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+            />
+            <input
+              type="text"
+              value={content.apuestaBottomBorderColor || ''}
+              onChange={(e) => onChange('apuestaBottomBorderColor', e.target.value)}
+              placeholder="Ej: #8b5cf6 o transparent"
+              style={{ flex: 1, padding: '8px' }}
+            />
+            {content.apuestaBottomBorderColor && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '8px 12px', height: 'auto' }}
+                onClick={() => onChange('apuestaBottomBorderColor', '')}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* --- Fondos Personalizados --- */}
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
