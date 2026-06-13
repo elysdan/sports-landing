@@ -553,6 +553,22 @@ function UpcomingModule({ content }) {
   );
 }
 
+function formatOddValue(odd) {
+  if (!odd) return '—';
+  const oddStr = String(odd).trim();
+  const match = oddStr.match(/^([^.,]+)([.,])(.+)$/);
+  if (match) {
+    const [, integerPart, separator, decimalPart] = match;
+    return (
+      <>
+        <span>{integerPart}</span>
+        <span className="apuesta-odd-decimal" style={{ fontSize: '0.5em' }}>{separator}{decimalPart}</span>
+      </>
+    );
+  }
+  return <span>{oddStr}</span>;
+}
+
 function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const mode = content.mode || '3-way';
   const teamAInfo = content.teamA || {};
@@ -574,19 +590,19 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
                 <span className="apuesta-team-name">{teamAInfo.code || teamAInfo.name || ''}</span>
               </div>
             )}
-            <span className="apuesta-odd-value">{teamAInfo.odd || '—'}</span>
+            <span className="apuesta-odd-value">{formatOddValue(teamAInfo.odd)}</span>
           </div>
         )}
 
         {mode === '3-way' && (
           <div className="apuesta-odd-box box-center">
-            <span className="apuesta-odd-value">{content.draw?.odd || '—'}</span>
+            <span className="apuesta-odd-value">{formatOddValue(content.draw?.odd)}</span>
           </div>
         )}
 
         {(mode === '3-way' || mode === '2-way') && (
           <div className={`apuesta-odd-box box-right ${!hasTeamB ? 'no-team-info' : ''}`}>
-            <span className="apuesta-odd-value">{teamBInfo.odd || '—'}</span>
+            <span className="apuesta-odd-value">{formatOddValue(teamBInfo.odd)}</span>
             {hasTeamB && (
               <div className="apuesta-team-info">
                 <span className="apuesta-team-name">{teamBInfo.code || teamBInfo.name || ''}</span>
