@@ -584,10 +584,15 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const bottomBorderColor = content.apuestaBottomBorderColor || '#8b5cf6';
   const bottomBorderValue = bottomBorderWidth > 0 ? `${bottomBorderWidth}px solid ${bottomBorderColor}` : 'none';
 
+  const headerBorderWidth = content.apuestaHeaderBorderWidth !== undefined ? content.apuestaHeaderBorderWidth : 0;
+  const headerBorderColor = content.apuestaHeaderBorderColor || 'transparent';
+  const headerBorderValue = headerBorderWidth > 0 ? `${headerBorderWidth}px solid ${headerBorderColor}` : 'none';
+
   const containerStyle = {
     '--apuesta-border-horizontal': borderValue,
     '--apuesta-border-vertical': borderValue,
     '--apuesta-border-bottom': bottomBorderValue,
+    '--apuesta-header-border-side': headerBorderValue,
     ...(content.apuestaTextColor ? { '--apuesta-text-color': content.apuestaTextColor } : {}),
     ...(content.apuestaNumberColor ? { '--apuesta-number-color': content.apuestaNumberColor } : {}),
   };
