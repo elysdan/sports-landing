@@ -1165,7 +1165,7 @@
 .narrow-col-4 .apuesta-header,
 .narrow-col-3 .apuesta-header {
   justify-content: space-between !important;
-  margin-bottom: 6px !important;
+  margin-bottom: 0px !important;
 }
 
 .narrow-col-2 .apuesta-header,
@@ -1833,12 +1833,15 @@ img.sb-team-flag,
 .module-wrapper .module-apuesta-display .apuesta-title {
   color: var(--apuesta-text-color, var(--text-color, var(--color-white))) !important;
 }
+
 .module-wrapper .module-apuesta-display .apuesta-tag {
   color: var(--apuesta-text-color, var(--text-color, var(--color-text-secondary))) !important;
 }
+
 .module-wrapper .module-apuesta-display .apuesta-team-name {
   color: var(--apuesta-text-color, var(--text-color, var(--color-white))) !important;
 }
+
 .module-wrapper .module-apuesta-display .apuesta-odd-value {
   color: var(--apuesta-number-color, var(--text-color, #ffb300)) !important;
-}
+}
