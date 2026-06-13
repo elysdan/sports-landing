@@ -587,7 +587,9 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
   const containerStyle = {
     '--apuesta-border-horizontal': borderValue,
     '--apuesta-border-vertical': borderValue,
-    '--apuesta-border-bottom': bottomBorderValue
+    '--apuesta-border-bottom': bottomBorderValue,
+    ...(content.apuestaTextColor ? { '--apuesta-text-color': content.apuestaTextColor } : {}),
+    ...(content.apuestaNumberColor ? { '--apuesta-number-color': content.apuestaNumberColor } : {}),
   };
 
   return (

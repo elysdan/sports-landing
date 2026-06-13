@@ -345,6 +345,70 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
         </div>
       </div>
 
+      {/* --- Colores de Texto y Números --- */}
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Colores de Texto y Números
+      </h3>
+      <div className="field-row" style={{ marginBottom: '16px' }}>
+        <div className="field">
+          <label>Color de los Textos (Título/Equipos)</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.apuestaTextColor && /^#[0-9A-F]{6}$/i.test(content.apuestaTextColor) ? content.apuestaTextColor : '#ffffff'}
+              onChange={(e) => onChange('apuestaTextColor', e.target.value)}
+              style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+            />
+            <input
+              type="text"
+              value={content.apuestaTextColor || ''}
+              onChange={(e) => onChange('apuestaTextColor', e.target.value)}
+              placeholder="Ej: #ffffff"
+              style={{ flex: 1, padding: '8px' }}
+            />
+            {content.apuestaTextColor && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '8px 12px', height: 'auto' }}
+                onClick={() => onChange('apuestaTextColor', '')}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="field">
+          <label>Color de los Números (Cuotas)</label>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <input
+              type="color"
+              value={content.apuestaNumberColor && /^#[0-9A-F]{6}$/i.test(content.apuestaNumberColor) ? content.apuestaNumberColor : '#ffb300'}
+              onChange={(e) => onChange('apuestaNumberColor', e.target.value)}
+              style={{ width: '36px', height: '36px', padding: '2px', border: '1px solid var(--color-border)', borderRadius: '4px', cursor: 'pointer', background: 'transparent' }}
+            />
+            <input
+              type="text"
+              value={content.apuestaNumberColor || ''}
+              onChange={(e) => onChange('apuestaNumberColor', e.target.value)}
+              placeholder="Ej: #ffb300"
+              style={{ flex: 1, padding: '8px' }}
+            />
+            {content.apuestaNumberColor && (
+              <button
+                type="button"
+                className="admin-btn admin-btn-secondary"
+                style={{ padding: '8px 12px', height: 'auto' }}
+                onClick={() => onChange('apuestaNumberColor', '')}
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* --- Fondos Personalizados --- */}
       <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
