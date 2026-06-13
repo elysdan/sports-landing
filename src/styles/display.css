@@ -268,7 +268,7 @@
   justify-content: center;
   padding: 0 !important;
   background: var(--card-bg-color, #161616) !important;
-  border: 3px solid #ffb300 !important;
+  border: none !important;
   border-radius: 0 !important;
   box-sizing: border-box;
   overflow: hidden;
@@ -321,7 +321,7 @@
 }
 
 .sb-team-card:first-child {
-  border-right: 3px solid #ffb300 !important;
+  border-right: none !important;
 }
 
 .sb-card-score {
@@ -340,7 +340,7 @@
   line-height: 0.9 !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
   overflow: hidden !important;
-  border-bottom: 3px solid #ffb300 !important;
+  border-bottom: none !important;
 }
 
 .sb-card-info {
@@ -403,7 +403,7 @@
   height: 100%;
   padding: 0 !important;
   background: var(--card-bg-color, #161616) !important;
-  border: 3px solid #ffb300 !important;
+  border: none !important;
   border-radius: 0 !important;
   display: flex;
   flex-direction: column !important;
@@ -423,7 +423,7 @@
   width: 100% !important;
   flex-shrink: 0;
   padding: clamp(8px, calc(14px * var(--scale, 1)), 24px) !important;
-  border-bottom: 3px solid #ffb300 !important;
+  border-bottom: none !important;
   background: transparent !important;
   text-align: center !important;
   box-sizing: border-box;
@@ -477,7 +477,7 @@
 }
 
 .upcoming-team-box.box-left {
-  border-right: 3px solid #ffb300 !important;
+  border-right: none !important;
 }
 
 .upcoming-number {
@@ -623,7 +623,7 @@
 .span-w-2 .upcoming-team-box.box-left,
 .vertical .upcoming-team-box.box-left {
   border-right: none !important;
-  border-bottom: 3px solid #ffb300 !important;
+  border-bottom: none !important;
 }
 
 /* ─── MODULE TYPE: APUESTA ─── */
@@ -632,7 +632,7 @@
   height: 100%;
   padding: 0 !important;
   background: var(--card-bg-color, #161616) !important;
-  border: 3px solid #ffb300 !important;
+  border: none !important;
   border-radius: 0 !important;
   display: flex;
   flex-direction: column;
@@ -650,7 +650,7 @@
   margin-top: 2px !important;
   margin-bottom: 2px !important;
   padding: 2px 12px !important;
-  border-bottom: 3px solid #ffb300 !important;
+  border-bottom: none !important;
   box-sizing: border-box;
   gap: 12px;
 }
@@ -713,7 +713,7 @@
 }
 
 .apuesta-odd-box:not(:first-child) {
-  border-left: 3px solid #ffb300 !important;
+  border-left: none !important;
 }
 
 .apuesta-odd-box:hover {
@@ -901,7 +901,7 @@
 
   .module-apuesta-display .apuesta-odd-box:not(:first-child) {
     border-left: none !important;
-    border-top: 3px solid #ffb300 !important;
+    border-top: none !important;
   }
 
   .module-apuesta-display .box-left .sb-team-flag,
@@ -1058,15 +1058,15 @@
 }
 
 .pregunta-divider-horizontal {
-  height: 3px !important;
+  height: 0 !important;
   width: 100%;
-  background-color: #ffb300 !important;
+  background-color: transparent !important;
   flex-shrink: 0;
 }
 
 .pregunta-divider-vertical {
-  width: 3px !important;
-  background-color: #ffb300 !important;
+  width: 0 !important;
+  background-color: transparent !important;
   align-self: stretch;
   flex-shrink: 0;
 }
@@ -1675,7 +1675,7 @@ img.sb-team-flag,
 .vertical .apuesta-header {
   margin-bottom: 0 !important;
   padding: clamp(10px, calc(18px * var(--scale, 1)), 24px) !important;
-  border-bottom: 3px solid #ffb300 !important;
+  border-bottom: none !important;
   box-sizing: border-box;
 }
 
@@ -1709,7 +1709,7 @@ img.sb-team-flag,
 
 .vertical .apuesta-odd-box:not(:first-child) {
   border-left: none !important;
-  border-top: 3px solid #ffb300 !important;
+  border-top: none !important;
 }
 
 .vertical .apuesta-team-info {
