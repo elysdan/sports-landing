@@ -578,13 +578,16 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
 
   return (
     <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`}>
-      <div className="apuesta-header">
+      <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
         <div className="apuesta-title">{content.title}</div>
         {content.tag && <div className="apuesta-tag">{content.tag}</div>}
       </div>
       <div className="apuesta-odds-row">
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
-          <div className={`apuesta-odd-box box-left ${!hasTeamA ? 'no-team-info' : ''}`}>
+          <div
+            className={`apuesta-odd-box box-left ${!hasTeamA ? 'no-team-info' : ''}`}
+            style={content.boxLeftBgColor ? { background: content.boxLeftBgColor } : {}}
+          >
             {hasTeamA && (
               <div className="apuesta-team-info">
                 <span className="apuesta-team-name">{teamAInfo.code || teamAInfo.name || ''}</span>
@@ -595,13 +598,19 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
         )}
 
         {mode === '3-way' && (
-          <div className="apuesta-odd-box box-center">
+          <div
+            className="apuesta-odd-box box-center"
+            style={content.boxCenterBgColor ? { background: content.boxCenterBgColor } : {}}
+          >
             <span className="apuesta-odd-value">{formatOddValue(content.draw?.odd)}</span>
           </div>
         )}
 
         {(mode === '3-way' || mode === '2-way') && (
-          <div className={`apuesta-odd-box box-right ${!hasTeamB ? 'no-team-info' : ''}`}>
+          <div
+            className={`apuesta-odd-box box-right ${!hasTeamB ? 'no-team-info' : ''}`}
+            style={content.boxRightBgColor ? { background: content.boxRightBgColor } : {}}
+          >
             <span className="apuesta-odd-value">{formatOddValue(teamBInfo.odd)}</span>
             {hasTeamB && (
               <div className="apuesta-team-info">
