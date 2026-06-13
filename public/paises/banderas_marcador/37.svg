@@ -1,9 +1,30 @@
-<svg width="203" height="122" viewBox="0 0 203 122" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="none">
-<rect width="202.749" height="121.649" fill="url(#pattern0_16_52)"/>
-<defs>
-<pattern id="pattern0_16_52" patternContentUnits="objectBoundingBox" width="1" height="1">
-<use xlink:href="#image0_16_52" transform="matrix(0.004 0 0 0.00666667 0 -0.0566667)"/>
-</pattern>
-<image id="image0_16_52" width="250" height="167" preserveAspectRatio="none" xlink:href="data:image/png;base64,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"/>
-</defs>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 84">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4 {
+        stroke-width: 0px;
+      }
+
+      .cls-2 {
+        fill: #d7141a;
+      }
+
+      .cls-3 {
+        fill: #11457e;
+      }
+
+      .cls-4 {
+        fill: #fff;
+      }
+    </style>
+  </defs>
+  <rect class="cls-2" x="-.5" width="300.5" height="83.89"/>
+  <rect class="cls-4" x="-.5" width="300.5" height="41.94"/>
+  <polygon class="cls-3" points="-.5 0 -.5 83.89 85 41.94 -.5 0"/>
+  <rect class="cls-1" x="-.5" width="300.5" height="83.89"/>
 </svg>
