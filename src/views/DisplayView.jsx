@@ -304,7 +304,7 @@ export function TeamFlag({ flag, teamName, worldCupTeams = [], isScoreboard = fa
             minHeight: '100%',
             maxWidth: 'none',
             maxHeight: 'none',
-            objectFit: 'contain',
+            objectFit: 'cover',
             borderRadius: 0,
             border: 'none',
             padding: 0,
