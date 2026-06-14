@@ -423,9 +423,40 @@ function ScoreboardModule({ content }) {
   };
 
   return (
-    <div className="module-scoreboard-display" style={scoreboardStyle}>
+    <div className="module-scoreboard-display" style={{ position: 'relative' }}>
+      {/* Bordes Exteriores Absolutos */}
+      {borderTopShow && (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `${borderTopWidth}px`, backgroundColor: borderTopColor, zIndex: 11, pointerEvents: 'none' }} />
+      )}
+      {borderBottomShow && (
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${borderBottomWidth}px`, backgroundColor: borderBottomColor, zIndex: 11, pointerEvents: 'none' }} />
+      )}
+      {borderLeftShow && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: `${borderLeftWidth}px`, backgroundColor: borderLeftColor, zIndex: 11, pointerEvents: 'none' }} />
+      )}
+      {borderRightShow && (
+        <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: `${borderRightWidth}px`, backgroundColor: borderRightColor, zIndex: 11, pointerEvents: 'none' }} />
+      )}
+
+      {/* Divisor Central Vertical Absoluto */}
+      {dividerVerticalShow && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: 0,
+            bottom: 0,
+            width: `${dividerVerticalWidth}px`,
+            transform: 'translateX(-50%)',
+            backgroundColor: dividerVerticalColor,
+            zIndex: 10,
+            pointerEvents: 'none'
+          }}
+        />
+      )}
+
       <div className="sb-cards-container">
-        <div className="sb-team-card">
+        <div className="sb-team-card" style={{ position: 'relative' }}>
           <div className="sb-card-score" style={scoreStyleA}>
             {hasMediaBgA && (
               isVideoBgA ? (
@@ -467,11 +498,14 @@ function ScoreboardModule({ content }) {
           {dividerHorizontalShow && (
             <div
               style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
-                width: '100%',
                 zIndex: 10,
-                flexShrink: 0
+                pointerEvents: 'none'
               }}
             />
           )}
@@ -491,19 +525,7 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
 
-        {dividerVerticalShow && (
-          <div
-            style={{
-              width: `${dividerVerticalWidth}px`,
-              backgroundColor: dividerVerticalColor,
-              height: '100%',
-              zIndex: 10,
-              flexShrink: 0
-            }}
-          />
-        )}
-
-        <div className="sb-team-card">
+        <div className="sb-team-card" style={{ position: 'relative' }}>
           <div className="sb-card-score" style={scoreStyleB}>
             {hasMediaBgB && (
               isVideoBgB ? (
@@ -545,11 +567,14 @@ function ScoreboardModule({ content }) {
           {dividerHorizontalShow && (
             <div
               style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
-                width: '100%',
                 zIndex: 10,
-                flexShrink: 0
+                pointerEvents: 'none'
               }}
             />
           )}
