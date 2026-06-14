@@ -403,6 +403,97 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
           </div>
         </div>
       </div>
+
+      <div style={{ borderTop: '1px solid var(--color-border)', margin: '20px 0' }} />
+      <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
+        Líneas Divisoras y Bordes
+      </h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {[
+          { key: 'borderTop', label: 'Borde Superior' },
+          { key: 'borderBottom', label: 'Borde Inferior' },
+          { key: 'borderLeft', label: 'Borde Izquierdo' },
+          { key: 'borderRight', label: 'Borde Derecho' },
+          { key: 'dividerVertical', label: 'Divisor Central Vertical' },
+          { key: 'dividerHorizontal', label: 'Divisor Horizontal (Score/Info)' },
+        ].map((cfg) => {
+          const showKey = `${cfg.key}Show`;
+          const colorKey = `${cfg.key}Color`;
+          const widthKey = `${cfg.key}Width`;
+
+          const isShow = content[showKey] || false;
+          const colorVal = content[colorKey] || '#00a2ff';
+          const widthVal = content[widthKey] !== undefined ? content[widthKey] : 4;
+
+          return (
+            <div key={cfg.key} style={{ 
+              background: 'var(--color-bg-card)', 
+              padding: '12px var(--gap-md)', 
+              borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: isShow ? '12px' : '0' }}>
+                <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--color-white)' }}>
+                  {cfg.label}
+                </span>
+                <label style={{ display: 'inline-flex', alignItems: 'center', cursor: 'pointer', gap: '8px', fontSize: '12px', color: 'var(--color-text-secondary)' }}>
+                  <input
+                    type="checkbox"
+                    checked={isShow}
+                    onChange={(e) => updateModuleContent(moduleId, { [showKey]: e.target.checked })}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  Habilitar
+                </label>
+              </div>
+
+              {isShow && (
+                <div className="field-row" style={{ gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div className="field" style={{ marginBottom: 0 }}>
+                    <label>Color</label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                      <input
+                        type="color"
+                        value={colorVal && /^#[0-9A-F]{6}$/i.test(colorVal) ? colorVal : '#00a2ff'}
+                        onChange={(e) => updateModuleContent(moduleId, { [colorKey]: e.target.value })}
+                        style={{
+                          width: '38px',
+                          height: '38px',
+                          padding: '2px',
+                          border: '1px solid var(--color-border)',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          background: 'transparent',
+                          flexShrink: 0
+                        }}
+                      />
+                      <input
+                        type="text"
+                        value={content[colorKey] || ''}
+                        onChange={(e) => updateModuleContent(moduleId, { [colorKey]: e.target.value })}
+                        placeholder="Ej: #00a2ff"
+                        style={{ flex: 1, padding: '8px 10px', fontSize: '13px' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="field" style={{ marginBottom: 0 }}>
+                    <label>Grosor (px)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="20"
+                      value={widthVal}
+                      onChange={(e) => updateModuleContent(moduleId, { [widthKey]: parseInt(e.target.value) || 1 })}
+                      style={{ padding: '8px 10px', fontSize: '13px' }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }

@@ -360,6 +360,38 @@ function ScoreboardModule({ content }) {
   const hasImageA = flagUrlA && (flagUrlA.startsWith('/') || flagUrlA.startsWith('http') || flagUrlA.includes('.'));
   const hasImageB = flagUrlB && (flagUrlB.startsWith('/') || flagUrlB.startsWith('http') || flagUrlB.includes('.'));
 
+  // Bordes y divisores
+  const borderTopShow = content.borderTopShow || false;
+  const borderTopColor = content.borderTopColor || '#00a2ff';
+  const borderTopWidth = content.borderTopWidth !== undefined ? Number(content.borderTopWidth) : 4;
+
+  const borderBottomShow = content.borderBottomShow || false;
+  const borderBottomColor = content.borderBottomColor || '#00a2ff';
+  const borderBottomWidth = content.borderBottomWidth !== undefined ? Number(content.borderBottomWidth) : 4;
+
+  const borderLeftShow = content.borderLeftShow || false;
+  const borderLeftColor = content.borderLeftColor || '#00a2ff';
+  const borderLeftWidth = content.borderLeftWidth !== undefined ? Number(content.borderLeftWidth) : 4;
+
+  const borderRightShow = content.borderRightShow || false;
+  const borderRightColor = content.borderRightColor || '#00a2ff';
+  const borderRightWidth = content.borderRightWidth !== undefined ? Number(content.borderRightWidth) : 4;
+
+  const dividerVerticalShow = content.dividerVerticalShow || false;
+  const dividerVerticalColor = content.dividerVerticalColor || '#00a2ff';
+  const dividerVerticalWidth = content.dividerVerticalWidth !== undefined ? Number(content.dividerVerticalWidth) : 4;
+
+  const dividerHorizontalShow = content.dividerHorizontalShow || false;
+  const dividerHorizontalColor = content.dividerHorizontalColor || '#00a2ff';
+  const dividerHorizontalWidth = content.dividerHorizontalWidth !== undefined ? Number(content.dividerHorizontalWidth) : 4;
+
+  const scoreboardStyle = {
+    '--scoreboard-border-top': borderTopShow ? `${borderTopWidth}px solid ${borderTopColor}` : 'none',
+    '--scoreboard-border-bottom': borderBottomShow ? `${borderBottomWidth}px solid ${borderBottomColor}` : 'none',
+    '--scoreboard-border-left': borderLeftShow ? `${borderLeftWidth}px solid ${borderLeftColor}` : 'none',
+    '--scoreboard-border-right': borderRightShow ? `${borderRightWidth}px solid ${borderRightColor}` : 'none',
+  };
+
   // Fondo del marcador A (Local)
   const scoreBgTypeA = content.scoreBgTypeA || 'color';
   const scoreBgColorA = content.scoreBgColorA || '';
@@ -391,7 +423,7 @@ function ScoreboardModule({ content }) {
   };
 
   return (
-    <div className="module-scoreboard-display">
+    <div className="module-scoreboard-display" style={scoreboardStyle}>
       <div className="sb-cards-container">
         <div className="sb-team-card">
           <div className="sb-card-score" style={scoreStyleA}>
@@ -432,6 +464,17 @@ function ScoreboardModule({ content }) {
             )}
             <span style={{ position: 'relative', zIndex: 1 }}>{content.teamA.score}</span>
           </div>
+          {dividerHorizontalShow && (
+            <div
+              style={{
+                height: `${dividerHorizontalWidth}px`,
+                backgroundColor: dividerHorizontalColor,
+                width: '100%',
+                zIndex: 10,
+                flexShrink: 0
+              }}
+            />
+          )}
           <div
             className="sb-card-info"
             style={hasImageA ? {
@@ -448,6 +491,17 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
 
+        {dividerVerticalShow && (
+          <div
+            style={{
+              width: `${dividerVerticalWidth}px`,
+              backgroundColor: dividerVerticalColor,
+              height: '100%',
+              zIndex: 10,
+              flexShrink: 0
+            }}
+          />
+        )}
 
         <div className="sb-team-card">
           <div className="sb-card-score" style={scoreStyleB}>
@@ -488,6 +542,17 @@ function ScoreboardModule({ content }) {
             )}
             <span style={{ position: 'relative', zIndex: 1 }}>{content.teamB.score}</span>
           </div>
+          {dividerHorizontalShow && (
+            <div
+              style={{
+                height: `${dividerHorizontalWidth}px`,
+                backgroundColor: dividerHorizontalColor,
+                width: '100%',
+                zIndex: 10,
+                flexShrink: 0
+              }}
+            />
+          )}
           <div
             className="sb-card-info"
             style={hasImageB ? {
