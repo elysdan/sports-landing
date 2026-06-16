@@ -10,23 +10,25 @@ export default function PreguntaEditor({ content, onChange, updateModuleContent,
 
   return (
     <>
-      <div className="field">
-        <label>Pregunta / Título (ej: ¿AMBOS EQUIPOS ANOTARÁN?)</label>
-        <input
-          type="text"
-          value={content.title || ''}
-          onChange={(e) => onChange('title', e.target.value)}
-        />
-      </div>
-      <div className="field">
-        <label>Posición del Título / Pregunta</label>
-        <select
-          value={content.titlePosition || 'top'}
-          onChange={(e) => onChange('titlePosition', e.target.value)}
-        >
-          <option value="top">Arriba (Por defecto)</option>
-          <option value="bottom">Abajo</option>
-        </select>
+      <div className="field-row">
+        <div className="field">
+          <label>Pregunta / Título (ej: ¿AMBOS EQUIPOS ANOTARÁN?)</label>
+          <input
+            type="text"
+            value={content.title || ''}
+            onChange={(e) => onChange('title', e.target.value)}
+          />
+        </div>
+        <div className="field">
+          <label>Posición de la Pregunta / Título</label>
+          <select
+            value={content.titlePosition || 'top'}
+            onChange={(e) => onChange('titlePosition', e.target.value)}
+          >
+            <option value="top">Arriba (Por defecto)</option>
+            <option value="bottom">Abajo</option>
+          </select>
+        </div>
       </div>
 
       {/* --- Diseño del Título --- */}

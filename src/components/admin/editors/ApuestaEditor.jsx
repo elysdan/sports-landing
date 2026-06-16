@@ -58,15 +58,17 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
         </div>
       </div>
 
-      <div className="field" style={{ marginTop: '12px' }}>
-        <label>Posición del Título</label>
-        <select
-          value={content.titlePosition || 'top'}
-          onChange={(e) => onChange('titlePosition', e.target.value)}
-        >
-          <option value="top">Arriba (Por defecto)</option>
-          <option value="bottom">Abajo</option>
-        </select>
+      <div className="field-row" style={{ marginTop: '12px', marginBottom: '12px' }}>
+        <div className="field">
+          <label>Posición del Título</label>
+          <select
+            value={content.titlePosition || 'top'}
+            onChange={(e) => onChange('titlePosition', e.target.value)}
+          >
+            <option value="top">Arriba (Por defecto)</option>
+            <option value="bottom">Abajo</option>
+          </select>
+        </div>
       </div>
 
       <div className="field" style={{ marginTop: '12px', marginBottom: '8px' }}>

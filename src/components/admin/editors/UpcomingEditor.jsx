@@ -16,19 +16,21 @@ export default function UpcomingEditor({ content, onChange, updateModuleContent,
 
   return (
     <>
-      <div className="field">
-        <label>Hora</label>
-        <input type="text" value={content.time || ''} onChange={(e) => onChange('time', e.target.value)} />
-      </div>
-      <div className="field">
-        <label>Posición del Título / Hora</label>
-        <select
-          value={content.titlePosition || 'top'}
-          onChange={(e) => onChange('titlePosition', e.target.value)}
-        >
-          <option value="top">Arriba (Por defecto)</option>
-          <option value="bottom">Abajo</option>
-        </select>
+      <div className="field-row">
+        <div className="field">
+          <label>Hora</label>
+          <input type="text" value={content.time || ''} onChange={(e) => onChange('time', e.target.value)} />
+        </div>
+        <div className="field">
+          <label>Posición del Título / Hora</label>
+          <select
+            value={content.titlePosition || 'top'}
+            onChange={(e) => onChange('titlePosition', e.target.value)}
+          >
+            <option value="top">Arriba (Por defecto)</option>
+            <option value="bottom">Abajo</option>
+          </select>
+        </div>
       </div>
       <div className="field" style={{ marginBottom: '12px' }}>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'normal', color: 'var(--color-white)' }}>
