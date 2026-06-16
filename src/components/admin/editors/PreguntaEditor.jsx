@@ -18,6 +18,16 @@ export default function PreguntaEditor({ content, onChange, updateModuleContent,
           onChange={(e) => onChange('title', e.target.value)}
         />
       </div>
+      <div className="field">
+        <label>Posición del Título / Pregunta</label>
+        <select
+          value={content.titlePosition || 'top'}
+          onChange={(e) => onChange('titlePosition', e.target.value)}
+        >
+          <option value="top">Arriba (Por defecto)</option>
+          <option value="bottom">Abajo</option>
+        </select>
+      </div>
 
       {/* --- Diseño del Título --- */}
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginTop: '20px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>

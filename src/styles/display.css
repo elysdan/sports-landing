@@ -521,7 +521,7 @@
   min-height: 100% !important;
   max-width: none !important;
   max-height: none !important;
-  object-fit: cover !important;
+  object-fit: fill !important;
   border-radius: 0 !important;
   border: none !important;
   padding: 0 !important;
@@ -1285,30 +1285,6 @@
   gap: calc(4px * var(--scale, 1)) !important;
 }
 
-.short-row-1 .upcoming-team-box img.sb-team-flag {
-  position: static !important;
-  width: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
-  height: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: cover !important;
-  border-radius: 4px !important;
-  border-width: 1px !important;
-}
-
-.short-row-1 .upcoming-team-box .sb-team-flag {
-  position: static !important;
-  width: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
-  height: clamp(20px, calc(36px * var(--scale, 1)), 52px) !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  border-radius: 4px !important;
-  font-size: clamp(14px, calc(24px * var(--scale, 1)), 32px) !important;
-}
 
 
 .short-row-1 .upcoming-header-box {
@@ -1846,4 +1822,53 @@ img.sb-team-flag,
 
 .module-wrapper .module-apuesta-display .apuesta-odd-value {
   color: var(--apuesta-number-color, var(--text-color, #ffb300)) !important;
+}
+
+/* Ensure the upcoming vs card has 100% height and flags stretch vertically to cover the entire module height */
+.module-upcoming-display {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: stretch !important;
+  padding: 0 !important;
+}
+
+.module-upcoming-display .upcoming-vs-card {
+  height: 100% !important;
+  flex: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+}
+
+.module-upcoming-display .upcoming-team-box {
+  height: 100% !important;
+  padding: 0 !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.module-upcoming-display .upcoming-team-box img.sb-team-flag-img {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: fill !important;
+  z-index: 0 !important;
+}
+
+/* Custom header/title and flag/name positioning styles */
+.module-apuesta-display.title-bottom .apuesta-header {
+  border-top: var(--apuesta-border-horizontal, none) !important;
+  border-bottom: none !important;
+}
+
+.module-scoreboard-display.flag-top .sb-card-info {
+  border-top: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2) !important;
 }

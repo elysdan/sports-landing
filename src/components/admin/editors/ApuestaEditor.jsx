@@ -58,6 +58,17 @@ export default function ApuestaEditor({ content, onChange, updateModuleContent, 
         </div>
       </div>
 
+      <div className="field" style={{ marginTop: '12px' }}>
+        <label>Posición del Título</label>
+        <select
+          value={content.titlePosition || 'top'}
+          onChange={(e) => onChange('titlePosition', e.target.value)}
+        >
+          <option value="top">Arriba (Por defecto)</option>
+          <option value="bottom">Abajo</option>
+        </select>
+      </div>
+
       <div className="field" style={{ marginTop: '12px', marginBottom: '8px' }}>
         <label style={{ display: 'block', fontWeight: 'normal', color: 'var(--color-white)', marginBottom: '4px' }}>
           Tamaño de los números de cuotas (Escala: {content.apuestaOddScale !== undefined ? content.apuestaOddScale : '1.0'}x)

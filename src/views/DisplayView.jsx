@@ -422,8 +422,10 @@ function ScoreboardModule({ content }) {
     ...(content.scoreTextColorB ? { color: content.scoreTextColorB } : {})
   };
 
+  const isFlagTop = content.flagPosition === 'top';
+
   return (
-    <div className="module-scoreboard-display" style={{ position: 'relative' }}>
+    <div className={`module-scoreboard-display ${isFlagTop ? 'flag-top' : ''}`} style={{ position: 'relative' }}>
       {/* Bordes Exteriores Absolutos */}
       {borderTopShow && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `${borderTopWidth}px`, backgroundColor: borderTopColor, zIndex: 11, pointerEvents: 'none' }} />
@@ -456,7 +458,7 @@ function ScoreboardModule({ content }) {
       )}
 
       <div className="sb-cards-container">
-        <div className="sb-team-card" style={{ position: 'relative' }}>
+        <div className="sb-team-card" style={{ position: 'relative', flexDirection: isFlagTop ? 'column-reverse' : 'column' }}>
           <div className="sb-card-score" style={scoreStyleA}>
             {hasMediaBgA && (
               isVideoBgA ? (
@@ -501,7 +503,7 @@ function ScoreboardModule({ content }) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                bottom: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
+                [isFlagTop ? 'top' : 'bottom']: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
                 zIndex: 10,
@@ -525,7 +527,7 @@ function ScoreboardModule({ content }) {
           </div>
         </div>
 
-        <div className="sb-team-card" style={{ position: 'relative' }}>
+        <div className="sb-team-card" style={{ position: 'relative', flexDirection: isFlagTop ? 'column-reverse' : 'column' }}>
           <div className="sb-card-score" style={scoreStyleB}>
             {hasMediaBgB && (
               isVideoBgB ? (
@@ -570,7 +572,7 @@ function ScoreboardModule({ content }) {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                bottom: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
+                [isFlagTop ? 'top' : 'bottom']: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
                 zIndex: 10,
@@ -620,10 +622,11 @@ function UpcomingModule({ content }) {
   const flagB = getTeamFlag(teamBInfo.name, content.flagB, teamBInfo.flag, worldCupTeams);
 
   const hasTime = content.time && content.time.trim() !== '';
+  const isTitleBottom = content.titlePosition === 'bottom';
 
   return (
-    <div className="module-upcoming-display">
-      {hasTime && (
+    <div className={`module-upcoming-display ${isTitleBottom ? 'title-bottom' : ''}`}>
+      {hasTime && !isTitleBottom && (
         <div className="upcoming-header-box">
           <div className="upcoming-time-display">{content.time}</div>
         </div>
@@ -639,6 +642,11 @@ function UpcomingModule({ content }) {
           <TeamFlag flag={flagB?.flag || flagB || '🏳️'} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} isUpcoming={true} />
         </div>
       </div>
+      {hasTime && isTitleBottom && (
+        <div className="upcoming-header-box">
+          <div className="upcoming-time-display">{content.time}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -687,12 +695,16 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
     ...(content.apuestaNumberColor ? { '--apuesta-number-color': content.apuestaNumberColor } : {}),
   };
 
+  const isTitleBottom = content.titlePosition === 'bottom';
+
   return (
-    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''}`} style={containerStyle}>
-      <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
-        <div className="apuesta-title">{content.title}</div>
-        {content.tag && <div className="apuesta-tag">{content.tag}</div>}
-      </div>
+    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''} ${isTitleBottom ? 'title-bottom' : ''}`} style={containerStyle}>
+      {!isTitleBottom && (
+        <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
+          <div className="apuesta-title">{content.title}</div>
+          {content.tag && <div className="apuesta-tag">{content.tag}</div>}
+        </div>
+      )}
       <div className="apuesta-odds-row">
         {(mode === '1-way' || mode === '2-way' || mode === '3-way') && (
           <div
@@ -731,6 +743,12 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
           </div>
         )}
       </div>
+      {isTitleBottom && (
+        <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
+          <div className="apuesta-title">{content.title}</div>
+          {content.tag && <div className="apuesta-tag">{content.tag}</div>}
+        </div>
+      )}
     </div>
   );
 }
@@ -753,12 +771,18 @@ function PreguntaModule({ content }) {
     moduleStyle['--pregunta-title-bg'] = content.titleBgColor;
   }
 
+  const isTitleBottom = content.titlePosition === 'bottom';
+
   return (
-    <div className="module-pregunta-display" style={moduleStyle}>
-      <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
-        <div className="pregunta-title" style={content.titleTextColor ? { color: 'var(--pregunta-title-color)' } : {}}>{content.title}</div>
-      </div>
-      <div className="pregunta-divider-horizontal" />
+    <div className={`module-pregunta-display ${isTitleBottom ? 'title-bottom' : ''}`} style={moduleStyle}>
+      {!isTitleBottom && (
+        <>
+          <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
+            <div className="pregunta-title" style={content.titleTextColor ? { color: 'var(--pregunta-title-color)' } : {}}>{content.title}</div>
+          </div>
+          <div className="pregunta-divider-horizontal" />
+        </>
+      )}
       <div className="pregunta-options-row">
         <div className={`pregunta-option-box box-yes ${optionLayoutClass}`}>
           {yesType === 'sticker' ? (
@@ -794,6 +818,14 @@ function PreguntaModule({ content }) {
           </span>
         </div>
       </div>
+      {isTitleBottom && (
+        <>
+          <div className="pregunta-divider-horizontal" />
+          <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
+            <div className="pregunta-title" style={content.titleTextColor ? { color: 'var(--pregunta-title-color)' } : {}}>{content.title}</div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

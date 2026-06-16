@@ -150,6 +150,16 @@ export default function ScoreboardEditor({ content, updateModuleContent, moduleI
       <h3 style={{ fontSize: '13px', color: 'var(--color-gold)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>
         Estilos del Marcador
       </h3>
+      <div className="field" style={{ marginBottom: '16px' }}>
+        <label>Posición de las Banderas y Nombres</label>
+        <select
+          value={content.flagPosition || 'bottom'}
+          onChange={(e) => updateModuleContent(moduleId, { flagPosition: e.target.value })}
+        >
+          <option value="bottom">Abajo (Por defecto)</option>
+          <option value="top">Arriba</option>
+        </select>
+      </div>
       <div className="field-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Fondo score A */}
         <div className="field" style={{ marginBottom: 0 }}>
