@@ -603,8 +603,8 @@
 .span-w-2 .upcoming-vs-card,
 .vertical .upcoming-vs-card {
   flex-direction: column !important;
-  justify-content: space-evenly !important;
-  gap: calc(8px * var(--scale, 1)) !important;
+  justify-content: stretch !important;
+  gap: 0 !important;
   flex: 1 !important;
   width: 100% !important;
 }
@@ -624,6 +624,16 @@
 .vertical .upcoming-team-box.box-left {
   border-right: none !important;
   border-bottom: none !important;
+}
+
+/* Compact sizes for short cells or compact upcoming */
+.short-row-1 .upcoming-team-box {
+  padding: calc(8px * var(--scale, 1)) !important;
+}
+
+.short-row-1 .upcoming-vs-badge {
+  font-size: clamp(10px, calc(18px * var(--font-scale, 1)), 28px) !important;
+  padding: calc(4px * var(--scale, 1)) calc(12px * var(--scale, 1)) !important;
 }
 
 /* ─── MODULE TYPE: APUESTA ─── */

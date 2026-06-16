@@ -422,10 +422,130 @@ function ScoreboardModule({ content }) {
     ...(content.scoreTextColorB ? { color: content.scoreTextColorB } : {})
   };
 
-  const isFlagTop = content.flagPosition === 'top';
+  const flagPosition = content.flagPosition || 'bottom';
+
+  const scoreDivA = (
+    <div className="sb-card-score" style={scoreStyleA}>
+      {hasMediaBgA && (
+        isVideoBgA ? (
+          <video
+            src={scoreBgUrlA}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 0
+            }}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${scoreBgUrlA})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0
+            }}
+          />
+        )
+      )}
+      <span style={{ position: 'relative', zIndex: 1 }}>{content.teamA.score}</span>
+    </div>
+  );
+
+  const infoDivA = (
+    <div
+      className="sb-card-info"
+      style={hasImageA ? {
+        backgroundImage: `url(${flagUrlA})`,
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : {}}
+    >
+      {!hasImageA && content.teamA.flag && (
+        <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamA.flag}</span>
+      )}
+      <span className="sb-card-code">{content.teamA.code || content.teamA.name?.slice(0, 3)}</span>
+    </div>
+  );
+
+  const scoreDivB = (
+    <div className="sb-card-score" style={scoreStyleB}>
+      {hasMediaBgB && (
+        isVideoBgB ? (
+          <video
+            src={scoreBgUrlB}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              zIndex: 0
+            }}
+            autoPlay
+            muted
+            loop
+            playsInline
+          />
+        ) : (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: `url(${scoreBgUrlB})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              zIndex: 0
+            }}
+          />
+        )
+      )}
+      <span style={{ position: 'relative', zIndex: 1 }}>{content.teamB.score}</span>
+    </div>
+  );
+
+  const infoDivB = (
+    <div
+      className="sb-card-info"
+      style={hasImageB ? {
+        backgroundImage: `url(${flagUrlB})`,
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : {}}
+    >
+      {!hasImageB && content.teamB.flag && (
+        <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamB.flag}</span>
+      )}
+      <span className="sb-card-code">{content.teamB.code || content.teamB.name?.slice(0, 3)}</span>
+    </div>
+  );
+
+  const dividerPositionStyle = flagPosition === 'top'
+    ? { top: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)` }
+    : { bottom: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)` };
 
   return (
-    <div className={`module-scoreboard-display ${isFlagTop ? 'flag-top' : ''}`} style={{ position: 'relative' }}>
+    <div className="module-scoreboard-display" style={{ position: 'relative' }}>
       {/* Bordes Exteriores Absolutos */}
       {borderTopShow && (
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: `${borderTopWidth}px`, backgroundColor: borderTopColor, zIndex: 11, pointerEvents: 'none' }} />
@@ -458,52 +578,25 @@ function ScoreboardModule({ content }) {
       )}
 
       <div className="sb-cards-container">
-        <div className="sb-team-card" style={{ position: 'relative', flexDirection: isFlagTop ? 'column-reverse' : 'column' }}>
-          <div className="sb-card-score" style={scoreStyleA}>
-            {hasMediaBgA && (
-              isVideoBgA ? (
-                <video
-                  src={scoreBgUrlA}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    zIndex: 0
-                  }}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
-              ) : (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: `url(${scoreBgUrlA})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    zIndex: 0
-                  }}
-                />
-              )
-            )}
-            <span style={{ position: 'relative', zIndex: 1 }}>{content.teamA.score}</span>
-          </div>
+        <div className="sb-team-card" style={{ position: 'relative' }}>
+          {flagPosition === 'top' ? (
+            <>
+              {infoDivA}
+              {scoreDivA}
+            </>
+          ) : (
+            <>
+              {scoreDivA}
+              {infoDivA}
+            </>
+          )}
           {dividerHorizontalShow && (
             <div
               style={{
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                [isFlagTop ? 'top' : 'bottom']: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
+                ...dividerPositionStyle,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
                 zIndex: 10,
@@ -511,68 +604,27 @@ function ScoreboardModule({ content }) {
               }}
             />
           )}
-          <div
-            className="sb-card-info"
-            style={hasImageA ? {
-              backgroundImage: `url(${flagUrlA})`,
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            } : {}}
-          >
-            {!hasImageA && content.teamA.flag && (
-              <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamA.flag}</span>
-            )}
-            <span className="sb-card-code">{content.teamA.code || content.teamA.name?.slice(0, 3)}</span>
-          </div>
         </div>
 
-        <div className="sb-team-card" style={{ position: 'relative', flexDirection: isFlagTop ? 'column-reverse' : 'column' }}>
-          <div className="sb-card-score" style={scoreStyleB}>
-            {hasMediaBgB && (
-              isVideoBgB ? (
-                <video
-                  src={scoreBgUrlB}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    zIndex: 0
-                  }}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                />
-              ) : (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: `url(${scoreBgUrlB})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
-                    zIndex: 0
-                  }}
-                />
-              )
-            )}
-            <span style={{ position: 'relative', zIndex: 1 }}>{content.teamB.score}</span>
-          </div>
+        <div className="sb-team-card" style={{ position: 'relative' }}>
+          {flagPosition === 'top' ? (
+            <>
+              {infoDivB}
+              {scoreDivB}
+            </>
+          ) : (
+            <>
+              {scoreDivB}
+              {infoDivB}
+            </>
+          )}
           {dividerHorizontalShow && (
             <div
               style={{
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                [isFlagTop ? 'top' : 'bottom']: `calc(48px * var(--scale, 1) - ${dividerHorizontalWidth / 2}px)`,
+                ...dividerPositionStyle,
                 height: `${dividerHorizontalWidth}px`,
                 backgroundColor: dividerHorizontalColor,
                 zIndex: 10,
@@ -580,20 +632,6 @@ function ScoreboardModule({ content }) {
               }}
             />
           )}
-          <div
-            className="sb-card-info"
-            style={hasImageB ? {
-              backgroundImage: `url(${flagUrlB})`,
-              backgroundSize: '100% 100%',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat'
-            } : {}}
-          >
-            {!hasImageB && content.teamB.flag && (
-              <span className="sb-team-flag" style={{ opacity: 0.25, marginRight: '8px' }}>{content.teamB.flag}</span>
-            )}
-            <span className="sb-card-code">{content.teamB.code || content.teamB.name?.slice(0, 3)}</span>
-          </div>
         </div>
       </div>
     </div>
@@ -622,11 +660,11 @@ function UpcomingModule({ content }) {
   const flagB = getTeamFlag(teamBInfo.name, content.flagB, teamBInfo.flag, worldCupTeams);
 
   const hasTime = content.time && content.time.trim() !== '';
-  const isTitleBottom = content.titlePosition === 'bottom';
+  const titlePosition = content.titlePosition || 'top';
 
   return (
-    <div className={`module-upcoming-display ${isTitleBottom ? 'title-bottom' : ''}`}>
-      {hasTime && !isTitleBottom && (
+    <div className={`module-upcoming-display title-${titlePosition} ${!hasTime ? 'no-title' : ''}`}>
+      {hasTime && titlePosition === 'top' && (
         <div className="upcoming-header-box">
           <div className="upcoming-time-display">{content.time}</div>
         </div>
@@ -642,7 +680,7 @@ function UpcomingModule({ content }) {
           <TeamFlag flag={flagB?.flag || flagB || '🏳️'} teamName={teamBInfo.name} worldCupTeams={worldCupTeams} isUpcoming={true} />
         </div>
       </div>
-      {hasTime && isTitleBottom && (
+      {hasTime && titlePosition === 'bottom' && (
         <div className="upcoming-header-box">
           <div className="upcoming-time-display">{content.time}</div>
         </div>
@@ -695,11 +733,11 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
     ...(content.apuestaNumberColor ? { '--apuesta-number-color': content.apuestaNumberColor } : {}),
   };
 
-  const isTitleBottom = content.titlePosition === 'bottom';
+  const titlePosition = content.titlePosition || 'top';
 
   return (
-    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''} ${isTitleBottom ? 'title-bottom' : ''}`} style={containerStyle}>
-      {!isTitleBottom && (
+    <div className={`module-apuesta-display ${isVerticalLayout ? 'vertical' : 'horizontal'} ${isShort ? 'short-row' : ''} title-${titlePosition}`} style={containerStyle}>
+      {titlePosition === 'top' && (
         <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
           <div className="apuesta-title">{content.title}</div>
           {content.tag && <div className="apuesta-tag">{content.tag}</div>}
@@ -743,7 +781,7 @@ function ApuestaModule({ content, isVerticalLayout, isShort }) {
           </div>
         )}
       </div>
-      {isTitleBottom && (
+      {titlePosition === 'bottom' && (
         <div className="apuesta-header" style={content.headerBgColor ? { background: content.headerBgColor } : {}}>
           <div className="apuesta-title">{content.title}</div>
           {content.tag && <div className="apuesta-tag">{content.tag}</div>}
@@ -771,11 +809,11 @@ function PreguntaModule({ content }) {
     moduleStyle['--pregunta-title-bg'] = content.titleBgColor;
   }
 
-  const isTitleBottom = content.titlePosition === 'bottom';
+  const titlePosition = content.titlePosition || 'top';
 
   return (
-    <div className={`module-pregunta-display ${isTitleBottom ? 'title-bottom' : ''}`} style={moduleStyle}>
-      {!isTitleBottom && (
+    <div className={`module-pregunta-display title-${titlePosition}`} style={moduleStyle}>
+      {titlePosition === 'top' && (
         <>
           <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
             <div className="pregunta-title" style={content.titleTextColor ? { color: 'var(--pregunta-title-color)' } : {}}>{content.title}</div>
@@ -818,7 +856,7 @@ function PreguntaModule({ content }) {
           </span>
         </div>
       </div>
-      {isTitleBottom && (
+      {titlePosition === 'bottom' && (
         <>
           <div className="pregunta-divider-horizontal" />
           <div className="pregunta-header" style={content.titleBgColor ? { backgroundColor: 'var(--pregunta-title-bg)' } : {}}>
